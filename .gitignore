@@ -1,0 +1,37 @@
+# Environment Dependent files
+/input/*
+/output/*
+/vocal/*
+/kissFFT/*
+Makefile
+main.cpp
+
+# Visual C++ files
+/Debug/*
+/Release/*
+/ipch/*
+*.sdf
+*.sln
+*.suo
+*.vcxproj
+*.vcxproj.*
+*.opensdf
+
+# Eclipse Project files
+.cproject
+.project
+.settings/*
+
+# Compiled Object files
+Nakloid
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
