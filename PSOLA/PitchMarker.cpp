@@ -156,7 +156,7 @@ vector<float> PitchMarker::xcorr(vector<short>::iterator first, vector<short>::i
   for (int i=0; i<fftlen; i++)
     in1[i][0] = in1[i][1] = in2[i][0] = in2[i][1] = 0;
   for (int i=0; i<wavdata.size(); i++)
-    in1[i][0] = in2[i+wavdata.size()][0] = wavdata[i];
+    in1[i][0] = in2[i+wavdata.size()-1][0] = wavdata[i];
 
   fftw_plan p1 = fftw_plan_dft_1d(fftlen, in1, out1, FFTW_FORWARD, FFTW_ESTIMATE);
   fftw_execute(p1);
