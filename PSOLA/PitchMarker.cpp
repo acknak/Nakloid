@@ -1,8 +1,6 @@
 #include "PitchMarker.h"
 
 #pragma comment(lib, "libfftw3-3.lib")
-#pragma comment(lib, "libfftw3f-3.lib")
-#pragma comment(lib, "libfftw3l-3.lib")
 
 #define _USE_MATH_DEFINES
 
@@ -104,12 +102,12 @@ bool PitchMarker::mark(vector<short> input)
       vector<float>::iterator it_max =
         max_element(xcorr_win.begin()+(win_size*2.75), xcorr_win.begin()+(win_size*3.25));
 
-  	  long dist = it_max - xcorr_win.begin() - (win_size*2);
+      long dist = it_max - xcorr_win.begin() - (win_size*2);
 	    if (input.end()-mark_next <= dist)
 	      to_next = false;
   	  else
 	      mark_list.push_back((mark_next+=dist)-input.begin());
-	  }
+    }
     // prev
 	  if (!to_prev || mark_prev-input.begin()<win_size) {
       to_prev = false;
@@ -118,7 +116,7 @@ bool PitchMarker::mark(vector<short> input)
       vector<float>::iterator it_max =
         max_element(xcorr_win.begin()+(win_size*2.75), xcorr_win.begin()+(win_size*3.25));
 
-	    long dist = it_max - xcorr_win.begin() - (win_size*2);
+      long dist = it_max - xcorr_win.begin() - (win_size*2);
 	    if (mark_prev-input.begin() <= dist)
         to_prev = false;
 	    else
@@ -148,42 +146,45 @@ vector<float> PitchMarker::xcorr(vector<short>::iterator first, vector<short>::i
   }
 
   long fftlen = wavdata.size() * 2 - 1;
-  fftw_plan p1,p2,p3;
   fftw_complex *in1 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
   fftw_complex *in2 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
+  fftw_complex *in3 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
   fftw_complex *out1 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
   fftw_complex *out2 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
+  fftw_complex *out3 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
 
   for (int i=0; i<fftlen; i++)
     in1[i][0] = in1[i][1] = in2[i][0] = in2[i][1] = 0;
   for (int i=0; i<wavdata.size(); i++)
     in1[i][0] = in2[i+wavdata.size()][0] = wavdata[i];
 
-  p1 = fftw_plan_dft_1d(fftlen, in1, out1, FFTW_FORWARD, FFTW_ESTIMATE);
+  fftw_plan p1 = fftw_plan_dft_1d(fftlen, in1, out1, FFTW_FORWARD, FFTW_ESTIMATE);
   fftw_execute(p1);
   fftw_destroy_plan(p1);
 
-  p2 = fftw_plan_dft_1d(fftlen, in2, out2, FFTW_FORWARD, FFTW_ESTIMATE);
+  fftw_plan p2 = fftw_plan_dft_1d(fftlen, in2, out2, FFTW_FORWARD, FFTW_ESTIMATE);
   fftw_execute(p2);
   fftw_destroy_plan(p2);
 
   for (int i=0; i<fftlen; i++) {
-    in1[i][0] = (out1[i][0]*out2[i][0])+(out1[i][1]*out2[i][1]);
-    in1[i][1] = (out1[i][0]*out2[i][1])-(out1[i][1]*out2[i][0]);
+    in3[i][0] = (out1[i][0]*out2[i][0])+(out1[i][1]*out2[i][1]);
+    in3[i][1] = (out1[i][0]*out2[i][1])-(out1[i][1]*out2[i][0]);
   }
 
-  p3 = fftw_plan_dft_1d(fftlen, in1, out1, FFTW_BACKWARD, FFTW_ESTIMATE);
+  fftw_plan p3 = fftw_plan_dft_1d(fftlen, in3, out3, FFTW_BACKWARD, FFTW_ESTIMATE);
   fftw_execute(p3);
   fftw_destroy_plan(p3);
 
   vector<float> output(fftlen, 0);
   for (int i=0; i<fftlen; i++)
-    output[i] = out1[i][0];
+    output[i] = out3[i][0];
 
   fftw_free(in1);
   fftw_free(in2);
+  fftw_free(in3);
   fftw_free(out1);
   fftw_free(out2);
+  fftw_free(out3);
 
   return output;
 }
