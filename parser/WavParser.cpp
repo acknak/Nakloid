@@ -146,10 +146,8 @@ bool WavParser::parse()
       ++track;
     } else {
       // other chunk
-      if (WavFormat::isTag(tag)) {
-        cerr << "unknown tag found" << endl;
-        break;
-      }
+      if (WavFormat::isTag(tag))
+        cerr << endl << "*** unknown tag found at WavParser ***" << endl << endl;
       ifs.seekg(chunk_size, ios_base::cur);
     }
 
