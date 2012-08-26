@@ -4,12 +4,13 @@ using namespace std;
 
 Note::Note()
 {
-  start = length = 0;
+  start = length = pitch = 0;
   pron = "";
-  pitch = velocity = 0;
+  velocity = 100;
+  prec = ovrl = -1;
 }
 
-Note::Note(double start, unsigned char pitch, unsigned char velocity)
+Note::Note(double start, unsigned char pitch, short velocity)
 {
   Note();
   this->setStart(start);
@@ -24,6 +25,8 @@ Note::Note(const Note& other)
   pron = other.pron;
   pitch = other.pitch;
   velocity = other.velocity;
+  prec = other.prec;
+  ovrl = other.ovrl;
 }
 
 Note::~Note(){}
@@ -36,6 +39,8 @@ Note& Note::operator=(const Note& other)
     pron = other.pron;
     pitch = other.pitch;
     velocity = other.velocity;
+    prec = other.prec;
+    ovrl = other.ovrl;
   }
   return *this;
 }
@@ -48,6 +53,8 @@ bool Note::operator==(const Note& other) const
   is_eq &= (pron == other.pron);
   is_eq &= (pitch == other.pitch);
   is_eq &= (velocity == other.velocity);
+  is_eq &= (prec == other.prec);
+  is_eq &= (ovrl == other.ovrl);
   return is_eq;
 }
 
@@ -111,14 +118,37 @@ void Note::setPitch(unsigned char pitch)
   this->pitch = pitch;
 }
 
-unsigned char Note::getVelocity()
+unsigned short Note::getVelocity()
 {
   return velocity;
 }
 
-void Note::setVelocity(unsigned char velocity)
+void Note::setVelocity(short velocity)
 {
-  this->velocity = velocity;
+  if (velocity > 0)
+    this->velocity = velocity;
+}
+
+short Note::getPrec()
+{
+  return prec;
+}
+
+void Note::setPrec(short prec)
+{
+  if (prec > 0)
+    this->prec = prec;
+}
+
+short Note::getOvrl()
+{
+  return ovrl;
+}
+
+void Note::setOvrl(short ovrl)
+{
+  if (ovrl > 0)
+    this->ovrl = ovrl;
 }
 
 double Note::tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo)

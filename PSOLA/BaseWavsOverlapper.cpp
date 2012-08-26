@@ -2,7 +2,7 @@
 
 using namespace std;
 
-BaseWavsOverlapper::BaseWavsOverlapper():rep_start(-1){}
+BaseWavsOverlapper::BaseWavsOverlapper():rep_start(-1), velocity(1.0), is_normalize(true){}
 
 BaseWavsOverlapper::~BaseWavsOverlapper(){}
 
@@ -70,6 +70,31 @@ long BaseWavsOverlapper::getRepStart()
   return rep_start;
 }
 
+void BaseWavsOverlapper::setVelocity(unsigned short velocity)
+{
+  this->velocity = velocity/100.0;
+}
+
+void BaseWavsOverlapper::setVelocity(double velocity)
+{
+  this->velocity = velocity;
+}
+
+double BaseWavsOverlapper::getVelocity()
+{
+  return velocity;
+}
+
+void BaseWavsOverlapper::isNormalize(bool is_normalize)
+{
+  this->is_normalize = is_normalize;
+}
+
+bool BaseWavsOverlapper::isNormalize()
+{
+  return is_normalize;
+}
+
 bool BaseWavsOverlapper::overlapping()
 {
   if (pitch_marks.empty() || base_wavs.empty() || rep_start<0)
@@ -83,6 +108,12 @@ bool BaseWavsOverlapper::overlapping()
   vector<BaseWav>::iterator tmp_base_wav = base_wavs.begin();
   cout << "output size:" << output_wav.size() << endl;
   cout << "morph_start:" << morph_start << ", morph_last:" << morph_last << endl;
+
+  if (is_normalize) {
+    double target_rms = getRMS(base_wavs[rep_start].data.getDataVector());
+    for (int i=rep_start+1; i<base_wavs.size(); i++)
+      base_wavs[i].data.setData(normalize(base_wavs[i].data.getDataVector(), target_rms));
+  }
 
   for (int i=0; i<pitch_marks.size()-1; i++) {
     long tmp_dist, tmp_pitch_mark = (pitch_marks[i] > morph_last)
@@ -114,6 +145,10 @@ bool BaseWavsOverlapper::overlapping()
       output_wav[win_start+j] += win[j];
   }
 
+  if (velocity != 1.0)
+    for (int i=0; i<output_wav.size(); i++)
+      output_wav[i] *= velocity;
+
   cout << "----- finish overlapping -----" << endl << endl;
   return true;
 }
@@ -124,6 +159,23 @@ void BaseWavsOverlapper::debugTxt(string output)
 
   for (int i=0; i<output_wav.size(); i++)
     ofs << output_wav[i] << endl;
+}
+
+double BaseWavsOverlapper::getRMS(vector<short> wav)
+{
+  double rms = 0.0;
+  for (int i=0; i<wav.size(); i++)
+    rms += pow((double)wav[i], 2) / wav.size();
+  return sqrt(rms);
+}
+
+vector<short> BaseWavsOverlapper::normalize(vector<short> wav, double target_rms)
+{
+  double wav_rms = getRMS(wav);
+  for (int i=0; i<wav.size(); i++)
+    wav[i] = wav[i] * (target_rms/wav_rms);
+
+  return wav;
 }
 
 void BaseWavsOverlapper::debugWav(string output)

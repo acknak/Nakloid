@@ -35,15 +35,24 @@ class BaseWavsOverlapper {
   std::vector<short> getOutputWavVector();
   void setRepStart(long rep_start);
   long getRepStart();
+  void setVelocity(unsigned short velocity);
+  void setVelocity(double velocity);
+  double getVelocity();
+  void isNormalize(bool is_normalize);
+  bool isNormalize();
 
  private:
   BaseWavsOverlapper(const BaseWavsOverlapper& other);
   BaseWavsOverlapper& operator=(const BaseWavsOverlapper& other);
+  std::vector<short> normalize(std::vector<short>wav, double target_rms);
+  double getRMS(std::vector<short> wav);
 
   std::vector<short> output_wav;
   std::vector<long> pitch_marks;
   std::vector<BaseWav> base_wavs;
   long rep_start;
+  double velocity;
+  bool is_normalize;
 };
 
 #endif

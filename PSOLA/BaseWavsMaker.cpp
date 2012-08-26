@@ -165,7 +165,6 @@ bool BaseWavsMaker::makeBaseWavs()
   vector<double> filter = getTri(rep_len_point);
   filter.erase(filter.begin()+(filter.size()/2), filter.end());
   long base_pos = rep_start_point + (rep_len_point/2);
-  double target_rms = getRMS(base_wavs[rep_start_point].data.getDataVector());
   cout << "base_wavs size:" << base_wavs.size() << ", base_pos:" << base_pos << endl;
   for (int i=0; i<rep_len_point/2; i++) {
     BaseWav fore_wav = base_wavs[rep_start_point+i];
@@ -208,60 +207,11 @@ bool BaseWavsMaker::makeBaseWavs()
           + aft_wav_data[j+aft_wav.fact.dwPitchLeft]*(1-filter[i]);
     }
 
-    // normalize
-    base_wavs[base_pos+i].data.setData(normalize(morph_wav_data, target_rms));
+    base_wavs[base_pos+i].data.setData(morph_wav_data);
   }
-/*
-  // normalize
-  double target_rms = getRMS(base_wavs[rep_start_point].data.getDataVector());
-  for (int i=0; i<base_wavs.size(); i++)
-    base_wavs[i].data.setData(normalize(base_wavs[i].data.getDataVector(), target_rms));
-*/
+
   cout << "----- finish making base wavs -----" << endl << endl;
   return true;
-}
-
-double BaseWavsMaker::getMean(vector<short> wav)
-{
-  double mean = 0.0;
-  for (int i=0; i<wav.size(); i++)
-    mean += wav[i];
-  return mean / wav.size();
-}
-
-double BaseWavsMaker::getVar(vector<short> wav)
-{
-  double var = 0.0, mean = getMean(wav);
-  for (int i=0; i<wav.size(); i++)
-    var += pow(wav[i]-mean, 2);
-  return var / wav.size();
-}
-
-double BaseWavsMaker::getRMS(vector<short> wav)
-{
-  double rms = 0.0;
-  for (int i=0; i<wav.size(); i++)
-    rms += pow((double)wav[i], 2) / wav.size();
-  return sqrt(rms);
-}
-
-vector<short> BaseWavsMaker::normalize(vector<short> wav, double target_rms)
-{
-  double wav_rms = getRMS(wav);
-  for (int i=0; i<wav.size(); i++)
-    wav[i] = wav[i] * (target_rms/wav_rms);
-
-  return wav;
-}
-
-vector<short> BaseWavsMaker::normalize(vector<short> wav, double target_mean, double target_var)
-{
-  double wav_mean = getMean(wav), wav_var = getVar(wav);
-  double diff = target_mean - wav_mean, rate = sqrt(target_var/wav_var);
-  for (int i=0; i<wav.size(); i++)
-    wav[i] = (wav[i]+diff) * rate;
-
-  return wav;
 }
 
 vector<double> BaseWavsMaker::getTri(long len)

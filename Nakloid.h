@@ -21,10 +21,12 @@
 class Nakloid {
  public:
   Nakloid();
+  explicit Nakloid(std::string path_ust);
   Nakloid(std::string singer, std::string path_score, short track, std::string path_lyric);
   virtual ~Nakloid();
 
   void setDefaultFormat();
+  bool setScorePath(std::string path_ust);
   bool setScorePath(std::string path_score, short track, std::string path_lyric);
   bool vocalization();
   bool vocalization(std::string path_song);

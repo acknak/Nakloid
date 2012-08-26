@@ -21,6 +21,7 @@ typedef struct {
   unsigned short prec; // preceding utterance
   unsigned short ovrl; // overlap range
   double frq;
+  bool is_normalize;
   BaseWavsContainer bwc;
 } Voice;
 

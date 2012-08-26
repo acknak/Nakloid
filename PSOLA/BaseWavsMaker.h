@@ -39,11 +39,6 @@ class BaseWavsMaker {
   BaseWavsMaker(const BaseWavsMaker& other);
   BaseWavsMaker& operator=(const BaseWavsMaker& other);
 
-  double getMean(std::vector<short> wav);
-  double getVar(std::vector<short> wav);
-  double getRMS(std::vector<short> wav);
-  std::vector<short> normalize(std::vector<short>wav, double target_mean, double target_var);
-  std::vector<short> normalize(std::vector<short>wav, double target_rms);
   std::vector<double> getHann(long len);
   std::vector<double> getTri(long len);
   std::vector<double> getLanczos(long len, unsigned short lobe);

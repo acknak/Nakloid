@@ -9,7 +9,7 @@ class Note {
   const static double edge_length;
 
   Note();
-  Note(double start, unsigned char pitch, unsigned char velocity);
+  Note(double start, unsigned char pitch, short velocity);
   Note(const Note& other);
   ~Note();
 
@@ -29,15 +29,21 @@ class Note {
   unsigned char getPitch();
   double getPitchHz();
   void setPitch(unsigned char pitch);
-  unsigned char getVelocity();
-  void setVelocity(unsigned char velocity);
+  unsigned short getVelocity();
+  void setVelocity(short velocity);
+  short getPrec();
+  void setPrec(short prec);
+  short getOvrl();
+  void setOvrl(short ovrl);
 
  private:
   double start;
   double length;
   std::string pron;
   unsigned char pitch;
-  unsigned char velocity;
+  unsigned short velocity;
+  short prec;
+  short ovrl;
 
   double tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
 };
