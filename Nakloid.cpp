@@ -70,10 +70,7 @@ bool Nakloid::setScorePath(string path_ust)
       setSinger(".."+buf_vector[1]);
     }
     if (buf_vector[0] == "OutFile") {
-      boost::algorithm::replace_all(buf_vector[1], "%", "/");
-      if (buf_vector[1].front() == '/')
-        buf_vector[1] = "." + buf_vector[1];
-      setSongPath(buf_vector[1]);
+      setSongPath("./output/"+buf_vector[1]+".wav");
     }
     if (buf_vector[0] == "Length")
       if (buf_vector[1]!="" && (tmp=boost::lexical_cast<short>(buf_vector[1]))>0)
@@ -239,7 +236,6 @@ bool Nakloid::vocalization()
     overlapper->setBaseWavs(voice.bwc.data);
     overlapper->setRepStart(voice.bwc.format.dwRepeatStart);
     overlapper->setVelocity(notes[pos_note].getVelocity());
-    overlapper->isNormalize(voice.is_normalize);
     overlapper->overlapping();
     vector<short> note_wav = overlapper->getOutputWavVector();
     delete overlapper;

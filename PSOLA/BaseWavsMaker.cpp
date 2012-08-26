@@ -165,6 +165,7 @@ bool BaseWavsMaker::makeBaseWavs()
   vector<double> filter = getTri(rep_len_point);
   filter.erase(filter.begin()+(filter.size()/2), filter.end());
   long base_pos = rep_start_point + (rep_len_point/2);
+  double target_rms = getRMS(base_wavs[rep_start_point].data.getDataVector());
   cout << "base_wavs size:" << base_wavs.size() << ", base_pos:" << base_pos << endl;
   for (int i=0; i<rep_len_point/2; i++) {
     BaseWav fore_wav = base_wavs[rep_start_point+i];
@@ -207,11 +208,27 @@ bool BaseWavsMaker::makeBaseWavs()
           + aft_wav_data[j+aft_wav.fact.dwPitchLeft]*(1-filter[i]);
     }
 
-    base_wavs[base_pos+i].data.setData(morph_wav_data);
+    base_wavs[base_pos+i].data.setData(normalize(morph_wav_data, target_rms));
   }
 
   cout << "----- finish making base wavs -----" << endl << endl;
   return true;
+}
+
+double BaseWavsMaker::getRMS(vector<short> wav)
+{
+  double rms = 0.0;
+  for (int i=0; i<wav.size(); i++)
+    rms += pow((double)wav[i], 2) / wav.size();
+  return sqrt(rms);
+}
+
+vector<short> BaseWavsMaker::normalize(vector<short> wav, double target_rms)
+{
+  double wav_rms = getRMS(wav);
+  for (int i=0; i<wav.size(); i++)
+    wav[i] = wav[i] * (target_rms/wav_rms);
+  return wav;
 }
 
 vector<double> BaseWavsMaker::getTri(long len)
