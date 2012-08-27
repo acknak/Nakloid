@@ -93,6 +93,7 @@ bool BaseWavsOverlapper::overlapping()
 
   output_wav.clear();
   output_wav.assign(pitch_marks.back(), 0);
+  vector<long> tmp_output_wav(output_wav.size(), 0);
   long morph_start = base_wavs[rep_start+((base_wavs.size()-rep_start)/2)].fact.dwPosition;
   long morph_last = base_wavs.back().fact.dwPosition;
   vector<BaseWav>::iterator tmp_base_wav = base_wavs.begin();
@@ -126,12 +127,15 @@ bool BaseWavsOverlapper::overlapping()
       win_end = pitch_marks.back();
     }
     for (int j=0; j<win_end-win_start; j++)
-      output_wav[win_start+j] += win[j];
+      tmp_output_wav[win_start+j] += win[j];
   }
 
-  if (velocity != 1.0)
-    for (int i=0; i<output_wav.size(); i++)
-      output_wav[i] *= velocity;
+  // normalize
+  double scale = max((*max_element(tmp_output_wav.begin(), tmp_output_wav.end()))/(double)numeric_limits<short>::max(),
+    (*min_element(tmp_output_wav.begin(), tmp_output_wav.end()))/(double)numeric_limits<short>::min());
+  scale = (scale>0.8)?(0.8/scale):1.0;
+  for (int i=0; i<output_wav.size(); i++)
+    output_wav[i] = tmp_output_wav[i] * scale * velocity;
 
   cout << "----- finish overlapping -----" << endl << endl;
   return true;
