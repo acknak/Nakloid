@@ -246,7 +246,7 @@ bool Nakloid::vocalization()
     DataArranger::edge_back(&note_wav, format.dwSamplesPerSec);
 
     // set output
-    for (int i=0; i<(int)note_wav.size(); i++)
+    for (int i=0; i<note_wav.size(); i++)
       output_wav[pos_start+i] += note_wav[i];
   }
 

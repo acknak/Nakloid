@@ -2,17 +2,10 @@
 
 using namespace std;
 
-Note::Note()
-{
-  start = length = pitch = 0;
-  pron = "";
-  velocity = 100;
-  prec = ovrl = -1;
-}
+Note::Note():start(0),length(0),pitch(0),pron(""),velocity(100),prec(-1),ovrl(-1){}
 
-Note::Note(double start, unsigned char pitch, short velocity)
+Note::Note(double start, unsigned char pitch, short velocity):start(0),length(0),pitch(0),pron(""),velocity(100),prec(-1),ovrl(-1)
 {
-  Note();
   this->setStart(start);
   this->setPitch(pitch);
   this->setVelocity(velocity);
