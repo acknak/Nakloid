@@ -86,6 +86,7 @@ Voice VoiceDB::getVoice(string pron)
 
         // make input pitch mark
         PitchMarker *marker = new PitchMarker(voice_map[pron].frq, fs);
+        marker->setConsPos(voice_map[pron].cons, fs);
         marker->mark(wav_data);
         vector<long> input_pitch_marks = marker->getMarkVector();
         delete marker;
