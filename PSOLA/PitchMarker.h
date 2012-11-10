@@ -43,11 +43,12 @@ class PitchMarker {
 
   std::vector<float> xcorr(std::vector<short>::iterator it_start, std::vector<short>::iterator it_base, short exp_dist);
   std::vector<float> xcorr(std::vector<short>::iterator first, std::vector<short>::iterator last);
+  std::vector<double> getHann(long len);
   short pitch;
   short win_size;
   long cons_pos;
   std::list<long> mark_list;
-  std::vector<float> filter;
+  std::vector<double> filter;
 };
 
 #endif
