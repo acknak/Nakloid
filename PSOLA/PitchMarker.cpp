@@ -37,7 +37,6 @@ short PitchMarker::getWinSize()
 void PitchMarker::setWinSize(short win_size)
 {
   this->win_size = win_size;
-  filter = getHann(win_size);
 }
 
 list<long> PitchMarker::getMarkList()
@@ -103,45 +102,26 @@ bool PitchMarker::mark(vector<short> input)
     it_start = (*it_max>-*it_min)?it_max:it_min;
   }
   mark_list.push_back((mark_prev=mark_next=it_start)-input.begin());
-  cout << "win_size:" << win_size << ", start:" << mark_prev-input.begin() << ", input.size:" << input.size() << endl;
+  cout << "win_size:" << win_size << ", start:" << it_start-input.begin() << ", input.size:" << input.size() << endl;
 
   // pitch marking
   while (input.end()-mark_next > win_size*1.5) {
-    vector<float> xcorr_win = xcorr(it_start, mark_next, win_size);
+    vector<double> xcorr_win = xcorr(it_start, mark_next, win_size);
     long dist = max_element(xcorr_win.begin(),xcorr_win.end())-xcorr_win.begin();
     mark_list.push_back((mark_next+=dist)-input.begin());
   }
   if (input.end()-mark_next > win_size)
     mark_list.push_back(mark_next+win_size-input.begin());
   mark_list.push_back(input.size()-1);
-  /*
-  while (mark_prev-input.begin() > win_size*1.5) {
-    vector<float> xcorr_win = xcorr(mark_prev, it_start, -win_size);
-    long dist = max_element(xcorr_win.begin(),xcorr_win.end())-xcorr_win.begin();
-    mark_list.push_front((mark_prev-=dist)-input.begin());
-  }
-  if (mark_prev-input.begin() > win_size)
-    mark_list.push_front(mark_prev-win_size-input.begin());
-  mark_list.push_front(0);
-  */
+
   short dist = *(++mark_list.begin())-mark_list.front();
   while (mark_prev-input.begin() > max(dist,win_size)*1.5) {
-    vector<float> xcorr_win = xcorr(mark_prev+dist, mark_prev, -win_size);
+    vector<double> xcorr_win = xcorr(mark_prev+dist, mark_prev, -win_size);
     dist = max_element(xcorr_win.begin(),xcorr_win.end())-xcorr_win.begin();
     mark_list.push_front((mark_prev-=dist)-input.begin());
-    /*
-    vector<float> xcorr_win = xcorr(mark_prev+tmp_win_size, mark_prev-tmp_win_size);
-    vector<float>::iterator it_max =
-      max_element(xcorr_win.begin()+(tmp_win_size*2.75), xcorr_win.begin()+(tmp_win_size*3.25));
-    long dist = it_max - xcorr_win.begin() - (tmp_win_size*2);
-	  if (mark_prev-input.begin() > dist)
-      mark_list.push_front((mark_prev-=dist)-input.begin());
-    else
-      break;
-    */
   }
   if (mark_prev-input.begin() > max(dist,win_size))
-    mark_list.push_front(max(dist,win_size));
+    mark_list.push_front(mark_prev-max(dist,win_size)-input.begin());
   mark_list.push_front(0);
 
   cout << "----- finish pitch marking -----" << endl << endl;
@@ -149,9 +129,10 @@ bool PitchMarker::mark(vector<short> input)
 }
 
 // cross correlation
-vector<float> PitchMarker::xcorr(vector<short>::iterator it_start, vector<short>::iterator it_base, short exp_dist)
+vector<double> PitchMarker::xcorr(vector<short>::iterator it_start, vector<short>::iterator it_base, short exp_dist)
 {
   long win_size=exp_dist*((exp_dist>0)?1:-1), fftlen=win_size*2;
+  vector<double> filter = getHann(win_size);
 
   fftw_complex *in1 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
   fftw_complex *in2 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
@@ -160,20 +141,18 @@ vector<float> PitchMarker::xcorr(vector<short>::iterator it_start, vector<short>
   fftw_complex *out2 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
   fftw_complex *out3 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
 
-  if (exp_dist > 0) {
-    for (int i=0; i<win_size; i++) {
+  for (int i=0; i<fftlen; i++)
+    in1[i][0] = in1[i][1] = in2[i][0] = in2[i][1] = 0;  if (exp_dist > 0) {
+  for (int i=0; i<win_size; i++) {
       in1[i][0] = (*(it_start-(win_size/2)+i)) * filter[i];
       in2[i+win_size][0] = *(it_base+(win_size/2)+i) * filter[i];
     }
   } else {
-    vector<double> tmp_filter = getHann(win_size);
     for (int i=0; i<win_size; i++) {
-      in1[i][0] = *(it_start+(win_size/2)-i) * tmp_filter[i];
-      in2[i+win_size][0] = *(it_base-(win_size/2)-i) * tmp_filter[i];
+      in1[i][0] = *(it_start+(win_size/2)-i) * filter[i];
+      in2[i+win_size][0] = *(it_base-(win_size/2)-i) * filter[i];
     }
   }
-  for (int i=0; i<fftlen; i++)
-    in1[i][1] = in2[i][1] = 0;
 
   fftw_plan p1 = fftw_plan_dft_1d(fftlen, in1, out1, FFTW_FORWARD, FFTW_ESTIMATE);
   fftw_execute(p1);
@@ -192,7 +171,7 @@ vector<float> PitchMarker::xcorr(vector<short>::iterator it_start, vector<short>
   fftw_execute(p3);
   fftw_destroy_plan(p3);
 
-  vector<float> output(fftlen, 0);
+  vector<double> output(fftlen, 0);
   for (int i=0; i<fftlen; i++)
     output[i] = out3[i][0];
 
@@ -206,17 +185,6 @@ vector<float> PitchMarker::xcorr(vector<short>::iterator it_start, vector<short>
   return output;
 }
 
-void PitchMarker::debug(string output)
-{
-  if (mark_list.empty())
-    return;
-
-  ofstream ofs(output.c_str());
-  for (list<long>::iterator it=mark_list.begin(); it!=mark_list.end(); ++it){
-    ofs << setw(8) << *it << endl;
-  }
-}
-
 vector<double> PitchMarker::getHann(long len)
 {
   vector<double> filter(len, 0);
@@ -227,4 +195,14 @@ vector<double> PitchMarker::getHann(long len)
   }
 
   return filter;
+}
+void PitchMarker::debug(string output)
+{
+  if (mark_list.empty())
+    return;
+
+  ofstream ofs(output.c_str());
+  for (list<long>::iterator it=mark_list.begin(); it!=mark_list.end(); ++it){
+    ofs << setw(8) << *it << endl;
+  }
 }
