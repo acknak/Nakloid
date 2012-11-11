@@ -18,8 +18,6 @@ sample code
     //return 0;
     }
 
-[Makefile example](https://github.com/acknak/Nakloid/wiki/Makefile)
-
 required
 ------
 * [FFTW](http://www.fftw.org/)

@@ -2,7 +2,6 @@
 /input/*
 /output/*
 /vocal/*
-Makefile
 main.cpp
 *.dll
 
