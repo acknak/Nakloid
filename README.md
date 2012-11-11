@@ -2,7 +2,7 @@ Nakloid
 ======================
 Nakloid: Unit-waveform-oriented Singing Voice Synthesis System
 
-usage
+sample code
 ------
     // main.cpp
     #include "Nakloid.h"
@@ -18,12 +18,13 @@ usage
     //return 0;
     }
 
+[Makefile example](https://github.com/acknak/Nakloid/wiki/Makefile)
+
 required
 ------
-* Microsoft Visual C++ Compiler
 * [FFTW](http://www.fftw.org/)
 * [Boost C++ Libraries](http://www.boost.org/)
- 
+
 license
 ----------
 Copyright &copy; 2012 acknak
