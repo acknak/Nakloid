@@ -2,8 +2,6 @@
 
 #pragma comment(lib, "libfftw3-3.lib")
 
-#define _USE_MATH_DEFINES
-
 using namespace std;
 
 PitchMarker::PitchMarker(){}

@@ -2,9 +2,9 @@
 /input/*
 /output/*
 /vocal/*
-/kissFFT/*
 Makefile
 main.cpp
+*.dll
 
 # Visual C++ files
 /Debug/*
@@ -27,6 +27,7 @@ Nakloid
 *.slo
 *.lo
 *.o
+*.exe
 
 # Compiled Dynamic libraries
 *.so

@@ -26,7 +26,7 @@ bool VoiceDB::initVoiceMap(string filename)
 {
   this->singer = singer;
 
-  ifstream ifs(filename);
+  ifstream ifs(filename.c_str());
   string buf, wav_ext=".wav";
   while(ifs && getline(ifs, buf)) {
     vector<string> v1, v2;
@@ -50,7 +50,7 @@ bool VoiceDB::initVoiceMap(string filename)
     if (v1[0].find(wav_ext) == string::npos)
       voice_map[v2[0]].frq = 260.0;
     else {
-      ifstream ifs_frq("vocal/"+singer+"/"+filename+"_wav.frq", ios::binary);
+      ifstream ifs_frq(("vocal/"+singer+"/"+filename+"_wav.frq").c_str(), ios::binary);
       ifs_frq.seekg(sizeof(char)*12, ios_base::beg);
       ifs_frq.read((char*)&(voice_map[v2[0]].frq), sizeof(double));
     }

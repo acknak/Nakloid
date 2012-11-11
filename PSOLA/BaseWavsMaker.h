@@ -1,8 +1,6 @@
 #ifndef BaseWavsMaker_h
 #define BaseWavsMaker_h
 
-#define M_PI 3.1415926535897932384626433832795
-
 #include <list>
 #include <cmath>
 #include <vector>
@@ -56,4 +54,8 @@ class BaseWavsMaker {
   long rep_len_point;
 };
 
+#endif
+
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
 #endif

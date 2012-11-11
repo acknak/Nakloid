@@ -1,7 +1,5 @@
 #include "DataArranger.h"
 
-#define M_PI 3.1415926535897932384626433832795
-
 using namespace std;
 
 const short DataArranger::edge_back_ms = 30; //ms

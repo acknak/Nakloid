@@ -107,11 +107,12 @@ BaseWavsContainer BaseWavsFileIO::get(string filename)
 
 bool BaseWavsFileIO::set(string filename, BaseWavsContainer bwc)
 {
-  long size_all = 28 + bwc.format.wAdditionalSize + sizeof(short);
+  short wAdditionalSize = BaseWavsFormat::wAdditionalSize;
+  long size_all = 28 + wAdditionalSize + sizeof(short);
   ofstream ofs(filename.c_str(), ios_base::trunc|ios_base::binary);
   WavParser::setWavHeader(&ofs, bwc.format, size_all);
 
-  ofs.write((char*)&(bwc.format.wAdditionalSize), sizeof(short));
+  ofs.write((char*)&(wAdditionalSize), sizeof(short));
   ofs.write((char*)&(bwc.format.wLobeSize), sizeof(short));
   ofs.write((char*)&(bwc.format.dwRepeatStart), sizeof(long));
   ofs.write((char*)&(bwc.format.wF0), sizeof(short));

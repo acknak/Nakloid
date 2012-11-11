@@ -43,14 +43,14 @@ bool Nakloid::setScorePath(string path_ust)
 {
   cout << "----- read score from " << path_ust << " -----" << endl;
   // read ust
-  ifstream ifs(path_ust);
+  ifstream ifs(path_ust.c_str());
   string buf_str;
   list<string> buf_list;
   short tmp, tempo=120;
   while (ifs && getline(ifs, buf_str)) {
     if (buf_str == "[#SETTING]")
       continue;
-    if (buf_str.front()=='[') {
+    if (buf_str[0]=='[') {
       Note tmp;
       if (notes.size()>0 && notes.back().getPron()=="R") {
         tmp.setStart(notes.back().getLength());
@@ -65,7 +65,7 @@ bool Nakloid::setScorePath(string path_ust)
       tempo = (buf_vector[1]!="" && ((tmp=boost::lexical_cast<double>(buf_vector[1]))>0))?tmp:0;
     if (buf_vector[0] == "VoiceDir") {
       boost::algorithm::replace_all(buf_vector[1], "%", "/");
-      if (buf_vector[1].front() != '/')
+      if (buf_vector[1][0] != '/')
         buf_vector[1] = "/" + buf_vector[1];
       setSinger(".."+buf_vector[1]);
     }
@@ -107,7 +107,7 @@ bool Nakloid::setScorePath(string path_score, short track, string path_lyric)
   delete score;
 
   // set lyric
-  ifstream ifs(path_lyric);
+  ifstream ifs(path_lyric.c_str());
   string buf_str;
   list<string> buf_list;
   while (ifs && getline(ifs, buf_str)) {
