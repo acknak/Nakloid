@@ -4,14 +4,14 @@
 
 using namespace std;
 
-PitchMarker::PitchMarker(){}
+PitchMarker::PitchMarker():pitch(0),cons_pos(0){}
 
-PitchMarker::PitchMarker(short win_size)
+PitchMarker::PitchMarker(short win_size):pitch(0),cons_pos(0)
 {
   setWinSize(win_size);
 }
 
-PitchMarker::PitchMarker(short pitch, unsigned long fs)
+PitchMarker::PitchMarker(short pitch, unsigned long fs):cons_pos(0)
 {
   setPitch(pitch, fs);
 }
@@ -26,7 +26,7 @@ short PitchMarker::getPitch()
 void PitchMarker::setPitch(short pitch, unsigned long fs)
 {
   this->pitch = pitch;
-  this->win_size = (short)(fs / pitch);
+  setWinSize((short)(fs / pitch));
 }
 
 short PitchMarker::getWinSize()
@@ -36,8 +36,8 @@ short PitchMarker::getWinSize()
 
 void PitchMarker::setWinSize(short win_size)
 {
-  this->pitch = 0;
   this->win_size = win_size;
+  filter = getHann(win_size);
 }
 
 list<long> PitchMarker::getMarkList()
@@ -54,6 +54,16 @@ vector<long> PitchMarker::getMarkVector()
     mark_vector[++i] = *it;
 
   return mark_vector;
+}
+
+long PitchMarker::getConsPos()
+{
+  return cons_pos;
+}
+
+void PitchMarker::setConsPos(unsigned short cons, unsigned long fs)
+{
+  this->cons_pos = fs / 1000.0 * cons;
 }
 
 bool PitchMarker::mark(WavData input)
@@ -79,71 +89,70 @@ bool PitchMarker::mark(vector<short> input)
   cout << "----- start pitch marking -----" << endl;
 
   vector<short>::iterator mark_next, mark_prev;
-  bool to_prev, to_next;
   mark_list.clear();
 
   // find base mark
-  vector<short>::iterator it_max = max_element(input.begin()+win_size+1, input.end()-win_size-1);
-  vector<short>::iterator it_min = min_element(input.begin()+win_size+1, input.end()-win_size-1);
-  vector<short>::iterator it_start = (*it_max>-*it_min)?it_max:it_min;
+  vector<short>::iterator it_start;
+  if (cons_pos == 0) {
+    vector<short>::iterator it_max = max_element(input.begin()+win_size+1, input.end()-win_size-1);
+    vector<short>::iterator it_min = min_element(input.begin()+win_size+1, input.end()-win_size-1);
+    it_start = (*it_max>-*it_min)?it_max:it_min;
+  } else {
+    vector<short>::iterator it_max = max_element(input.begin()+cons_pos, input.begin()+cons_pos+win_size);
+    vector<short>::iterator it_min = min_element(input.begin()+cons_pos, input.begin()+cons_pos+win_size);
+    it_start = (*it_max>-*it_min)?it_max:it_min;
+  }
   mark_list.push_back((mark_prev=mark_next=it_start)-input.begin());
-  to_prev = to_next = true;
   cout << "win_size:" << win_size << ", start:" << mark_prev-input.begin() << ", input.size:" << input.size() << endl;
 
   // pitch marking
-  while (to_prev || to_next) {
-    // next
-    if (!to_next || input.end()-mark_next<win_size) {
-      to_next = false;
-  	} else {
-      vector<float> xcorr_win = xcorr(mark_next-win_size, mark_next+win_size-1);
-      vector<float>::iterator it_max =
-        max_element(xcorr_win.begin()+(win_size*2.75), xcorr_win.begin()+(win_size*3.25));
-
-      long dist = it_max - xcorr_win.begin() - (win_size*2);
-	    if (input.end()-mark_next <= dist)
-	      to_next = false;
-  	  else
-	      mark_list.push_back((mark_next+=dist)-input.begin());
-    }
-    // prev
-	  if (!to_prev || mark_prev-input.begin()<win_size) {
-      to_prev = false;
-    } else {
-      vector<float> xcorr_win = xcorr(mark_prev+win_size+1, mark_prev-win_size);
-      vector<float>::iterator it_max =
-        max_element(xcorr_win.begin()+(win_size*2.75), xcorr_win.begin()+(win_size*3.25));
-
-      long dist = it_max - xcorr_win.begin() - (win_size*2);
-	    if (mark_prev-input.begin() <= dist)
-        to_prev = false;
-	    else
-        mark_list.push_front((mark_prev-=dist)-input.begin());
-	  }
+  while (input.end()-mark_next > win_size*1.5) {
+    vector<float> xcorr_win = xcorr(it_start, mark_next, win_size);
+    long dist = max_element(xcorr_win.begin(),xcorr_win.end())-xcorr_win.begin();
+    mark_list.push_back((mark_next+=dist)-input.begin());
   }
-
-  // add first and last point
-  if (mark_list.front() != 0)
-    mark_list.push_front(0);
-  if (mark_list.back() != input.size()-1)
-    mark_list.push_back(input.size()-1);
+  if (input.end()-mark_next > win_size)
+    mark_list.push_back(mark_next+win_size-input.begin());
+  mark_list.push_back(input.size()-1);
+  /*
+  while (mark_prev-input.begin() > win_size*1.5) {
+    vector<float> xcorr_win = xcorr(mark_prev, it_start, -win_size);
+    long dist = max_element(xcorr_win.begin(),xcorr_win.end())-xcorr_win.begin();
+    mark_list.push_front((mark_prev-=dist)-input.begin());
+  }
+  if (mark_prev-input.begin() > win_size)
+    mark_list.push_front(mark_prev-win_size-input.begin());
+  mark_list.push_front(0);
+  */
+  short dist = *(++mark_list.begin())-mark_list.front();
+  while (mark_prev-input.begin() > max(dist,win_size)*1.5) {
+    vector<float> xcorr_win = xcorr(mark_prev+dist, mark_prev, -win_size);
+    dist = max_element(xcorr_win.begin(),xcorr_win.end())-xcorr_win.begin();
+    mark_list.push_front((mark_prev-=dist)-input.begin());
+    /*
+    vector<float> xcorr_win = xcorr(mark_prev+tmp_win_size, mark_prev-tmp_win_size);
+    vector<float>::iterator it_max =
+      max_element(xcorr_win.begin()+(tmp_win_size*2.75), xcorr_win.begin()+(tmp_win_size*3.25));
+    long dist = it_max - xcorr_win.begin() - (tmp_win_size*2);
+	  if (mark_prev-input.begin() > dist)
+      mark_list.push_front((mark_prev-=dist)-input.begin());
+    else
+      break;
+    */
+  }
+  if (mark_prev-input.begin() > max(dist,win_size))
+    mark_list.push_front(max(dist,win_size));
+  mark_list.push_front(0);
 
   cout << "----- finish pitch marking -----" << endl << endl;
   return true;
 }
 
-vector<float> PitchMarker::xcorr(vector<short>::iterator first, vector<short>::iterator last)
+// cross correlation
+vector<float> PitchMarker::xcorr(vector<short>::iterator it_start, vector<short>::iterator it_base, short exp_dist)
 {
-  vector<short> wavdata;
-  if (last-first < 0) {
-    wavdata.resize(first-last);
-    reverse_copy(last, first, wavdata.begin());
-  } else {
-    wavdata.resize(last-first);
-    copy(first, last, wavdata.begin());
-  }
+  long win_size=exp_dist*((exp_dist>0)?1:-1), fftlen=win_size*2;
 
-  long fftlen = wavdata.size() * 2 - 1;
   fftw_complex *in1 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
   fftw_complex *in2 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
   fftw_complex *in3 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
@@ -151,10 +160,20 @@ vector<float> PitchMarker::xcorr(vector<short>::iterator first, vector<short>::i
   fftw_complex *out2 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
   fftw_complex *out3 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
 
+  if (exp_dist > 0) {
+    for (int i=0; i<win_size; i++) {
+      in1[i][0] = (*(it_start-(win_size/2)+i)) * filter[i];
+      in2[i+win_size][0] = *(it_base+(win_size/2)+i) * filter[i];
+    }
+  } else {
+    vector<double> tmp_filter = getHann(win_size);
+    for (int i=0; i<win_size; i++) {
+      in1[i][0] = *(it_start+(win_size/2)-i) * tmp_filter[i];
+      in2[i+win_size][0] = *(it_base-(win_size/2)-i) * tmp_filter[i];
+    }
+  }
   for (int i=0; i<fftlen; i++)
-    in1[i][0] = in1[i][1] = in2[i][0] = in2[i][1] = 0;
-  for (int i=0; i<wavdata.size(); i++)
-    in1[i][0] = in2[i+wavdata.size()-1][0] = wavdata[i];
+    in1[i][1] = in2[i][1] = 0;
 
   fftw_plan p1 = fftw_plan_dft_1d(fftlen, in1, out1, FFTW_FORWARD, FFTW_ESTIMATE);
   fftw_execute(p1);
@@ -196,4 +215,16 @@ void PitchMarker::debug(string output)
   for (list<long>::iterator it=mark_list.begin(); it!=mark_list.end(); ++it){
     ofs << setw(8) << *it << endl;
   }
+}
+
+vector<double> PitchMarker::getHann(long len)
+{
+  vector<double> filter(len, 0);
+
+  for (int i=0; i<filter.size(); ++i) {
+    double x = (i+1.0) / (filter.size()+1.0);
+    filter[i] = 0.5 - (0.5 * cos(2*M_PI*x));
+  }
+
+  return filter;
 }
