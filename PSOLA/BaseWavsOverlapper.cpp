@@ -6,85 +6,6 @@ BaseWavsOverlapper::BaseWavsOverlapper():rep_start(-1), velocity(1.0){}
 
 BaseWavsOverlapper::~BaseWavsOverlapper(){}
 
-void BaseWavsOverlapper::setPitchMarks(list<long> pitch_marks)
-{
-  this->pitch_marks.clear();
-  this->pitch_marks.assign(pitch_marks.size(), 0);
-
-  for (list<long>::iterator it=pitch_marks.begin(); it!=pitch_marks.end(); ++it)
-    this->pitch_marks[*it];
-}
-
-void BaseWavsOverlapper::setPitchMarks(vector<long> pitch_marks)
-{
-  this->pitch_marks = pitch_marks;
-}
-
-list<long> BaseWavsOverlapper::getPitchMarkList()
-{
-  list<long> pitch_marks;
-
-  for (int i=0; i<this->pitch_marks.size(); ++i)
-    pitch_marks.push_back(this->pitch_marks[i]);
-
-  return pitch_marks;
-}
-
-vector<long> BaseWavsOverlapper::getPitchMarkVector()
-{
-  return pitch_marks;
-}
-
-void BaseWavsOverlapper::setBaseWavs(vector<BaseWav> base_wavs)
-{
-  this->base_wavs = base_wavs;
-}
-
-vector<BaseWav> BaseWavsOverlapper::getBaseWavs()
-{
-  return base_wavs;
-}
-
-list<short> BaseWavsOverlapper::getOutputWavList()
-{
-  list<short> output_wav;
-
-  for (int i=0; i<this->output_wav.size(); ++i)
-    output_wav.push_back(this->output_wav[i]);
-
-  return output_wav;
-}
-
-vector<short> BaseWavsOverlapper::getOutputWavVector()
-{
-  return output_wav;
-}
-
-void BaseWavsOverlapper::setRepStart(long rep_start)
-{
-  this->rep_start = rep_start;
-}
-
-long BaseWavsOverlapper::getRepStart()
-{
-  return rep_start;
-}
-
-void BaseWavsOverlapper::setVelocity(unsigned short velocity)
-{
-  this->velocity = velocity/100.0;
-}
-
-void BaseWavsOverlapper::setVelocity(double velocity)
-{
-  this->velocity = velocity;
-}
-
-double BaseWavsOverlapper::getVelocity()
-{
-  return velocity;
-}
-
 bool BaseWavsOverlapper::overlapping()
 {
   if (pitch_marks.empty() || base_wavs.empty() || rep_start<0)
@@ -94,15 +15,15 @@ bool BaseWavsOverlapper::overlapping()
   output_wav.clear();
   output_wav.assign(pitch_marks.back(), 0);
   vector<long> tmp_output_wav(output_wav.size(), 0);
-  long morph_start = base_wavs[rep_start+((base_wavs.size()-rep_start)/2)].fact.dwPosition;
-  long morph_last = base_wavs.back().fact.dwPosition;
+  long fade_start = base_wavs[rep_start+((base_wavs.size()-rep_start)/2)].fact.dwPosition;
+  long fade_last = base_wavs.back().fact.dwPosition;
   vector<BaseWav>::iterator tmp_base_wav = base_wavs.begin();
   cout << "output size:" << output_wav.size() << endl;
-  cout << "morph_start:" << morph_start << ", morph_last:" << morph_last << endl;
+  cout << "fade_start:" << fade_start << ", fade_last:" << fade_last << endl;
 
   for (int i=0; i<pitch_marks.size()-1; i++) {
-    long tmp_dist, tmp_pitch_mark = (pitch_marks[i] > morph_last)
-      ? morph_start + ((pitch_marks[i]-morph_last)%(morph_last-morph_start))
+    long tmp_dist, tmp_pitch_mark = (pitch_marks[i] > fade_last)
+      ? fade_start + ((pitch_marks[i]-fade_last)%(fade_last-fade_start))
       : pitch_marks[i];
     long num_base_wav = 0;
     do {
@@ -168,4 +89,83 @@ void BaseWavsOverlapper::debugWav(string output)
   ofs.write((char*)data.getData(), data.getSize());
 
   cout << "finish wav output" << endl;
+}
+
+/*
+ * accessor
+ */
+void BaseWavsOverlapper::setPitchMarks(list<unsigned long> pitch_marks)
+{
+  this->pitch_marks.clear();
+  this->pitch_marks.assign(pitch_marks.begin(), pitch_marks.end());
+}
+
+void BaseWavsOverlapper::setPitchMarks(vector<unsigned long> pitch_marks)
+{
+  this->pitch_marks = pitch_marks;
+}
+
+list<unsigned long> BaseWavsOverlapper::getPitchMarkList()
+{
+  list<unsigned long> pitch_marks;
+
+  for (int i=0; i<this->pitch_marks.size(); ++i)
+    pitch_marks.push_back(this->pitch_marks[i]);
+
+  return pitch_marks;
+}
+
+vector<unsigned long> BaseWavsOverlapper::getPitchMarkVector()
+{
+  return pitch_marks;
+}
+
+void BaseWavsOverlapper::setBaseWavs(vector<BaseWav> base_wavs)
+{
+  this->base_wavs = base_wavs;
+}
+
+vector<BaseWav> BaseWavsOverlapper::getBaseWavs()
+{
+  return base_wavs;
+}
+
+list<short> BaseWavsOverlapper::getOutputWavList()
+{
+  list<short> output_wav;
+
+  for (int i=0; i<this->output_wav.size(); ++i)
+    output_wav.push_back(this->output_wav[i]);
+
+  return output_wav;
+}
+
+vector<short> BaseWavsOverlapper::getOutputWavVector()
+{
+  return output_wav;
+}
+
+void BaseWavsOverlapper::setRepStart(unsigned long rep_start)
+{
+  this->rep_start = rep_start;
+}
+
+unsigned long BaseWavsOverlapper::getRepStart()
+{
+  return rep_start;
+}
+
+void BaseWavsOverlapper::setVelocity(unsigned short velocity)
+{
+  this->velocity = velocity/100.0;
+}
+
+void BaseWavsOverlapper::setVelocity(double velocity)
+{
+  this->velocity = velocity;
+}
+
+double BaseWavsOverlapper::getVelocity()
+{
+  return velocity;
 }

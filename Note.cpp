@@ -2,11 +2,20 @@
 
 using namespace std;
 
-Note::Note():start(0),length(0),pitch(0),pron(""),velocity(100),prec(-1),ovrl(-1){}
+Note::Note():start(0),end(0),pitch(0),pron(""),velocity(100),is_prec(false),prec(0),is_ovrl(false),ovrl(0){}
 
-Note::Note(double start, unsigned char pitch, short velocity):start(0),length(0),pitch(0),pron(""),velocity(100),prec(-1),ovrl(-1)
+Note::Note(unsigned long start, unsigned char pitch, short velocity)
+  :start(0),end(0),pitch(0),pron(""),velocity(100),is_prec(false),prec(0),is_ovrl(false),ovrl(0)
 {
   this->setStart(start);
+  this->setPitch(pitch);
+  this->setVelocity(velocity);
+}
+
+Note::Note(unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char pitch, short velocity)
+  :start(0),end(0),pitch(0),pron(""),velocity(100),is_prec(false),prec(0),is_ovrl(false),ovrl(0)
+{
+  this->setStart(deltatime, timebase, tempo);
   this->setPitch(pitch);
   this->setVelocity(velocity);
 }
@@ -14,11 +23,13 @@ Note::Note(double start, unsigned char pitch, short velocity):start(0),length(0)
 Note::Note(const Note& other)
 {
   start = other.start;
-  length = other.length;
+  end = other.end;
   pron = other.pron;
   pitch = other.pitch;
   velocity = other.velocity;
+  is_prec = other.is_prec;
   prec = other.prec;
+  is_ovrl = other.is_ovrl;
   ovrl = other.ovrl;
 }
 
@@ -28,11 +39,13 @@ Note& Note::operator=(const Note& other)
 {
   if (this != &other) {
     start = other.start;
-    length = other.length;
+    end = other.end;
     pron = other.pron;
     pitch = other.pitch;
     velocity = other.velocity;
+    is_prec = other.is_prec;
     prec = other.prec;
+    is_ovrl = other.is_ovrl;
     ovrl = other.ovrl;
   }
   return *this;
@@ -42,11 +55,13 @@ bool Note::operator==(const Note& other) const
 {
   bool is_eq = true;
   is_eq &= (start == other.start);
-  is_eq &= (length == other.length);
+  is_eq &= (end == other.end);
   is_eq &= (pron == other.pron);
   is_eq &= (pitch == other.pitch);
   is_eq &= (velocity == other.velocity);
+  is_eq &= (is_prec == other.is_prec);
   is_eq &= (prec == other.prec);
+  is_eq &= (is_ovrl == other.is_ovrl);
   is_eq &= (ovrl == other.ovrl);
   return is_eq;
 }
@@ -56,12 +71,12 @@ bool Note::operator!=(const Note& other) const
     return !(*this == other);
 }
 
-double Note::getStart()
+unsigned long Note::getStart()
 {
   return start;
 }
 
-void Note::setStart(double start)
+void Note::setStart(unsigned long start)
 {
   this->start = start;
 }
@@ -71,19 +86,19 @@ void Note::setStart(unsigned long deltatime, unsigned short timebase, unsigned l
   this->start = tick2ms(deltatime, timebase, tempo);
 }
 
-double Note::getLength()
+unsigned long Note::getEnd()
 {
-  return length;
+  return end;
 }
 
-void Note::setLength(double length)
+void Note::setEnd(unsigned long end)
 {
-  this->length = length;
+  this->end = end;
 }
 
-void Note::setLength(unsigned long deltatime, unsigned short timebase, unsigned long tempo)
+void Note::setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo)
 {
-  this->length = tick2ms(deltatime, timebase, tempo);
+  this->end = tick2ms(deltatime, timebase, tempo);
 }
 
 string Note::getPron()
@@ -122,26 +137,36 @@ void Note::setVelocity(short velocity)
     this->velocity = velocity;
 }
 
-short Note::getPrec()
+bool Note::isPrec()
+{
+  return is_prec;
+}
+
+unsigned short Note::getPrec()
 {
   return prec;
 }
 
-void Note::setPrec(short prec)
+void Note::setPrec(unsigned short prec)
 {
-  if (prec > 0)
-    this->prec = prec;
+  is_prec = true;
+  this->prec = prec;
 }
 
-short Note::getOvrl()
+bool Note::isOvrl()
+{
+  return is_ovrl;
+}
+
+unsigned short Note::getOvrl()
 {
   return ovrl;
 }
 
-void Note::setOvrl(short ovrl)
+void Note::setOvrl(unsigned short ovrl)
 {
-  if (ovrl > 0)
-    this->ovrl = ovrl;
+  is_ovrl = true;
+  this->ovrl = ovrl;
 }
 
 double Note::tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo)

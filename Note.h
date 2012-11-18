@@ -10,7 +10,8 @@ class Note {
   const static double edge_length;
 
   Note();
-  Note(double start, unsigned char pitch, short velocity);
+  Note(unsigned long start, unsigned char pitch, short velocity);
+  Note(unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char pitch, short velocity);
   Note(const Note& other);
   ~Note();
 
@@ -19,12 +20,12 @@ class Note {
   bool operator!=(const Note& other) const;
 
   // accessor
-  double getStart();
-  void setStart(double start);
+  unsigned long getStart();
+  void setStart(unsigned long start);
   void setStart(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
-  double getLength();
-  void setLength(double length);
-  void setLength(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
+  unsigned long getEnd();
+  void setEnd(unsigned long end);
+  void setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
   std::string getPron();
   void setPron(std::string pron);
   unsigned char getPitch();
@@ -32,19 +33,23 @@ class Note {
   void setPitch(unsigned char pitch);
   unsigned short getVelocity();
   void setVelocity(short velocity);
-  short getPrec();
-  void setPrec(short prec);
-  short getOvrl();
-  void setOvrl(short ovrl);
+  bool isPrec();
+  unsigned short getPrec();
+  void setPrec(unsigned short prec);
+  bool isOvrl();
+  unsigned short getOvrl();
+  void setOvrl(unsigned short ovrl);
 
  private:
-  double start;
-  double length;
+  unsigned long start;
+  unsigned long end;
   std::string pron;
   unsigned char pitch;
   unsigned short velocity;
-  short prec;
-  short ovrl;
+  bool is_prec;
+  unsigned short prec;
+  bool is_ovrl;
+  unsigned short ovrl;
 
   double tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
 };

@@ -26,16 +26,16 @@ class BaseWavsOverlapper {
   void debugWav(std::string output);
 
   // accessor
-  void setPitchMarks(std::list<long> pitch_marks);
-  void setPitchMarks(std::vector<long> pitch_marks);
-  std::list<long> getPitchMarkList();
-  std::vector<long> getPitchMarkVector();
+  void setPitchMarks(std::list<unsigned long> pitch_marks);
+  void setPitchMarks(std::vector<unsigned long> pitch_marks);
+  std::list<unsigned long> getPitchMarkList();
+  std::vector<unsigned long> getPitchMarkVector();
   void setBaseWavs(std::vector<BaseWav> base_wavs);
   std::vector<BaseWav> getBaseWavs();
   std::list<short> getOutputWavList();
   std::vector<short> getOutputWavVector();
-  void setRepStart(long rep_start);
-  long getRepStart();
+  void setRepStart(unsigned long rep_start);
+  unsigned long getRepStart();
   void setVelocity(unsigned short velocity);
   void setVelocity(double velocity);
   double getVelocity();
@@ -45,9 +45,9 @@ class BaseWavsOverlapper {
   BaseWavsOverlapper& operator=(const BaseWavsOverlapper& other);
 
   std::vector<short> output_wav;
-  std::vector<long> pitch_marks;
+  std::vector<unsigned long> pitch_marks;
   std::vector<BaseWav> base_wavs;
-  long rep_start;
+  unsigned long rep_start;
   double velocity;
 };
 
