@@ -131,7 +131,8 @@ bool PitchMarker::mark(vector<short> input)
 // cross correlation
 vector<double> PitchMarker::xcorr(vector<short>::iterator it_start, vector<short>::iterator it_base, short exp_dist)
 {
-  long win_size=exp_dist*((exp_dist>0)?1:-1), fftlen=win_size*2;
+  int win_size = exp_dist * ((exp_dist>0)?1:-1);
+  int fftlen = win_size * 2;
   vector<double> filter = getHann(win_size);
 
   fftw_complex *in1 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));

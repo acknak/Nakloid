@@ -162,7 +162,7 @@ bool Nakloid::vocalization()
     Voice voice = voice_db->getVoice(notes[pos_note].getPron());
     Voice voice_prev, voice_next;
     unsigned short prec = (notes[pos_note].getPrec()>0)?notes[pos_note].getPrec():voice.prec;
-    unsigned short ovrl = (notes[pos_note].getOvrl()>0)?notes[pos_note].getOvrl():voice.ovrl;
+    //unsigned short ovrl = (notes[pos_note].getOvrl()>0)?notes[pos_note].getOvrl():voice.ovrl;
     unsigned short prec_next, prec_prev, ovrl_next, ovrl_prev;
     if (pos_note <= 0) {
       voice_prev = voice_db->getVoice("");

@@ -15,12 +15,13 @@ class BaseWavsFormat : public WavFormat {
   unsigned short wF0;
 };
 
-typedef struct {
+class BaseWavFact {
+ public:
   static const long chunkSize = 12;
   long dwPitchLeft;
   long dwPitchRight;
   long dwPosition;
-} BaseWavFact;
+};
 
 typedef struct {
   BaseWavFact fact;

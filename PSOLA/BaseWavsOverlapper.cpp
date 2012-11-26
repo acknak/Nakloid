@@ -96,7 +96,6 @@ bool BaseWavsOverlapper::overlapping()
   vector<long> tmp_output_wav(output_wav.size(), 0);
   long morph_start = base_wavs[rep_start+((base_wavs.size()-rep_start)/2)].fact.dwPosition;
   long morph_last = base_wavs.back().fact.dwPosition;
-  vector<BaseWav>::iterator tmp_base_wav = base_wavs.begin();
   cout << "output size:" << output_wav.size() << endl;
   cout << "morph_start:" << morph_start << ", morph_last:" << morph_last << endl;
 

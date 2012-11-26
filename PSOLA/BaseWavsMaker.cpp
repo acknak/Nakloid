@@ -92,15 +92,15 @@ bool BaseWavsMaker::makeBaseWavs()
   }
   double mean, std, rep_max, rep_min, rep_tmp;
   rep_tmp = mean = std = 0;
-  for (int i=rep_start_point; i<pitches.size(); i++)
+  for (long i=rep_start_point; i<pitches.size(); i++)
     mean += pitches[i];
   mean /= pitches.size();
-  for (int i=rep_start_point; i<pitches.size(); i++)
+  for (long i=rep_start_point; i<pitches.size(); i++)
     std += pow(pitches[i]-mean, 2);
   std = sqrt(std / pitches.size());
   rep_max = mean + std;
   rep_min = mean - std;
-  for (int i=rep_start_point; i<=pitches.size(); i++) {
+  for (long i=rep_start_point; i<=pitches.size(); i++) {
     if (i<pitches.size() && pitches[i]<rep_max && pitches[i]>rep_min) {
       if (rep_tmp == 0)
         rep_tmp = i;
