@@ -18,11 +18,11 @@ class Score : public SmfHandler {
  public:
   Score();
   explicit Score(std::string input_ust);
-  Score(std::string singer, std::string input_smf, short track, std::list<std::string> prons, std::string path_song);
+  Score(std::string singer, std::string input_smf, short track, std::string path_lyric, std::string path_song);
   virtual ~Score();
 
   bool isScoreLoaded();
-  void loadSmf(std::string input, unsigned short track, std::list<std::string> prons);
+  void loadSmf(std::string input, unsigned short track, std::string path_string);
   void loadUst(std::string input);
   void reloadPitches();
   void debug(std::string output);

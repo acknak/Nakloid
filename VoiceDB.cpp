@@ -63,7 +63,7 @@ Voice VoiceDB::getVoice(string pron)
   if ((voice_map.empty()&&!initVoiceMap()) || voice_map.find(pron)==voice_map.end())
     return getNullVoice();
 
-  if (voice_map[pron].bwc.data.empty()) {
+  if (voice_map[pron].bwc.base_wavs.empty()) {
     Voice tmp_voice = voice_map[pron];
     BaseWavsContainer bwc;
     BaseWavsFileIO *bwc_io = new BaseWavsFileIO();
@@ -99,7 +99,7 @@ Voice VoiceDB::getVoice(string pron)
         maker->setRepStart(voice_map[pron].cons, fs);
         maker->makeBaseWavs();
 
-        bwc.data = maker->getBaseWavs();
+        bwc.base_wavs = maker->getBaseWavs();
         bwc.format.wLobeSize = maker->getLobe();
         bwc.format.dwRepeatStart = maker->getRepStartPoint();
         delete maker;

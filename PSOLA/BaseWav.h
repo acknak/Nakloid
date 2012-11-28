@@ -29,7 +29,7 @@ typedef struct {
 
 typedef struct {
   BaseWavsFormat format;
-  std::vector<BaseWav> data;
+  std::vector<BaseWav> base_wavs;
 } BaseWavsContainer;
 
 #endif

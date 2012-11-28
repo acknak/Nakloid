@@ -41,10 +41,6 @@ class Nakloid {
   Nakloid(const Nakloid& other);
   Nakloid& operator=(const Nakloid& other);
 
-  unsigned long ms2pos(unsigned long ms);
-  unsigned long pos2ms(unsigned long pos);
-  std::list<unsigned long> getPitchMarks(std::vector<double> pitches);
-
   Score *score;
   VoiceDB *voice_db;
   WavFormat format;

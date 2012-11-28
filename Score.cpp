@@ -4,14 +4,16 @@ using namespace std;
 
 Score::Score() : tempo(500000), track(1), time_parse(0), note_parse(0){}
 
-Score::Score(string input_ust) : tempo(500000), track(1), time_parse(0), note_parse(0)
+Score::Score(string input_ust)
+  :tempo(500000), track(1), time_parse(0), note_parse(0)
 {
   loadUst(input_ust);
 }
 
-Score::Score(string singer, string input_smf, short track, list<string> prons, string path_song) : tempo(500000), track(1), time_parse(0), note_parse(0)
+Score::Score(string singer, string input_smf, short track, string path_lyric, string path_song)
+  :tempo(500000), track(1), time_parse(0), note_parse(0)
 {
-  loadSmf(input_smf, track, prons);
+  loadSmf(input_smf, track, path_lyric);
   setSinger(singer);
   setSongPath(path_song);
 }
@@ -26,10 +28,26 @@ bool Score::isScoreLoaded()
   return !notes.empty();
 }
 
-void Score::loadSmf(string input, unsigned short track, list<string> prons)
+void Score::loadSmf(string input, unsigned short track, string path_lyric)
 {
   cout << "----- start score(smf) loading -----" << endl;
 
+  // load lyric txt
+  list<string> prons;
+  ifstream ifs(path_lyric.c_str());
+  string buf_str;
+
+  while (ifs && getline(ifs, buf_str)) {
+    if (buf_str == "")
+      continue;
+    if (*(buf_str.end()-1) == ',')
+      buf_str.erase(buf_str.end()-1,buf_str.end());
+    vector<string> buf_vector;
+    boost::algorithm::split(buf_vector, buf_str, boost::is_any_of(","));
+    prons.insert(prons.end(), buf_vector.begin(), buf_vector.end());
+  }
+
+  // load smf
   this->track = track;
   SmfParser *smf_parser = new SmfParser(input);
   if (smf_parser->isSmfFile()) {
@@ -149,6 +167,7 @@ void Score::debug(string output)
         << setw(6) << (unsigned int)it->getVelocity() << endl;
 }
 
+
 /*
  * accessor
  */
@@ -204,6 +223,7 @@ void Score::setPitches(vector<double> pitches)
 {
   this->pitches = pitches;
 }
+
 
 /*
  * inherit from SmfParser 
