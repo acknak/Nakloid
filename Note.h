@@ -2,7 +2,9 @@
 #define Note_h
 
 #include <cmath>
+#include <vector>
 #include <string>
+#include <iostream>
 
 // Value Object
 class Note {
@@ -10,8 +12,8 @@ class Note {
   const static double edge_length;
 
   Note();
-  Note(unsigned long start, unsigned char pitch, short velocity);
-  Note(unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char pitch, short velocity);
+  Note(unsigned long start, unsigned char base_pitch, short velocity);
+  Note(unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short velocity);
   Note(const Note& other);
   ~Note();
 
@@ -28,11 +30,12 @@ class Note {
   void setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
   std::string getPron();
   void setPron(std::string pron);
-  unsigned char getPitch();
-  double getPitchHz();
-  void setPitch(unsigned char pitch);
-  unsigned short getVelocity();
-  void setVelocity(short velocity);
+  unsigned char getBasePitch();
+  double getBasePitchHz();
+  void setBasePitch(unsigned char base_pitch);
+  std::vector<unsigned char> getVelocities();
+  void setVelocity(unsigned char velocity);
+  void setVelocities(std::vector<unsigned char> velocities);
   bool isPrec();
   unsigned short getPrec();
   void setPrec(unsigned short prec);
@@ -44,8 +47,9 @@ class Note {
   unsigned long start;
   unsigned long end;
   std::string pron;
-  unsigned char pitch;
-  unsigned short velocity;
+  unsigned char base_pitch;
+  unsigned char base_velocity;
+  std::vector<unsigned char> velocities;
   bool is_prec;
   unsigned short prec;
   bool is_ovrl;

@@ -116,7 +116,7 @@ bool Nakloid::vocalization()
       ms_end -= (it_next_notes)->getPrec() - (it_next_notes)->getOvrl();
     }
     cout << "pron: " << it_notes->getPron() << endl;
-    overlapper->overlapping(ms_start, ms_end, voice_db->getVoice(it_notes->getPron()).bwc);
+    overlapper->overlapping(ms_start, ms_end, voice_db->getVoice(it_notes->getPron()).bwc, it_notes->getVelocities());
   }
   overlapper->outputWav(score->getSongPath());
   delete overlapper;

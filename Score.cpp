@@ -122,7 +122,7 @@ void Score::loadUst(string path_ust)
       notes.back().setPron(buf_vector[1]);
     if (buf_vector[0] == "NoteNum")
       if (buf_vector[1]!="" && (tmp=boost::lexical_cast<short>(buf_vector[1]))>0)
-        notes.back().setPitch(tmp);
+        notes.back().setBasePitch(tmp);
     if (buf_vector[0] == "PreUtterance")
       if (buf_vector[1]!="" && (tmp=boost::lexical_cast<short>(buf_vector[1]))>0)
         notes.back().setPrec((tmp>0)?tmp:0);
@@ -146,7 +146,7 @@ void Score::reloadPitches()
   pitches.resize(notes.back().getEnd(), 0.0);
   for (list<Note>::iterator it=notes.begin(); it!=notes.end(); ++it)
     for (int i=(*it).getStart(); i<(*it).getEnd(); i++)
-      pitches[i] = (*it).getPitchHz();
+      pitches[i] = (*it).getBasePitchHz();
 }
 
 void Score::debug(string output)
@@ -163,8 +163,8 @@ void Score::debug(string output)
   for (list<Note>::iterator it=notes.begin(); it!=notes.end(); ++it)
     ofs << setw(8) << dec << it->getStart()
         << setw(8) << it->getEnd()
-        << setw(6) << hex << (unsigned int)it->getPitch()
-        << setw(6) << (unsigned int)it->getVelocity() << endl;
+        << setw(6) << hex << (unsigned int)it->getBasePitch()
+        << setw(6) << (unsigned int)it->getVelocities()[0] << endl;
 }
 
 
@@ -248,7 +248,7 @@ void Score::eventMidi(long deltatime, unsigned char msg, unsigned char* data)
 
   if (SmfHandler::charToMidiMsg(msg) == MIDI_MSG_NOTE_ON) {
     if (note_parse) {
-      if (note_parse->getPitch() == data[0]) {
+      if (note_parse->getBasePitch() == data[0]) {
         if (data[1] == 0) {
           note_parse->setEnd(time_parse, timebase, tempo);
           notes.push_back(*note_parse);

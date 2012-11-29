@@ -34,7 +34,7 @@ BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<double> pitches)
 
 BaseWavsOverlapper::~BaseWavsOverlapper(){}
 
-bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_end, BaseWavsContainer bwc)
+bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_end, BaseWavsContainer bwc, vector<unsigned char> velocities)
 {
   if (pitchmarks.empty())
     return false;
@@ -75,8 +75,9 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
       win.erase(win.end()-(win_end-pitchmarks.back()), win.end());
       win_end = pitchmarks.back();
     }
+    double scale = ((pos2ms(dist)<velocities.size())?velocities[pos2ms(dist)]:velocities.back())/100.0;
     for (int i=0; i<win_end-win_start; i++)
-      output_wav[win_start+i] += win[i];
+      output_wav[win_start+i] += win[i] * scale;
   } while (++it_pitchmarks != it_end_pitchmarks);
 
   cout << "----- finish overlapping -----" << endl << endl;
