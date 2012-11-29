@@ -108,7 +108,8 @@ void WavData::setData(list<short> data)
 void WavData::setData(vector<short> data)
 {
   short *data_array = new short[data.size()];
-  copy(data.begin(), data.end(), data_array);
+  for (int i=0; i<data.size(); i++)
+    data_array[i] = data[i];
 
   setData(data_array, data.size()*sizeof(short));
   delete[] data_array;
