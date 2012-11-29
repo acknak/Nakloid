@@ -94,6 +94,7 @@ bool Nakloid::vocalization()
   list<Note> notes = score->getNotesList();
 
   // set Note params from voiceDB
+  cout << "loading voiceDB..." << endl;
   for (list<Note>::iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
     if (it_notes == notes.begin()) {
       unsigned short ovrl = it_notes->isOvrl()?it_notes->getOvrl():voice_db->getVoice(it_notes->getPron()).ovrl;
@@ -103,8 +104,9 @@ bool Nakloid::vocalization()
     if (!it_notes->isOvrl())
       it_notes->setOvrl(voice_db->getVoice(it_notes->getPron()).ovrl);
     if (!it_notes->isPrec())
-      it_notes->setOvrl(voice_db->getVoice(it_notes->getPron()).prec);
+      it_notes->setPrec(voice_db->getVoice(it_notes->getPron()).prec);
   }
+  cout << "loading finished" << endl;
 
   // Singing Voice Synthesis
   BaseWavsOverlapper *overlapper = new BaseWavsOverlapper(format, score->getPitches());
