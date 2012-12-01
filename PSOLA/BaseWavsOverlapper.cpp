@@ -44,7 +44,7 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
     return false;
   cout << "----- start overlapping -----" << endl;
 
-  unsigned long fade_start = bwc.base_wavs[(bwc.base_wavs.size()-bwc.format.dwRepeatStart)/2].fact.dwPosition;
+  unsigned long fade_start = (bwc.base_wavs.end()-1-((bwc.base_wavs.size()-1-bwc.format.dwRepeatStart)/2))->fact.dwPosition;
   unsigned long fade_last = bwc.base_wavs.back().fact.dwPosition;
   vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(ms2pos(ms_start));
   vector<unsigned long>::iterator it_end_pitchmarks = pos2it(ms2pos(ms_end));
