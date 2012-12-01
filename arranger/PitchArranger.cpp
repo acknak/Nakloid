@@ -10,6 +10,10 @@ const short PitchArranger::vibrato_offset = 500; //ms
 const short PitchArranger::vibrato_width = 200; //ms
 const double PitchArranger::vibrato_depth = 5; //hz
 
+void PitchArranger::arrange(Score *score, WavFormat format)
+{
+}
+
 void PitchArranger::vibrato(vector<double> *guide_pitches)
 {
   if (guide_pitches->size() > vibrato_offset)

@@ -183,6 +183,7 @@ void Score::noteParamChanged(Note *note)
   note->reloadVelocities();
 }
 
+
 /*
  * accessor
  */

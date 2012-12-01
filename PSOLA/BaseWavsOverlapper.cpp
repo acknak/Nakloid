@@ -18,9 +18,9 @@ BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<double> pitches)
   while (tmp_ms < pitches.size()) {
     if (pitches[tmp_ms] > 0) {
       if (!is_note_on)
-        tmp_pitchmarks.push_back(ms2pos(tmp_ms));
+        tmp_pitchmarks.push_back(ms2pos(tmp_ms, format));
       tmp_pitchmarks.push_back(tmp_pitchmarks.back()+(1.0/pitches[tmp_ms]*format.dwSamplesPerSec));
-      tmp_ms = pos2ms(tmp_pitchmarks.back());
+      tmp_ms = pos2ms(tmp_pitchmarks.back(), format);
       is_note_on = true;
     } else {
       tmp_ms++;
@@ -46,8 +46,8 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
 
   unsigned long fade_start = (bwc.base_wavs.end()-1-((bwc.base_wavs.size()-1-bwc.format.dwRepeatStart)/2))->fact.dwPosition;
   unsigned long fade_last = bwc.base_wavs.back().fact.dwPosition;
-  vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(ms2pos(ms_start));
-  vector<unsigned long>::iterator it_end_pitchmarks = pos2it(ms2pos(ms_end));
+  vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(ms2pos(ms_start,format));
+  vector<unsigned long>::iterator it_end_pitchmarks = pos2it(ms2pos(ms_end,format));
   vector<unsigned long>::iterator it_pitchmarks = it_begin_pitchmarks;
   cout << "base_wav size:" << bwc.base_wavs.size() << endl;
   cout << "fade_start:" << fade_start << ", fade_last:" << fade_last << endl;
@@ -75,7 +75,8 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
       win.erase(win.end()-(win_end-pitchmarks.back()), win.end());
       win_end = pitchmarks.back();
     }
-    double scale = ((pos2ms(dist)<velocities.size())?velocities[pos2ms(dist)]:velocities.back())/100.0;
+    unsigned long ms_dist = pos2ms(*it_pitchmarks-*it_begin_pitchmarks,format);
+    double scale = ((ms_dist<velocities.size())?velocities[ms_dist]:velocities.back())/100.0;
     for (int i=0; i<win_end-win_start; i++)
       output_wav[win_start+i] += win[i] * scale;
   } while (++it_pitchmarks != it_end_pitchmarks);
@@ -101,16 +102,6 @@ void BaseWavsOverlapper::debug(string output)
 
   for (int i=0; i<output_wav.size(); i++)
     ofs << output_wav[i] << endl;
-}
-
-unsigned long BaseWavsOverlapper::ms2pos(unsigned long ms)
-{
-  return ms / 1000.0 * format.dwSamplesPerSec;
-}
-
-unsigned long BaseWavsOverlapper::pos2ms(unsigned long pos)
-{
-  return pos / (double)format.dwSamplesPerSec * 1000;
 }
 
 vector<unsigned long>::iterator BaseWavsOverlapper::pos2it(unsigned long pos)

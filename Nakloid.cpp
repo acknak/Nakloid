@@ -91,9 +91,10 @@ bool Nakloid::vocalization()
   }
 
   cout << "----- start vocalization -----" << endl << endl;
-  list<Note> notes = score->getNotesList();
+  list<Note> notes;
 
-  // set Note params from voiceDB
+  // set note params from voiceDB
+  notes = score->getNotesList();
   cout << endl << "loading voiceDB..." << endl << endl;
   for (list<Note>::iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
     if (it_notes == notes.begin()) {
@@ -106,9 +107,17 @@ bool Nakloid::vocalization()
     if (!it_notes->isPrec())
       it_notes->setPrec(voice_db->getVoice(it_notes->getPron()).prec);
   }
+  score->setNotes(notes);
   cout << endl << "load finished" << endl << endl << endl;
 
+  // arrange note params
+  cout << endl << "arrange params..." << endl << endl;
+  NoteArranger::arrange(score);
+  PitchArranger::arrange(score, format);
+  cout << endl << "arrange finished" << endl << endl << endl;
+
   // Singing Voice Synthesis
+  notes = score->getNotesList();
   BaseWavsOverlapper *overlapper = new BaseWavsOverlapper(format, score->getPitches());
   for (list<Note>::iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
     cout << "pron: " << it_notes->getPron() << ", "

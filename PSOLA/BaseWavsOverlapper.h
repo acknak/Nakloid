@@ -10,12 +10,13 @@
 #include <algorithm>
 
 #include "BaseWav.h"
+#include "../arranger/Arranger.h"
 #include "../parser/WavFormat.h"
 #include "../parser/WavData.h"
 #include "../parser/WavParser.h"
 
 // Refference Object
-class BaseWavsOverlapper {
+class BaseWavsOverlapper : Arranger {
  public:
   BaseWavsOverlapper(WavFormat format, std::list<double> pitches);
   BaseWavsOverlapper(WavFormat format, std::vector<double> pitches);
@@ -34,8 +35,8 @@ class BaseWavsOverlapper {
   BaseWavsOverlapper(const BaseWavsOverlapper& other);
   BaseWavsOverlapper& operator=(const BaseWavsOverlapper& other);
 
-  unsigned long ms2pos(unsigned long ms);
-  unsigned long pos2ms(unsigned long pos);
+  //unsigned long ms2pos(unsigned long ms);
+  //unsigned long pos2ms(unsigned long pos);
   std::vector<unsigned long>::iterator pos2it(unsigned long pos);
 
   WavFormat format;

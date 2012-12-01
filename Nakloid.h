@@ -10,8 +10,8 @@
 #include <algorithm>
 #include "Score.h"
 #include "VoiceDB.h"
+#include "arranger/NoteArranger.h"
 #include "arranger/PitchArranger.h"
-#include "arranger/DataArranger.h"
 #include "parser/WavFormat.h"
 #include "parser/WavData.h"
 #include "parser/WavParser.h"
