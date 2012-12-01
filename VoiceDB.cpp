@@ -44,8 +44,8 @@ bool VoiceDB::initVoiceMap(string filename)
     voice_map[v2[0]].offs = (((tmp=boost::lexical_cast<short>(v2[1]))>0))?tmp:0;
     voice_map[v2[0]].cons = (((tmp=boost::lexical_cast<short>(v2[2]))>0))?tmp:0;
     voice_map[v2[0]].blnk = (((tmp=boost::lexical_cast<short>(v2[3]))>0))?tmp:0;
-    voice_map[v2[0]].prec = (((tmp=boost::lexical_cast<short>(v2[4]))>0))?tmp:0;
-    voice_map[v2[0]].ovrl = (((tmp=boost::lexical_cast<short>(v2[5]))>0))?tmp:0;
+    voice_map[v2[0]].prec = boost::lexical_cast<short>(v2[4]);
+    voice_map[v2[0]].ovrl = boost::lexical_cast<short>(v2[5]);
     voice_map[v2[0]].is_normalize = (v2.size()>6)?((tmp=boost::lexical_cast<short>(v2[6]))>0):true;
     if (v1[0].find(wav_ext) == string::npos)
       voice_map[v2[0]].frq = 260.0;

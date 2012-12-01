@@ -5,15 +5,26 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "Score.h"
+class Score;
+
+typedef struct {
+  unsigned long start;
+  unsigned long end;
+  std::string pron;
+  unsigned char base_pitch;
+  unsigned char base_velocity;
+  std::vector<unsigned char> velocities;
+  unsigned short lack;
+  short *prec;
+  short *ovrl;
+} NoteFrame;
 
 // Value Object
 class Note {
  public:
-  const static double edge_length;
-
-  Note();
-  Note(unsigned long start, unsigned char base_pitch, short velocity);
-  Note(unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short velocity);
+  Note(Score *score, unsigned long id);
+  Note(Score *score, unsigned long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, unsigned char base_velocity);
   Note(const Note& other);
   ~Note();
 
@@ -23,39 +34,38 @@ class Note {
 
   // accessor
   unsigned long getStart();
-  void setStart(unsigned long start);
+  unsigned long getPronStart();
+  void setStart(unsigned long ms_start);
   void setStart(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
   unsigned long getEnd();
-  void setEnd(unsigned long end);
+  unsigned long getPronEnd();
+  void setEnd(unsigned long ms_end);
   void setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
   std::string getPron();
   void setPron(std::string pron);
   unsigned char getBasePitch();
   double getBasePitchHz();
   void setBasePitch(unsigned char base_pitch);
+  void reloadVelocities();
+  void reloadVelocities(unsigned char base_velocity);
   std::vector<unsigned char> getVelocities();
-  void setVelocity(unsigned char velocity);
   void setVelocities(std::vector<unsigned char> velocities);
+  unsigned short getLack();
+  void setLack(unsigned short lack);
   bool isPrec();
-  unsigned short getPrec();
-  void setPrec(unsigned short prec);
+  short getPrec();
+  void setPrec(short prec);
   bool isOvrl();
-  unsigned short getOvrl();
-  void setOvrl(unsigned short ovrl);
+  short getOvrl();
+  void setOvrl(short ovrl);
 
  private:
-  unsigned long start;
-  unsigned long end;
-  std::string pron;
-  unsigned char base_pitch;
-  unsigned char base_velocity;
-  std::vector<unsigned char> velocities;
-  bool is_prec;
-  unsigned short prec;
-  bool is_ovrl;
-  unsigned short ovrl;
+  Score *score;
+  unsigned long id;
+  NoteFrame self;
 
-  double tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
+  void initializeNoteFrame();
+  unsigned long tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
 };
 
 #endif

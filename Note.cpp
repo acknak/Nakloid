@@ -2,54 +2,46 @@
 
 using namespace std;
 
-Note::Note()
-  :start(0),end(0),base_pitch(0),base_velocity(100),pron(""),is_prec(false),prec(0),is_ovrl(false),ovrl(0){}
-
-Note::Note(unsigned long start, unsigned char base_pitch, short velocity)
-  :start(0),end(0),base_pitch(0),base_velocity(100),pron(""),is_prec(false),prec(0),is_ovrl(false),ovrl(0)
+Note::Note(Score *score, unsigned long id)
+  :score(score),id(id)
 {
-  this->setStart(start);
-  this->setBasePitch(base_pitch);
-  this->setVelocity(velocity);
+  initializeNoteFrame();
 }
 
-Note::Note(unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short velocity)
-  :start(0),end(0),base_pitch(0),pron(""),is_prec(false),prec(0),is_ovrl(false),ovrl(0)
+Note::Note(Score *score, unsigned long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, unsigned char base_velocity)
+  :score(score),id(id)
 {
+  initializeNoteFrame();
   this->setStart(deltatime, timebase, tempo);
   this->setBasePitch(base_pitch);
-  this->setVelocity(velocity);
+  self.base_velocity = base_velocity;
 }
 
 Note::Note(const Note& other)
 {
-  start = other.start;
-  end = other.end;
-  pron = other.pron;
-  base_pitch = other.base_pitch;
-  base_velocity = other.base_velocity;
-  velocities = other.velocities;
-  is_prec = other.is_prec;
-  prec = other.prec;
-  is_ovrl = other.is_ovrl;
-  ovrl = other.ovrl;
+  score = other.score;
+  id = other.id;
+  self = other.self;
 }
 
-Note::~Note(){}
+Note::~Note()
+{
+  if (self.ovrl != 0) {
+    delete self.ovrl;
+    self.ovrl = 0;
+  }
+  if (self.prec != 0) {
+    delete self.prec;
+    self.prec = 0;
+  }
+}
 
 Note& Note::operator=(const Note& other)
 {
   if (this != &other) {
-    start = other.start;
-    end = other.end;
-    pron = other.pron;
-    base_pitch = other.base_pitch;
-    base_velocity = other.base_velocity;
-    velocities = other.velocities;
-    is_prec = other.is_prec;
-    prec = other.prec;
-    is_ovrl = other.is_ovrl;
-    ovrl = other.ovrl;
+    score = other.score;
+    id = other.id;
+    self = other.self;
   }
   return *this;
 }
@@ -57,16 +49,17 @@ Note& Note::operator=(const Note& other)
 bool Note::operator==(const Note& other) const
 {
   bool is_eq = true;
-  is_eq &= (start == other.start);
-  is_eq &= (end == other.end);
-  is_eq &= (pron == other.pron);
-  is_eq &= (base_pitch == other.base_pitch);
-  is_eq &= (base_velocity == other.base_velocity);
-  is_eq &= (velocities == other.velocities);
-  is_eq &= (is_prec == other.is_prec);
-  is_eq &= (prec == other.prec);
-  is_eq &= (is_ovrl == other.is_ovrl);
-  is_eq &= (ovrl == other.ovrl);
+  is_eq &= (score == other.score);
+  is_eq &= (id == other.id);
+  is_eq &= (self.start == other.self.start);
+  is_eq &= (self.end == other.self.end);
+  is_eq &= (self.pron == other.self.pron);
+  is_eq &= (self.base_pitch == other.self.base_pitch);
+  is_eq &= (self.base_velocity == other.self.base_velocity);
+  is_eq &= (self.velocities == other.self.velocities);
+  is_eq &= (self.lack == other.self.lack);
+  is_eq &= (self.prec == other.self.prec);
+  is_eq &= (self.ovrl == other.self.ovrl);
   return is_eq;
 }
 
@@ -77,136 +70,158 @@ bool Note::operator!=(const Note& other) const
 
 unsigned long Note::getStart()
 {
-  return start;
+  return self.start;
 }
 
-void Note::setStart(unsigned long start)
+unsigned long Note::getPronStart()
 {
-  if (!velocities.empty())
-    if (this->start < start)
-      velocities.insert(velocities.begin(), start-this->start, velocities.front());
-    else
-      velocities.erase(velocities.begin(), velocities.begin()+(start-this->start));
-  this->start = start;
+  unsigned long tmp = self.start - (getPrec()+(getOvrl()<0)?getOvrl():0);
+  return tmp>0?tmp:0;
+}
+
+void Note::setStart(unsigned long ms_start)
+{
+  this->self.start = ms_start;
+  if (self.start < self.end)
+    score->noteParamChanged(this);
 }
 
 void Note::setStart(unsigned long deltatime, unsigned short timebase, unsigned long tempo)
 {
-  unsigned long tmp_start = tick2ms(deltatime, timebase, tempo);
-  if (!velocities.empty())
-    if (this->start < tmp_start)
-      velocities.insert(velocities.begin(), tmp_start-this->start, velocities.front());
-    else
-      velocities.erase(velocities.begin(), velocities.begin()+(tmp_start-this->start));
-  this->start = tmp_start;
+  setStart(tick2ms(deltatime, timebase, tempo));
 }
 
 unsigned long Note::getEnd()
 {
-  return end;
+  return self.end;
 }
 
-void Note::setEnd(unsigned long end)
+unsigned long Note::getPronEnd()
 {
-  if (!velocities.empty())
-    if (this->end < end)
-      velocities.insert(velocities.end(), end-this->end, velocities.back());
-    else
-      velocities.erase(velocities.end()-(end-this->end), velocities.end());
-  this->end = end;
+  unsigned long tmp = self.end - getLack();
+  return tmp>0?tmp:0;
+}
+
+void Note::setEnd(unsigned long ms_end)
+{
+  self.end = ms_end;
+  score->noteParamChanged(this);
 }
 
 void Note::setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo)
 {
-  unsigned long tmp_end = tick2ms(deltatime, timebase, tempo);
-  if (!velocities.empty())
-    if (this->end < tmp_end)
-      velocities.insert(velocities.end(), tmp_end-this->end, velocities.back());
-    else
-      velocities.erase(velocities.end()-(tmp_end-this->end), velocities.end());
-  this->end = tmp_end;
+  setEnd(tick2ms(deltatime, timebase, tempo));
 }
 
 string Note::getPron()
 {
-  return pron;
+  return self.pron;
 }
 
 void Note::setPron(string pron)
 {
-  this->pron = pron;
+  this->self.pron = pron;
 }
 
 unsigned char Note::getBasePitch()
 {
-  return base_pitch;
+  return self.base_pitch;
 }
 
 double Note::getBasePitchHz()
 {
-  return 440.0 * pow(2.0,(base_pitch-(int)0x45)/12.0);
+  return 440.0 * pow(2.0,(self.base_pitch-(int)0x45)/12.0);
 }
 
 void Note::setBasePitch(unsigned char base_pitch)
 {
-  this->base_pitch = base_pitch;
+  this->self.base_pitch = base_pitch;
 }
 
 vector<unsigned char> Note::getVelocities()
 {
-  if (start >= end)
+  if (self.start >= self.end)
     cerr << "[Note::getVelocities()] Note on time not defined" << endl;
-  else if (velocities.empty() && start<end)
-    velocities.assign(end-start, base_velocity);
-  return velocities;
+  else if (self.velocities.empty() && self.start<self.end)
+    self.velocities.assign(self.end-self.start, self.base_velocity);
+  return self.velocities;
 }
 
-void Note::setVelocity(unsigned char velocity)
+void Note::reloadVelocities()
 {
-  base_velocity = velocity;
+  if (getPronStart() < getPronEnd())
+    self.velocities.assign(getPronEnd()-getPronStart(), self.base_velocity);
+}
+
+void Note::reloadVelocities(unsigned char velocity)
+{
+  self.base_velocity = velocity;
+  reloadVelocities();
 }
 
 void Note::setVelocities(vector<unsigned char> velocities)
 {
-  if (velocities.size() == end-start)
-    this->velocities = velocities;
+  if (velocities.size() == self.end-self.start)
+    self.velocities = velocities;
   else
     cerr << "[Note::setVelocities()] Velocity length differ from Note on time" << endl;
 }
 
 bool Note::isPrec()
 {
-  return is_prec;
+  return self.prec!=0;
 }
 
-unsigned short Note::getPrec()
+short Note::getPrec()
 {
-  return prec;
+  return (self.prec==0)?0:*self.prec;
 }
 
-void Note::setPrec(unsigned short prec)
+void Note::setPrec(short prec)
 {
-  is_prec = true;
-  this->prec = prec;
+  self.prec = new short (prec);
+  score->noteParamChanged(this);
 }
 
 bool Note::isOvrl()
 {
-  return is_ovrl;
+  return self.ovrl!=0;
 }
 
-unsigned short Note::getOvrl()
+short Note::getOvrl()
 {
-  return ovrl;
+  return (self.ovrl==0)?0:*self.ovrl;
 }
 
-void Note::setOvrl(unsigned short ovrl)
+void Note::setOvrl(short ovrl)
 {
-  is_ovrl = true;
-  this->ovrl = ovrl;
+  self.ovrl = new short (ovrl);
+  score->noteParamChanged(this);
 }
 
-double Note::tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo)
+unsigned short Note::getLack()
 {
-  return ((double)tick) / timebase * (tempo/1000.0);
+  return self.lack;
+}
+
+void Note::setLack(unsigned short lack)
+{
+  self.lack = lack;
+}
+
+void Note::initializeNoteFrame()
+{
+  self.start = 0;
+  self.end = 0;
+  self.pron = "";
+  self.base_pitch = 0x45;
+  self.base_velocity = 100;
+  self.lack = 0;
+  self.prec = 0;
+  self.ovrl = 0;
+}
+
+unsigned long Note::tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo)
+{
+  return (unsigned long)(((double)tick) / timebase * (tempo/1000.0));
 }

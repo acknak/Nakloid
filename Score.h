@@ -12,6 +12,7 @@
 #include "Note.h"
 #include "parser/SmfParser.h"
 #include "parser/SmfHandler.h"
+class Note;
 
 // Reference Object
 class Score : public SmfHandler {
@@ -26,6 +27,9 @@ class Score : public SmfHandler {
   void loadUst(std::string input);
   void reloadPitches();
   void debug(std::string output);
+
+  // Note mediator
+  void noteParamChanged(Note *note);
 
   // accessor
   std::string getSinger();
@@ -60,6 +64,7 @@ class Score : public SmfHandler {
   bool is_parse;
   unsigned long time_parse;
   Note *note_parse;
+  unsigned long id_parse;
 };
 
 #endif

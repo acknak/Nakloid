@@ -2,16 +2,15 @@
 
 using namespace std;
 
-Score::Score() : tempo(500000), track(1), time_parse(0), note_parse(0){}
+Score::Score() : tempo(500000), track(1), time_parse(0), note_parse(0),id_parse(0){}
 
-Score::Score(string input_ust)
-  :tempo(500000), track(1), time_parse(0), note_parse(0)
+Score::Score(string input_ust):tempo(500000),track(1),time_parse(0),note_parse(0),id_parse(0)
 {
   loadUst(input_ust);
 }
 
 Score::Score(string singer, string input_smf, short track, string path_lyric, string path_song)
-  :tempo(500000), track(1), time_parse(0), note_parse(0)
+  :tempo(500000),track(1),time_parse(0),note_parse(0),id_parse(0)
 {
   loadSmf(input_smf, track, path_lyric);
   setSinger(singer);
@@ -58,7 +57,7 @@ void Score::loadSmf(string input, unsigned short track, string path_lyric)
     ifstream ifs;
     ifs.open(input.c_str(), ios::in|ios::binary);
     if (!ifs) {
-      cout << input << " cannot open\n";
+      cerr << input << " cannot open\n";
       return;
     }
     Note *note = 0;
@@ -66,6 +65,10 @@ void Score::loadSmf(string input, unsigned short track, string path_lyric)
       ifs.read((char *)note, sizeof(Note));
       notes.push_back(*note);
     }
+  }
+  if (notes.size() == 0) {
+    cerr << "cannot read notes" << endl;
+    return;
   }
   list<Note>::iterator it_notes = notes.begin();
   list<string>::iterator it_prons = prons.begin();
@@ -93,13 +96,13 @@ void Score::loadUst(string path_ust)
     if (buf_str == "[#SETTING]")
       continue;
     if (buf_str[0]=='[') {
-      Note tmp;
+      Note *tmp_note = new Note(this, ++id_parse);
       if (notes.size()>0) {
-        tmp.setStart(notes.back().getEnd());
+        tmp_note->setStart(notes.back().getEnd());
         if (notes.back().getPron()=="R")
           notes.pop_back();
       }
-      notes.push_back(tmp);
+      notes.push_back(*tmp_note);
       continue;
     }
     vector<string> buf_vector;
@@ -124,14 +127,14 @@ void Score::loadUst(string path_ust)
       if (buf_vector[1]!="" && (tmp=boost::lexical_cast<short>(buf_vector[1]))>0)
         notes.back().setBasePitch(tmp);
     if (buf_vector[0] == "PreUtterance")
-      if (buf_vector[1]!="" && (tmp=boost::lexical_cast<short>(buf_vector[1]))>0)
-        notes.back().setPrec((tmp>0)?tmp:0);
+      if (buf_vector[1]!="")
+        notes.back().setPrec(boost::lexical_cast<short>(buf_vector[1]));
     if (buf_vector[0] == "VoiceOverlap")
-      if (buf_vector[1]!="" && (tmp=boost::lexical_cast<short>(buf_vector[1]))>0)
-        notes.back().setOvrl((tmp>0)?tmp:0);
+      if (buf_vector[1]!="")
+        notes.back().setOvrl(boost::lexical_cast<short>(buf_vector[1]));
     if (buf_vector[0] == "Intensity")
       if (buf_vector[1]!="" && (tmp=boost::lexical_cast<short>(buf_vector[1]))>0)
-        notes.back().setVelocity(tmp);
+        notes.back().reloadVelocities(tmp);
   }
   while (notes.back().getPron()=="R" || notes.back().getPron()=="")
     notes.pop_back();
@@ -167,6 +170,18 @@ void Score::debug(string output)
         << setw(6) << (unsigned int)it->getVelocities()[0] << endl;
 }
 
+
+/*
+ * Note mediator
+ */
+void Score::noteParamChanged(Note *note)
+{
+  if (notes.size() == 0)
+    return;
+  if (note->isPrec() || note->isOvrl())
+    (--find(notes.begin(), notes.end(), *note))->setLack((note->getPrec()-note->getOvrl()));
+  note->reloadVelocities();
+}
 
 /*
  * accessor
@@ -264,11 +279,11 @@ void Score::eventMidi(long deltatime, unsigned char msg, unsigned char* data)
           note_parse->setEnd(time_parse, timebase, tempo);
           notes.push_back(*note_parse);
           delete note_parse;
-          note_parse = new Note(0, data[0], data[1]);
+          note_parse = new Note(this, ++id_parse, 0, timebase, tempo, data[0], data[1]);
         }
       }
     } else {
-      note_parse = new Note(time_parse, timebase, tempo, data[0], data[1]);
+      note_parse = new Note(this, ++id_parse, time_parse, timebase, tempo, data[0], data[1]);
     }
   } else if (SmfHandler::charToMidiMsg(msg) == MIDI_MSG_NOTE_OFF && note_parse){
     note_parse->setEnd(time_parse, timebase, tempo);

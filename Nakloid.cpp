@@ -90,11 +90,11 @@ bool Nakloid::vocalization()
     return false;
   }
 
-  cout << "----- start vocalization -----" << endl;
+  cout << "----- start vocalization -----" << endl << endl;
   list<Note> notes = score->getNotesList();
 
   // set Note params from voiceDB
-  cout << "loading voiceDB..." << endl;
+  cout << endl << "loading voiceDB..." << endl << endl;
   for (list<Note>::iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
     if (it_notes == notes.begin()) {
       unsigned short ovrl = it_notes->isOvrl()?it_notes->getOvrl():voice_db->getVoice(it_notes->getPron()).ovrl;
@@ -106,19 +106,15 @@ bool Nakloid::vocalization()
     if (!it_notes->isPrec())
       it_notes->setPrec(voice_db->getVoice(it_notes->getPron()).prec);
   }
-  cout << "loading finished" << endl;
+  cout << endl << "load finished" << endl << endl << endl;
 
   // Singing Voice Synthesis
   BaseWavsOverlapper *overlapper = new BaseWavsOverlapper(format, score->getPitches());
   for (list<Note>::iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
-    unsigned long ms_start=it_notes->getStart()-it_notes->getPrec(), ms_end=it_notes->getEnd();
-    if (it_notes!=--notes.end()) {
-      list<Note>::iterator it_next_notes = it_notes;
-      ++it_next_notes;
-      ms_end -= (it_next_notes)->getPrec() - (it_next_notes)->getOvrl();
-    }
-    cout << "pron: " << it_notes->getPron() << endl;
-    overlapper->overlapping(ms_start, ms_end, voice_db->getVoice(it_notes->getPron()).bwc, it_notes->getVelocities());
+    cout << "pron: " << it_notes->getPron() << ", "
+      << "pron start: " << it_notes->getPronStart() << ", "
+      << "pron end: " << it_notes->getPronEnd() << endl;
+    overlapper->overlapping(it_notes->getPronStart(), it_notes->getPronEnd(), voice_db->getVoice(it_notes->getPron()).bwc, it_notes->getVelocities());
   }
   overlapper->outputWav(score->getSongPath());
   delete overlapper;
