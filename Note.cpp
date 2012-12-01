@@ -22,6 +22,10 @@ Note::Note(const Note& other)
   score = other.score;
   id = other.id;
   self = other.self;
+  if (other.self.prec != 0)
+    self.prec = new short (*(other.self.prec));
+  if (other.self.ovrl != 0)
+    self.ovrl = new short (*(other.self.ovrl));
 }
 
 Note::~Note()
@@ -42,6 +46,10 @@ Note& Note::operator=(const Note& other)
     score = other.score;
     id = other.id;
     self = other.self;
+    if (other.self.prec != 0)
+      self.prec = new short (*(other.self.prec));
+    if (other.self.ovrl != 0)
+      self.ovrl = new short (*(other.self.ovrl));
   }
   return *this;
 }
@@ -58,8 +66,8 @@ bool Note::operator==(const Note& other) const
   is_eq &= (self.base_velocity == other.self.base_velocity);
   is_eq &= (self.velocities == other.self.velocities);
   is_eq &= (self.lack == other.self.lack);
-  is_eq &= (self.prec == other.self.prec);
-  is_eq &= (self.ovrl == other.self.ovrl);
+  is_eq &= (&self.prec == &other.self.prec);
+  is_eq &= (&self.ovrl == &other.self.ovrl);
   return is_eq;
 }
 
@@ -75,7 +83,7 @@ unsigned long Note::getStart()
 
 unsigned long Note::getPronStart()
 {
-  unsigned long tmp = self.start - (getPrec()+(getOvrl()<0)?getOvrl():0);
+  unsigned long tmp = self.start - (getPrec()-(getOvrl()<0)?getOvrl():0);
   return tmp>0?tmp:0;
 }
 
@@ -140,10 +148,6 @@ void Note::setBasePitch(unsigned char base_pitch)
 
 vector<unsigned char> Note::getVelocities()
 {
-  if (self.start >= self.end)
-    cerr << "[Note::getVelocities()] Note on time not defined" << endl;
-  else if (self.velocities.empty() && self.start<self.end)
-    self.velocities.assign(self.end-self.start, self.base_velocity);
   return self.velocities;
 }
 
@@ -161,7 +165,7 @@ void Note::reloadVelocities(unsigned char velocity)
 
 void Note::setVelocities(vector<unsigned char> velocities)
 {
-  if (velocities.size() == self.end-self.start)
+  if (velocities.size() == self.velocities.size())
     self.velocities = velocities;
   else
     cerr << "[Note::setVelocities()] Velocity length differ from Note on time" << endl;
