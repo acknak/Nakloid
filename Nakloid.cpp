@@ -113,7 +113,7 @@ bool Nakloid::vocalization()
   // arrange note params
   cout << endl << "arrange params..." << endl << endl;
   NoteArranger::arrange(score);
-  PitchArranger::arrange(score, format);
+  PitchArranger::arrange(score);
   cout << endl << "arrange finished" << endl << endl << endl;
 
   // Singing Voice Synthesis
