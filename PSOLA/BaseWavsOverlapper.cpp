@@ -88,7 +88,7 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
 void BaseWavsOverlapper::outputWav(string output)
 {
   long size = output_wav.size()*sizeof(short);
-  ofstream ofs(output, ios_base::out|ios_base::trunc|ios_base::binary);
+  ofstream ofs(output.c_str(), ios_base::out|ios_base::trunc|ios_base::binary);
   WavParser::setWavHeader(&ofs, format, size+28);
   ofs.write((char*)WavFormat::data, sizeof(char)*4);
   ofs.write((char*)&size, sizeof(long));

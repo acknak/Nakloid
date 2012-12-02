@@ -181,6 +181,7 @@ void Score::noteParamChanged(Note *note)
   if (note->isPrec() || note->isOvrl())
     (--find(notes.begin(), notes.end(), *note))->setLack((note->getPrec()-note->getOvrl()));
   note->reloadVelocities();
+  reloadPitches();
 }
 
 
@@ -222,12 +223,14 @@ void Score::setNotes(list<Note> notes)
 {
   this->notes.clear();
   this->notes = notes;
+  reloadPitches();
 }
 
 void Score::setNotes(vector<Note> notes)
 {
   this->notes.clear();
   this->notes.assign(notes.begin(), notes.end());
+  reloadPitches();
 }
 
 vector<double> Score::getPitches()
