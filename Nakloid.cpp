@@ -96,6 +96,7 @@ bool Nakloid::vocalization()
   // set note params from voiceDB
   notes = score->getNotesList();
   cout << endl << "loading voiceDB..." << endl << endl;
+  double counter=0, percent=0;
   for (list<Note>::iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
     if (it_notes == notes.begin()) {
       unsigned short ovrl = it_notes->isOvrl()?it_notes->getOvrl():voice_db->getVoice(it_notes->getPron()).ovrl;
@@ -106,6 +107,8 @@ bool Nakloid::vocalization()
       it_notes->setOvrl(voice_db->getVoice(it_notes->getPron()).ovrl);
     if (!it_notes->isPrec())
       it_notes->setPrec(voice_db->getVoice(it_notes->getPron()).prec);
+    if (++counter/notes.size()>percent+0.1 && (percent=floor(counter/notes.size()*10)/10.0)<1.0)
+      cout << percent*100 << "%..." << endl;
   }
   score->setNotes(notes);
   cout << endl << "load finished" << endl << endl << endl;
@@ -123,9 +126,10 @@ bool Nakloid::vocalization()
     cout << "pron: " << it_notes->getPron() << ", "
       << "pron start: " << it_notes->getPronStart() << ", "
       << "pron end: " << it_notes->getPronEnd() << endl;
-    overlapper->overlapping(it_notes->getPronStart(), it_notes->getPronEnd(), voice_db->getVoice(it_notes->getPron()).bwc, it_notes->getVelocities());
+    overlapper->overlapping(it_notes->getPronStart(), it_notes->getPronEnd(),
+      voice_db->getVoice(it_notes->getPron()).bwc, it_notes->getVelocities());
   }
-  overlapper->outputWav(score->getSongPath());
+  overlapper->outputWav(score->getSongPath(), margin);
   delete overlapper;
 
   cout << "----- vocalization finished -----" << endl << endl;
