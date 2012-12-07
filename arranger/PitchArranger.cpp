@@ -16,11 +16,11 @@ void PitchArranger::arrange(Score *score)
   vector<double> pitches = score->getPitches();
 
   for (vector<Note>::iterator it_notes=notes.begin();it_notes!=notes.end();++it_notes) {
-    vibrato(pitches.begin()+it_notes->getPronStart(), pitches.begin()+it_notes->getPronEnd());
+    vibrato(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd());
     if (it_notes!=notes.begin() && it_notes->getStart()==(it_notes-1)->getEnd())
       overshoot(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd(), *(pitches.begin()+(it_notes-1)->getEnd()-1));
     if (it_notes!=notes.end()-1 && it_notes->getEnd()==(it_notes+1)->getStart())
-      preparation(pitches.begin()+it_notes->getPronStart(), pitches.begin()+it_notes->getPronEnd(), *(pitches.begin()+(it_notes+1)->getStart()));
+      preparation(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd(), *(pitches.begin()+(it_notes+1)->getStart()));
   }
 
   score->setPitches(pitches);
