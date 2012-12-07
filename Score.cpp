@@ -148,8 +148,8 @@ void Score::reloadPitches()
   pitches.clear();
   pitches.resize(notes.back().getEnd(), 0.0);
   for (list<Note>::iterator it=notes.begin(); it!=notes.end(); ++it)
-    for (int i=(*it).getStart(); i<(*it).getEnd(); i++)
-      pitches[i] = (*it).getBasePitchHz();
+    for (int i=it->getStart(); i<it->getEnd(); i++)
+      pitches[i] = it->getBasePitchHz();
 }
 
 void Score::debug(string output)
@@ -181,7 +181,6 @@ void Score::noteParamChanged(Note *note)
   if (note->isPrec() || note->isOvrl())
     (--find(notes.begin(), notes.end(), *note))->setLack((note->getPrec()-note->getOvrl()));
   note->reloadVelocities();
-  reloadPitches();
 }
 
 
@@ -291,9 +290,7 @@ void Score::eventMidi(long deltatime, unsigned char msg, unsigned char* data)
     }
   } else if (SmfHandler::charToMidiMsg(msg) == MIDI_MSG_NOTE_OFF && note_parse){
     note_parse->setEnd(time_parse, timebase, tempo);
-    note_parse->isOvrl();
     notes.push_back(*note_parse);
-    notes.back().isOvrl();
     delete note_parse;
     note_parse = NULL;
   }
