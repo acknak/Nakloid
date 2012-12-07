@@ -24,7 +24,7 @@ class BaseWavsOverlapper : Arranger {
 
   bool overlapping(unsigned long ms_start, unsigned long ms_end, BaseWavsContainer bwc, std::vector<unsigned char> velocities);
   void outputWav(std::string output);
-  void debug(std::string output);
+  void outputWav(std::string output, unsigned long ms_margin);
 
   // accessor
   WavFormat getWavFormat();
@@ -35,8 +35,6 @@ class BaseWavsOverlapper : Arranger {
   BaseWavsOverlapper(const BaseWavsOverlapper& other);
   BaseWavsOverlapper& operator=(const BaseWavsOverlapper& other);
 
-  //unsigned long ms2pos(unsigned long ms);
-  //unsigned long pos2ms(unsigned long pos);
   std::vector<unsigned long>::iterator pos2it(unsigned long pos);
 
   WavFormat format;

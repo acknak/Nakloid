@@ -44,7 +44,7 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
     return false;
   cout << "----- start overlapping -----" << endl;
 
-  unsigned long fade_start = (bwc.base_wavs.end()-1-((bwc.base_wavs.size()-1-bwc.format.dwRepeatStart)/2))->fact.dwPosition;
+  unsigned long fade_start = (bwc.base_wavs.begin()+bwc.format.dwRepeatStart)->fact.dwPosition;
   unsigned long fade_last = bwc.base_wavs.back().fact.dwPosition;
   vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(ms2pos(ms_start,format));
   vector<unsigned long>::iterator it_end_pitchmarks = pos2it(ms2pos(ms_end,format));
@@ -52,12 +52,12 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
   cout << "base_wav size:" << bwc.base_wavs.size() << endl;
   cout << "fade_start:" << fade_start << ", fade_last:" << fade_last << endl;
 
-  do {
+  while (it_pitchmarks != it_end_pitchmarks) {
     // choose overlap base_wav
     vector<BaseWav>::iterator it_base_wav = bwc.base_wavs.begin();
     unsigned long dist = *it_pitchmarks - *it_begin_pitchmarks;
     if (dist > fade_last)
-      dist = (dist-fade_start)%(fade_last-fade_start+1) + fade_start;
+      dist = (dist-fade_start)%(fade_last-fade_start) + fade_start;
     while (it_base_wav->fact.dwPosition < dist)
       ++it_base_wav;
 
@@ -79,7 +79,8 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
     double scale = ((ms_dist<velocities.size())?velocities[ms_dist]:velocities.back())/100.0;
     for (int i=0; i<win_end-win_start; i++)
       output_wav[win_start+i] += win[i] * scale;
-  } while (++it_pitchmarks != it_end_pitchmarks);
+    ++it_pitchmarks;
+  }
 
   cout << "----- finish overlapping -----" << endl << endl;
   return true;
@@ -96,12 +97,10 @@ void BaseWavsOverlapper::outputWav(string output)
   ofs.close();
 }
 
-void BaseWavsOverlapper::debug(string output)
+void BaseWavsOverlapper::outputWav(string output, unsigned long ms_margin)
 {
-  ofstream ofs(output.c_str());
-
-  for (int i=0; i<output_wav.size(); i++)
-    ofs << output_wav[i] << endl;
+  output_wav.insert(output_wav.begin(), ms2pos(ms_margin, format), 0);
+  outputWav(output);
 }
 
 vector<unsigned long>::iterator BaseWavsOverlapper::pos2it(unsigned long pos)
