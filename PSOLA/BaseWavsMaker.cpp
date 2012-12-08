@@ -2,7 +2,7 @@
 
 using namespace std;
 
-BaseWavsMaker::BaseWavsMaker():lobe(3),rep_start_point(0),rep_len_point(0),rep_start(0){}
+BaseWavsMaker::BaseWavsMaker():lobe(1),rep_start_point(0),rep_len_point(0),rep_start(0){}
 
 BaseWavsMaker::~BaseWavsMaker(){}
 
@@ -150,7 +150,7 @@ bool BaseWavsMaker::makeBaseWavs()
     if (win_end >= voice.size()) {
       // right edge
       filter.erase((filter.end()-1)-(win_end-voice.size()), filter.end());
-      base_wav.fact.dwPitchRight = win_end - voice.size();
+      base_wav.fact.dwPitchRight -= win_end - voice.size() + 1;
       win_end = voice.size() - 1;
     }
     // set base wav data
@@ -161,34 +161,39 @@ bool BaseWavsMaker::makeBaseWavs()
     base_wavs.push_back(base_wav);
   }
 
-  // make repeat morphing
+  // make self fade
   vector<double> filter = getTri(rep_len_point);
   filter.erase(filter.begin()+(filter.size()/2), filter.end());
   long base_pos = rep_start_point + (rep_len_point/2);
   double target_rms = getRMS(base_wavs[rep_start_point].data.getDataVector());
+  double target_mean = getMean(base_wavs[rep_start_point].data.getDataVector());
+  double target_var = getVar(base_wavs[rep_start_point].data.getDataVector(), target_mean);
+  vector<short> test = base_wavs[rep_start_point].data.getDataVector();
+  short target_max = *max_element(test.begin(),test.end());
+  short target_min = *min_element(test.begin(),test.end());
   cout << "base_wavs size:" << base_wavs.size() << ", base_pos:" << base_pos << endl;
   for (int i=0; i<rep_len_point/2; i++) {
     BaseWav fore_wav = base_wavs[rep_start_point+i];
     BaseWav aft_wav = base_wavs[base_pos+i];
     vector<short> fore_wav_data = fore_wav.data.getDataVector();
     vector<short> aft_wav_data = aft_wav.data.getDataVector();
-    vector<short> morph_wav_data(aft_wav_data.size(), 0);
+    vector<short> fade_wav_data(aft_wav_data.size(), 0);
 
     // left
     long left_diff = aft_wav.fact.dwPitchLeft - fore_wav.fact.dwPitchLeft;
     if (left_diff < 0) {
       for (int j=0; j<aft_wav.fact.dwPitchLeft; j++) {
-        morph_wav_data[j] = fore_wav_data[-left_diff+j]*filter[i] + aft_wav_data[j]*(1-filter[i]);
+        fade_wav_data[j] = fore_wav_data[-left_diff+j]*filter[i] + aft_wav_data[j]*(1-filter[i]);
       }
     } else {
       vector<short> tmp_fore_wav_data(fore_wav_data);
       tmp_fore_wav_data.insert(tmp_fore_wav_data.begin(), left_diff, 0);
       for (int j=0; j<aft_wav.fact.dwPitchLeft; j++)
-        morph_wav_data[j] = tmp_fore_wav_data[j]*filter[i] + aft_wav_data[j]*(1-filter[i]);
+        fade_wav_data[j] = tmp_fore_wav_data[j]*filter[i] + aft_wav_data[j]*(1-filter[i]);
     }
 
     // center
-    morph_wav_data[aft_wav.fact.dwPitchLeft] =
+    fade_wav_data[aft_wav.fact.dwPitchLeft] =
       fore_wav_data[fore_wav.fact.dwPitchLeft]*filter[i]
       + aft_wav_data[aft_wav.fact.dwPitchLeft]*(1-filter[i]);
 
@@ -196,19 +201,25 @@ bool BaseWavsMaker::makeBaseWavs()
     long right_diff = aft_wav.fact.dwPitchRight - fore_wav.fact.dwPitchRight;
     if (right_diff < 0) {
       for (int j=1; j<=aft_wav.fact.dwPitchRight; j++)
-        morph_wav_data[j+aft_wav.fact.dwPitchLeft] = 
+        fade_wav_data[j+aft_wav.fact.dwPitchLeft] = 
           fore_wav_data[j+fore_wav.fact.dwPitchLeft]*filter[i]
           + aft_wav_data[j+aft_wav.fact.dwPitchLeft]*(1-filter[i]);
     } else {
       vector<short> tmp_fore_wav_data(fore_wav_data);
       tmp_fore_wav_data.insert(tmp_fore_wav_data.end(), right_diff, 0);
       for (int j=1; j<=aft_wav.fact.dwPitchRight; j++)
-        morph_wav_data[j+aft_wav.fact.dwPitchLeft] =
+        fade_wav_data[j+aft_wav.fact.dwPitchLeft] =
           tmp_fore_wav_data[j+fore_wav.fact.dwPitchLeft]*filter[i]
           + aft_wav_data[j+aft_wav.fact.dwPitchLeft]*(1-filter[i]);
     }
 
-    base_wavs[base_pos+i].data.setData(normalize(morph_wav_data, target_rms));
+    //base_wavs[base_pos+i].data.setData(base_wavs[rep_start_point].data.getDataVector());
+    //base_wavs[base_pos+i].fact = base_wavs[rep_start_point].fact;
+
+    //base_wavs[base_pos+i].data.setData(normalize(fade_wav_data, target_max, target_min, target_mean));
+    //base_wavs[base_pos+i].data.setData(normalize(fade_wav_data, target_mean, target_var));
+    base_wavs[base_pos+i].data.setData(normalize(fade_wav_data, target_rms));
+    //base_wavs[base_pos+i].data.setData(fade_wav_data);
   }
 
   cout << "----- finish making base wavs -----" << endl << endl;
@@ -223,6 +234,22 @@ double BaseWavsMaker::getRMS(vector<short> wav)
   return sqrt(rms);
 }
 
+double BaseWavsMaker::getMean(vector<short> wav)
+{
+  double mean = 0.0;
+  for (int i=0; i<wav.size(); i++)
+    mean += wav[i] / (double)wav.size();
+  return mean;
+}
+
+double BaseWavsMaker::getVar(vector<short> wav, double mean)
+{
+  double var = 0.0;
+  for (int i=0; i<wav.size(); i++)
+    var += pow(wav[i]-mean, 2) / wav.size();
+  return sqrt(var);
+}
+
 vector<short> BaseWavsMaker::normalize(vector<short> wav, double target_rms)
 {
   double wav_rms = getRMS(wav);
@@ -231,27 +258,46 @@ vector<short> BaseWavsMaker::normalize(vector<short> wav, double target_rms)
   return wav;
 }
 
+vector<short> BaseWavsMaker::normalize(vector<short> wav, double target_mean, double target_var)
+{
+  double wav_mean = getMean(wav);
+  double wav_var = getVar(wav, wav_mean);
+  for (int i=0; i<wav.size(); i++)
+    wav[i] = (wav[i]+(target_mean-wav_mean)) * (target_var/wav_var);
+  return wav;
+}
+
+vector<short> BaseWavsMaker::normalize(vector<short> wav, short target_max, short target_min, double target_mean)
+{
+  double wav_mean = getMean(wav);
+  for (int i=0; i<wav.size(); i++)
+    wav[i] += target_mean - wav_mean;
+
+  short wav_max = *max_element(wav.begin(), wav.end());
+  short wav_min = *min_element(wav.begin(), wav.end());
+  for (int i=0; i<wav.size(); i++)
+    wav[i] *= ((double)target_max-target_min) / (wav_max-wav_min);
+
+  return wav;
+}
+
 vector<double> BaseWavsMaker::getTri(long len)
 {
   vector<double> filter(len, 0);
-
   for (int i=0; i<filter.size(); ++i) {
     double x = (i+1.0) / (filter.size()+1.0);
     filter[i] = 1.0 - 2*fabs(x-0.5);
   }
-
   return filter;
 }
 
 vector<double> BaseWavsMaker::getHann(long len)
 {
   vector<double> filter(len, 0);
-
   for (int i=0; i<filter.size(); ++i) {
     double x = (i+1.0) / (filter.size()+1.0);
     filter[i] = 0.5 - (0.5 * cos(2*M_PI*x));
   }
-
   return filter;
 }
 

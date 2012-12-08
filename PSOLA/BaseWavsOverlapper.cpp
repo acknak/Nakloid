@@ -57,7 +57,7 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
     vector<BaseWav>::iterator it_base_wav = bwc.base_wavs.begin();
     unsigned long dist = *it_pitchmarks - *it_begin_pitchmarks;
     if (dist > fade_last)
-      dist = (dist-fade_start)%(fade_last-fade_start) + fade_start;
+      dist = (fade_last==fade_start)?fade_start:(dist-fade_start)%(fade_last-fade_start)+fade_start;
     while (it_base_wav->fact.dwPosition < dist)
       ++it_base_wav;
 
