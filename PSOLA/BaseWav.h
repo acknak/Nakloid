@@ -9,10 +9,10 @@
 class BaseWavsFormat : public WavFormat {
  public:
   static const unsigned short BaseWavsFormatTag = 0xFFFF;
-  static const short wAdditionalSize = 8;
+  static const short wAdditionalSize = 12;
   unsigned short wLobeSize;
   unsigned long dwRepeatStart;
-  unsigned short wF0;
+  double wF0;
 };
 
 typedef struct {

@@ -59,7 +59,7 @@ BaseWavsContainer BaseWavsFileIO::get(string filename)
     ifs.seekg(2, ios_base::cur);
     ifs.read((char*)&bwc.format.wLobeSize, sizeof(short));
     ifs.read((char*)&bwc.format.dwRepeatStart, sizeof(long));
-    ifs.read((char*)&bwc.format.wF0, sizeof(short));
+    ifs.read((char*)&bwc.format.wF0, sizeof(double));
 
     list<BaseWav> base_wav_list;
     while(!ifs.eof()) {
@@ -115,7 +115,7 @@ bool BaseWavsFileIO::set(string filename, BaseWavsContainer bwc)
   ofs.write((char*)&(wAdditionalSize), sizeof(short));
   ofs.write((char*)&(bwc.format.wLobeSize), sizeof(short));
   ofs.write((char*)&(bwc.format.dwRepeatStart), sizeof(long));
-  ofs.write((char*)&(bwc.format.wF0), sizeof(short));
+  ofs.write((char*)&(bwc.format.wF0), sizeof(double));
 
   // fact chunk & data chunk
   vector<BaseWav> base_wavs = bwc.base_wavs;

@@ -102,6 +102,7 @@ Voice VoiceDB::getVoice(string pron)
         bwc.base_wavs = maker->getBaseWavs();
         bwc.format.wLobeSize = maker->getLobe();
         bwc.format.dwRepeatStart = maker->getRepStartPoint();
+        bwc.format.wF0 = voice_map[pron].frq;
         delete maker;
 
         // output bwc
