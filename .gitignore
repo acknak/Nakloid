@@ -35,3 +35,6 @@ Nakloid
 *.lai
 *.la
 *.a
+
+# Xcode
+*.DS_store

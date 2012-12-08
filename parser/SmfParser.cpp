@@ -105,7 +105,7 @@ bool SmfParser::parse()
 
     // get chunk data
     unsigned char status = 0;
-    for (int j=0; j<datasize; j++) {
+    for (long j=0; j<datasize; j++) {
       // get deltatime
       long deltatime = 0;
       do {

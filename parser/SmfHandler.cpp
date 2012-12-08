@@ -46,6 +46,7 @@ string SmfHandler::midiMsgToString(MidiMsg midi_msg)
   case MIDI_MSG_TUNE_REQ: return "Tune Request";
   case MIDI_MSG_END_EXL: return "End of Exclusive";
   case MIDI_MSG_META: return "Meta Message";
+  default:;
   }
   return "Unkenown Message";
 }
