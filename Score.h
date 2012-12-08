@@ -7,26 +7,41 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 #include "Note.h"
 #include "parser/SmfParser.h"
 #include "parser/SmfHandler.h"
+class Note;
 
 // Reference Object
 class Score : public SmfHandler {
  public:
   Score();
-  Score(std::string input, short track);
+  explicit Score(std::string input_ust);
+  Score(std::string singer, std::string input_smf, short track, std::string path_lyric, std::string path_song);
   virtual ~Score();
 
-  void load(std::string input);
   bool isScoreLoaded();
+  void loadSmf(std::string input, unsigned short track, std::string path_string);
+  void loadUst(std::string input);
+  void reloadPitches();
   void debug(std::string output);
 
+  // Note mediator
+  void noteParamChanged(Note *note);
+
   // accessor
-  void setTrack(short track);
+  std::string getSinger();
+  void setSinger(std::string singer);
+  std::string getSongPath();
+  void setSongPath(std::string path_song);
   std::list<Note> getNotesList();
   std::vector<Note> getNotesVector();
-  void setNote(std::list<Note> notes);
+  void setNotes(std::list<Note> notes);
+  void setNotes(std::vector<Note> notes);
+  std::vector<double> getPitches();
+  void setPitches(std::vector<double> pitches);
 
   // extension method
   void smfInfo(short, short);
@@ -39,15 +54,17 @@ class Score : public SmfHandler {
   Score(const Score& other);
   Score& operator=(const Score& other);
 
-  double tickToMSec(unsigned long tick);
-
+  std::string singer;
+  std::string path_song;
   unsigned short timebase;
   unsigned long tempo;
   std::list<Note> notes;
+  std::vector<double> pitches;
   unsigned short track;
   bool is_parse;
   unsigned long time_parse;
   Note *note_parse;
+  unsigned long id_parse;
 };
 
 #endif

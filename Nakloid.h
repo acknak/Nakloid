@@ -7,11 +7,11 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
-#include <boost/algorithm/string.hpp>
+#include <algorithm>
 #include "Score.h"
 #include "VoiceDB.h"
+#include "arranger/NoteArranger.h"
 #include "arranger/PitchArranger.h"
-#include "arranger/DataArranger.h"
 #include "parser/WavFormat.h"
 #include "parser/WavData.h"
 #include "parser/WavParser.h"
@@ -22,23 +22,18 @@ class Nakloid {
  public:
   Nakloid();
   explicit Nakloid(std::string path_ust);
-  Nakloid(std::string singer, std::string path_score, short track, std::string path_lyric);
+  Nakloid(std::string singer, std::string path_smf, short track, std::string path_lyric, std::string path_song);
   virtual ~Nakloid();
 
   void setDefaultFormat();
-  bool setScorePath(std::string path_ust);
-  bool setScorePath(std::string path_score, short track, std::string path_lyric);
+  bool setScore(std::string path_ust);
+  bool setScore(std::string singer, std::string path_smf, short track, std::string path_lyric, std::string path_song);
   bool vocalization();
-  bool vocalization(std::string path_song);
 
   // accessor
+  Score* getScore();
   WavFormat getFormat();
   void setFormat(WavFormat format);
-  std::vector<Note> getNotes();
-  void setSongPath(std::string path_song);
-  std::string getSongPath();
-  void setSinger(std::string singer);
-  std::string getSinger();
   void setMargin(long margin);
   long getMargin();
 
@@ -46,13 +41,16 @@ class Nakloid {
   Nakloid(const Nakloid& other);
   Nakloid& operator=(const Nakloid& other);
 
-  double ms2pos(long ms);
-
+  Score *score;
   VoiceDB *voice_db;
   WavFormat format;
-  std::vector<Note> notes;
-  std::string path_song;
-  long margin;
+  unsigned long margin;
 };
+
+typedef struct {
+  unsigned long pos;
+  unsigned long ms_start;
+  unsigned long ms_end;
+} pitch_mark;
 
 #endif

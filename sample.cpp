@@ -5,11 +5,11 @@ int main()
   Nakloid *nakloid = new Nakloid("./input/input.ust");
   nakloid->vocalization();
   delete nakloid;
-  return 0;
 
-//Nakloid *nakloid = new Nakloid("voiceDB", "./input/score.mid", 1, "./input/lyric.txt");
+//Nakloid *nakloid = new Nakloid("voiceDB", "./input/score.mid", 1, "./input/lyric.txt", "./output/output.wav");
 //nakloid->setMargin(1000);
-//nakloid->vocalization("./output/output.wav");
+//nakloid->vocalization();
 //delete nakloid;
-//return 0;
+
+return 0;
 }

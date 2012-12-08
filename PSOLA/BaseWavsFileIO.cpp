@@ -59,7 +59,7 @@ BaseWavsContainer BaseWavsFileIO::get(string filename)
     ifs.seekg(2, ios_base::cur);
     ifs.read((char*)&bwc.format.wLobeSize, sizeof(short));
     ifs.read((char*)&bwc.format.dwRepeatStart, sizeof(long));
-    ifs.read((char*)&bwc.format.wF0, sizeof(short));
+    ifs.read((char*)&bwc.format.wF0, sizeof(double));
 
     list<BaseWav> base_wav_list;
     while(!ifs.eof()) {
@@ -99,7 +99,7 @@ BaseWavsContainer BaseWavsFileIO::get(string filename)
       base_wav_list.push_back(tmp_base_wav);
     }
 
-    bwc.data.assign(base_wav_list.begin(), base_wav_list.end());
+    bwc.base_wavs.assign(base_wav_list.begin(), base_wav_list.end());
   }
 
   return bwc;
@@ -115,11 +115,11 @@ bool BaseWavsFileIO::set(string filename, BaseWavsContainer bwc)
   ofs.write((char*)&(wAdditionalSize), sizeof(short));
   ofs.write((char*)&(bwc.format.wLobeSize), sizeof(short));
   ofs.write((char*)&(bwc.format.dwRepeatStart), sizeof(long));
-  ofs.write((char*)&(bwc.format.wF0), sizeof(short));
+  ofs.write((char*)&(bwc.format.wF0), sizeof(double));
 
   // fact chunk & data chunk
-  vector<BaseWav> base_wavs = bwc.data;
-  for(vector<BaseWav>::iterator it=bwc.data.begin(); it!=bwc.data.end(); ++it) {
+  vector<BaseWav> base_wavs = bwc.base_wavs;
+  for(vector<BaseWav>::iterator it=bwc.base_wavs.begin(); it!=bwc.base_wavs.end(); ++it) {
     long factChunkSize = BaseWavFact::chunkSize;
     long dataChunkSize = (*it).data.getSize();
     ofs.write((char*)WavFormat::fact, sizeof(char)*4);

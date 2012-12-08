@@ -44,8 +44,8 @@ bool VoiceDB::initVoiceMap(string filename)
     voice_map[v2[0]].offs = (((tmp=boost::lexical_cast<short>(v2[1]))>0))?tmp:0;
     voice_map[v2[0]].cons = (((tmp=boost::lexical_cast<short>(v2[2]))>0))?tmp:0;
     voice_map[v2[0]].blnk = (((tmp=boost::lexical_cast<short>(v2[3]))>0))?tmp:0;
-    voice_map[v2[0]].prec = (((tmp=boost::lexical_cast<short>(v2[4]))>0))?tmp:0;
-    voice_map[v2[0]].ovrl = (((tmp=boost::lexical_cast<short>(v2[5]))>0))?tmp:0;
+    voice_map[v2[0]].prec = boost::lexical_cast<short>(v2[4]);
+    voice_map[v2[0]].ovrl = boost::lexical_cast<short>(v2[5]);
     voice_map[v2[0]].is_normalize = (v2.size()>6)?((tmp=boost::lexical_cast<short>(v2[6]))>0):true;
     if (v1[0].find(wav_ext) == string::npos)
       voice_map[v2[0]].frq = 260.0;
@@ -63,7 +63,7 @@ Voice VoiceDB::getVoice(string pron)
   if ((voice_map.empty()&&!initVoiceMap()) || voice_map.find(pron)==voice_map.end())
     return getNullVoice();
 
-  if (voice_map[pron].bwc.data.empty()) {
+  if (voice_map[pron].bwc.base_wavs.empty()) {
     Voice tmp_voice = voice_map[pron];
     BaseWavsContainer bwc;
     BaseWavsFileIO *bwc_io = new BaseWavsFileIO();
@@ -99,9 +99,10 @@ Voice VoiceDB::getVoice(string pron)
         maker->setRepStart(voice_map[pron].cons, fs);
         maker->makeBaseWavs();
 
-        bwc.data = maker->getBaseWavs();
+        bwc.base_wavs = maker->getBaseWavs();
         bwc.format.wLobeSize = maker->getLobe();
         bwc.format.dwRepeatStart = maker->getRepStartPoint();
+        bwc.format.wF0 = voice_map[pron].frq;
         delete maker;
 
         // output bwc

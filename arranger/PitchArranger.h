@@ -1,26 +1,30 @@
 #ifndef PitchArranger_h
 #define PitchArranger_h
 
-#include <vector>
 #include <cmath>
+#include <vector>
+#include "Arranger.h"
+#include "../Score.h"
+#include "../parser/WavFormat.h"
 
-class PitchArranger {
+class PitchArranger : Arranger {
  public:
-  const static short overshoot_length;
+  const static unsigned short overshoot_length;
   const static double overshoot_height;
-  const static short preparation_length;
+  const static unsigned short preparation_length;
   const static double preparation_height;
-  const static short vibrato_offset;
-  const static short vibrato_width;
+  const static unsigned short vibrato_offset;
+  const static unsigned short vibrato_width;
   const static double vibrato_depth;
 
-  static void vibrato(std::vector<double> *guide_pitches);
-  static void overshoot(std::vector<double> *guide_pitches, double pitch_from, double pitch_to);
-  static void preparation(std::vector<double> *guide_pitches, double pitch_from, double pitch_to);
+  static void arrange(Score *score);
+
+ private:
+  static void vibrato(std::vector<double>::iterator it_pitches_begin, std::vector<double>::iterator it_pitches_end);
+  static void overshoot(std::vector<double>::iterator it_pitches_begin, std::vector<double>::iterator it_pitches_end, double target_pitch);
+  static void preparation(std::vector<double>::iterator it_pitches_begin, std::vector<double>::iterator it_pitches_end, double target_pitch);
+  //static void overshoot(std::vector<double> *guide_pitches, double pitch_from, double pitch_to);
+  //static void preparation(std::vector<double> *guide_pitches, double pitch_from, double pitch_to);
 };
 
-#endif
-
-#ifndef M_PI
-#define M_PI 3.1415926535897932384626433832795
 #endif

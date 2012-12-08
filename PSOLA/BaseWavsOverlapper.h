@@ -7,48 +7,39 @@
 #include <limits>
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <algorithm>
 
 #include "BaseWav.h"
+#include "../arranger/Arranger.h"
 #include "../parser/WavFormat.h"
 #include "../parser/WavData.h"
 #include "../parser/WavParser.h"
 
 // Refference Object
-class BaseWavsOverlapper {
+class BaseWavsOverlapper : Arranger {
  public:
-  BaseWavsOverlapper();
+  BaseWavsOverlapper(WavFormat format, std::list<double> pitches);
+  BaseWavsOverlapper(WavFormat format, std::vector<double> pitches);
   virtual ~BaseWavsOverlapper();
 
-  bool overlapping();
-  void debugTxt(std::string output);
-  void debugWav(std::string output);
+  bool overlapping(unsigned long ms_start, unsigned long ms_end, BaseWavsContainer bwc, std::vector<unsigned char> velocities);
+  void outputWav(std::string output);
+  void outputWav(std::string output, unsigned long ms_margin);
 
   // accessor
-  void setPitchMarks(std::list<long> pitch_marks);
-  void setPitchMarks(std::vector<long> pitch_marks);
-  std::list<long> getPitchMarkList();
-  std::vector<long> getPitchMarkVector();
-  void setBaseWavs(std::vector<BaseWav> base_wavs);
-  std::vector<BaseWav> getBaseWavs();
-  std::list<short> getOutputWavList();
-  std::vector<short> getOutputWavVector();
-  void setRepStart(long rep_start);
-  long getRepStart();
-  void setVelocity(unsigned short velocity);
-  void setVelocity(double velocity);
-  double getVelocity();
+  WavFormat getWavFormat();
+  std::list<unsigned long> getPitchmarksList();
+  std::vector<unsigned long> getPitchmarksVector();
 
  private:
   BaseWavsOverlapper(const BaseWavsOverlapper& other);
   BaseWavsOverlapper& operator=(const BaseWavsOverlapper& other);
 
+  std::vector<unsigned long>::iterator pos2it(unsigned long pos);
+
+  WavFormat format;
+  std::vector<unsigned long> pitchmarks;
   std::vector<short> output_wav;
-  std::vector<long> pitch_marks;
-  std::vector<BaseWav> base_wavs;
-  long rep_start;
-  double velocity;
 };
 
 #endif
