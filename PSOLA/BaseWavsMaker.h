@@ -37,9 +37,10 @@ class BaseWavsMaker {
   BaseWavsMaker(const BaseWavsMaker& other);
   BaseWavsMaker& operator=(const BaseWavsMaker& other);
 
+  BaseWav makeBaseWav(std::vector<long> pitches, int point);
   std::vector<short> normalize(std::vector<short>wav, double target_rms);
   std::vector<short> normalize(std::vector<short>wav, double target_mean, double target_var);
-  std::vector<short> normalize(std::vector<short>wav, short target_max, short target_min, double target_mean);
+  std::vector<short> normalize(std::vector<short>wav, short target_max, short target_min);
   double getRMS(std::vector<short> wav);
   double getMean(std::vector<short> wav);
   double getVar(std::vector<short> wav, double mean);
