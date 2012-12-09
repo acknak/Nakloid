@@ -81,12 +81,9 @@ Voice VoiceDB::getVoice(string pron)
         vector<short> wav_data = (*(wav_parser.getDataChunks().begin())).getDataVector();
         unsigned long fs = wav_parser.getFormat().dwSamplesPerSec;
 
-        wav_data.erase(wav_data.begin(), wav_data.begin()+(voice_map[pron].offs*fs/1000));
-        wav_data.erase(wav_data.end()-(voice_map[pron].blnk*fs/1000), wav_data.end());
-
         // make input pitch mark
         PitchMarker *marker = new PitchMarker(voice_map[pron].frq, fs);
-        marker->setConsPos(voice_map[pron].cons, fs);
+        marker->setConsPos(voice_map[pron].offs+voice_map[pron].cons, fs);
         marker->mark(wav_data);
         vector<long> input_pitch_marks = marker->getMarkVector();
         delete marker;
@@ -96,6 +93,7 @@ Voice VoiceDB::getVoice(string pron)
         maker->setPitchMarks(input_pitch_marks);
         maker->setVoice(wav_data);
         maker->setLobe(base_wavs_lobe);
+        maker->setRange(voice_map[pron].offs, voice_map[pron].blnk, fs);
         maker->setRepStart(voice_map[pron].cons, fs);
         maker->makeBaseWavs();
 

@@ -31,13 +31,14 @@ class BaseWavsMaker {
   unsigned char getLobe();
   void setLobe(unsigned char lobe);
   long getRepStartPoint();
-  void setRepStart(long rep_start_ms, unsigned long fs);
+  void setRepStart(long ms_rep_start, unsigned long fs);
+  void setRange(unsigned short ms_offs, unsigned short ms_blnk, unsigned long fs);
 
  private:
   BaseWavsMaker(const BaseWavsMaker& other);
   BaseWavsMaker& operator=(const BaseWavsMaker& other);
 
-  BaseWav makeBaseWav(std::vector<long> pitches, int point);
+  BaseWav makeBaseWav(std::vector<long> pitches, int sub);
   std::vector<short> normalize(std::vector<short>wav, double target_rms);
   std::vector<short> normalize(std::vector<short>wav, double target_mean, double target_var);
   std::vector<short> normalize(std::vector<short>wav, short target_max, short target_min);
@@ -53,10 +54,13 @@ class BaseWavsMaker {
   std::vector<BaseWav> base_wavs;
   std::vector<short> voice;
   std::vector<long> pitch_marks;
+  unsigned short pos_offs;
+  unsigned short pos_blnk;
+  long pos_rep_start;
   unsigned char lobe;
-  long rep_start;
-  long rep_start_point;
-  long rep_len_point;
+  long sub_start;
+  long sub_end;
+  long sub_rep_start;
 };
 
 #endif
