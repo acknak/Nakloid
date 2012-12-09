@@ -66,8 +66,8 @@ bool Note::operator==(const Note& other) const
   is_eq &= (self.base_velocity == other.self.base_velocity);
   is_eq &= (self.velocities == other.self.velocities);
   is_eq &= (self.lack == other.self.lack);
-  is_eq &= (&self.prec == &other.self.prec);
-  is_eq &= (&self.ovrl == &other.self.ovrl);
+  is_eq &= (this->getPrec() == other.getPrec());
+  is_eq &= (this->getOvrl() == other.getOvrl());
   return is_eq;
 }
 
@@ -83,7 +83,7 @@ unsigned long Note::getStart()
 
 unsigned long Note::getPronStart()
 {
-  unsigned long tmp = self.start - (getPrec()-(getOvrl()<0)?getOvrl():0);
+  unsigned long tmp = self.start - (getPrec()-((getOvrl()<0)?getOvrl():0));
   return tmp>0?tmp:0;
 }
 
@@ -171,12 +171,22 @@ void Note::setVelocities(vector<unsigned char> velocities)
     cerr << "[Note::setVelocities()] Velocity length differ from Note on time" << endl;
 }
 
+unsigned short Note::getLack()
+{
+  return self.lack;
+}
+
+void Note::setLack(unsigned short lack)
+{
+  self.lack = lack;
+}
+
 bool Note::isPrec()
 {
   return self.prec!=0;
 }
 
-short Note::getPrec()
+short Note::getPrec() const
 {
   return (self.prec==0)?0:*self.prec;
 }
@@ -192,7 +202,7 @@ bool Note::isOvrl()
   return self.ovrl!=0;
 }
 
-short Note::getOvrl()
+short Note::getOvrl() const
 {
   return (self.ovrl==0)?0:*self.ovrl;
 }
@@ -201,16 +211,6 @@ void Note::setOvrl(short ovrl)
 {
   self.ovrl = new short (ovrl);
   score->noteParamChanged(this);
-}
-
-unsigned short Note::getLack()
-{
-  return self.lack;
-}
-
-void Note::setLack(unsigned short lack)
-{
-  self.lack = lack;
 }
 
 void Note::initializeNoteFrame()

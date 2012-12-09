@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include "Note.h"
@@ -31,15 +32,14 @@ class Score : public SmfHandler {
   // Note mediator
   void noteParamChanged(Note *note);
 
+  // member
+  std::list<Note> notes;
+
   // accessor
   std::string getSinger();
   void setSinger(std::string singer);
   std::string getSongPath();
   void setSongPath(std::string path_song);
-  std::list<Note> getNotesList();
-  std::vector<Note> getNotesVector();
-  void setNotes(std::list<Note> notes);
-  void setNotes(std::vector<Note> notes);
   std::vector<double> getPitches();
   void setPitches(std::vector<double> pitches);
 
@@ -58,7 +58,6 @@ class Score : public SmfHandler {
   std::string path_song;
   unsigned short timebase;
   unsigned long tempo;
-  std::list<Note> notes;
   std::vector<double> pitches;
   unsigned short track;
   bool is_parse;

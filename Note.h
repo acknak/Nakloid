@@ -53,10 +53,10 @@ class Note {
   unsigned short getLack();
   void setLack(unsigned short lack);
   bool isPrec();
-  short getPrec();
+  short getPrec() const;
   void setPrec(short prec);
   bool isOvrl();
-  short getOvrl();
+  short getOvrl() const;
   void setOvrl(short ovrl);
 
  private:

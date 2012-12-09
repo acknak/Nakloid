@@ -12,15 +12,14 @@ const double PitchArranger::vibrato_depth = 3; //hz
 
 void PitchArranger::arrange(Score *score)
 {
-  vector<Note> notes = score->getNotesVector();
   vector<double> pitches = score->getPitches();
 
-  for (vector<Note>::iterator it_notes=notes.begin();it_notes!=notes.end();++it_notes) {
+  for (list<Note>::iterator it_notes=score->notes.begin();it_notes!=score->notes.end();++it_notes) {
     vibrato(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd());
-    if (it_notes!=notes.begin() && it_notes->getStart()==(it_notes-1)->getEnd())
-      overshoot(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd(), *(pitches.begin()+(it_notes-1)->getEnd()-1));
-    if (it_notes!=notes.end()-1 && it_notes->getEnd()==(it_notes+1)->getStart())
-      preparation(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd(), *(pitches.begin()+(it_notes+1)->getStart()));
+    if (it_notes!=score->notes.begin() && it_notes->getStart()==boost::prior(it_notes)->getEnd())
+      overshoot(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd(), *(pitches.begin()+boost::prior(it_notes)->getEnd()-1));
+    if (it_notes!=--score->notes.end() && it_notes->getEnd()==boost::next(it_notes)->getStart())
+      preparation(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd(), *(pitches.begin()+boost::next(it_notes)->getStart()));
   }
 
   score->setPitches(pitches);
@@ -68,38 +67,3 @@ void PitchArranger::preparation(vector<double>::iterator it_pitches_begin, vecto
     for (int i=0; i<rit_pitches_end-rit_pitches_begin; i++)
       *(rit_pitches_begin+i) += -diff + (diff/(rit_pitches_end-rit_pitches_begin)*i);
 }
-/*
-void PitchArranger::overshoot(vector<double> *guide_pitches, double pitch_from, double pitch_to)
-{
-  double diff = (pitch_to-pitch_from) / 2;
-  if (guide_pitches->size()/2.0 > overshoot_length)
-    for (int i=0; i<overshoot_length/2; i++) {
-      (*guide_pitches)[i] +=
-        -diff + ((diff+(overshoot_height*((diff>0)?1:-1))) / (overshoot_length/2) * i);
-      (*guide_pitches)[i+(overshoot_length/2)] +=
-        (overshoot_height*((diff>0)?1:-1)) + ((overshoot_height*((diff>0)?-1:1))/(overshoot_length/2) * i);
-    }
-  else
-    for (int i=0; i<guide_pitches->size()/2.0; i++)
-      (*guide_pitches)[i] += -diff + (diff/(guide_pitches->size()/2)*i);
-}
-
-void PitchArranger::preparation(vector<double> *guide_pitches, double pitch_from, double pitch_to)
-{
-  if (guide_pitches->size() < vibrato_offset)
-    return;
-
-  //double diff = (pitch_from-pitch_to) / 2;
-  double diff = pitch_from - pitch_to;
-  if (guide_pitches->size()/2.0 > preparation_length){
-    for (int i=0; i<preparation_length/2; i++) {
-      (*guide_pitches)[guide_pitches->size()-i-1] +=
-        -diff + ((diff+(preparation_height*((diff>0)?1:-1)))/(preparation_length/2)*i);
-      (*guide_pitches)[guide_pitches->size()-(i+(preparation_length/2))-1] +=
-        (preparation_height*((diff>0)?1:-1)) + ((preparation_height*((diff>0)?-1:1))/(preparation_length/2)*i);
-    }
-  } else
-    for (int i=0; i<guide_pitches->size(); i++)
-      (*guide_pitches)[guide_pitches->size()-i-1] += diff + (-diff/(guide_pitches->size()/2)*i);
-}
-*/

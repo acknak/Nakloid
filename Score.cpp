@@ -178,8 +178,9 @@ void Score::noteParamChanged(Note *note)
 {
   if (notes.size() == 0)
     return;
-  if (note->isPrec() || note->isOvrl())
-    (--find(notes.begin(), notes.end(), *note))->setLack((note->getPrec()-note->getOvrl()));
+  list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
+  if ((note->isPrec() || note->isOvrl()) && it_tmp_note!=notes.begin())
+    (boost::prior(it_tmp_note))->setLack((note->getPrec()-note->getOvrl()));
   note->reloadVelocities();
 }
 
@@ -205,31 +206,6 @@ string Score::getSongPath()
 void Score::setSongPath(string path_song)
 {
   this->path_song = path_song;
-}
-
-list<Note> Score::getNotesList()
-{
-  return notes;
-}
-
-vector<Note> Score::getNotesVector()
-{
-  vector<Note> v_notes(notes.begin(), notes.end());
-  return v_notes;
-}
-
-void Score::setNotes(list<Note> notes)
-{
-  this->notes.clear();
-  this->notes = notes;
-  reloadPitches();
-}
-
-void Score::setNotes(vector<Note> notes)
-{
-  this->notes.clear();
-  this->notes.assign(notes.begin(), notes.end());
-  reloadPitches();
 }
 
 vector<double> Score::getPitches()

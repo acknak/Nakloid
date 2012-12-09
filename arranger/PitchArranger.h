@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <vector>
+#include <boost/utility.hpp>
 #include "Arranger.h"
 #include "../Score.h"
 #include "../parser/WavFormat.h"
@@ -23,8 +24,6 @@ class PitchArranger : Arranger {
   static void vibrato(std::vector<double>::iterator it_pitches_begin, std::vector<double>::iterator it_pitches_end);
   static void overshoot(std::vector<double>::iterator it_pitches_begin, std::vector<double>::iterator it_pitches_end, double target_pitch);
   static void preparation(std::vector<double>::iterator it_pitches_begin, std::vector<double>::iterator it_pitches_end, double target_pitch);
-  //static void overshoot(std::vector<double> *guide_pitches, double pitch_from, double pitch_to);
-  //static void preparation(std::vector<double> *guide_pitches, double pitch_from, double pitch_to);
 };
 
 #endif

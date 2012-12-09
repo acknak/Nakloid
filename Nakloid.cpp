@@ -91,26 +91,25 @@ bool Nakloid::vocalization()
   }
 
   cout << "----- start vocalization -----" << endl << endl;
-  list<Note> notes;
 
   // set note params from voiceDB
-  notes = score->getNotesList();
   cout << endl << "loading voiceDB..." << endl << endl;
   double counter=0, percent=0;
-  for (list<Note>::iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
-    if (it_notes == notes.begin()) {
-      unsigned short ovrl = it_notes->isOvrl()?it_notes->getOvrl():voice_db->getVoice(it_notes->getPron()).ovrl;
-      if (margin < max<unsigned long>(ovrl, it_notes->getStart()))
-        margin = max<unsigned long>(ovrl, it_notes->getStart());
+  for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
+    if (it_notes == score->notes.begin()) {
+      short ovrl = it_notes->isOvrl()?it_notes->getOvrl():voice_db->getVoice(it_notes->getPron()).ovrl;
+      short prec = it_notes->isPrec()?it_notes->getPrec():voice_db->getVoice(it_notes->getPron()).prec;
+      short tmp_margin = prec - ((ovrl<0)?ovrl:0);
+      if (max<unsigned long>(margin, tmp_margin) > it_notes->getStart())
+        margin = max<unsigned long>(margin, tmp_margin);
     }
     if (!it_notes->isOvrl())
       it_notes->setOvrl(voice_db->getVoice(it_notes->getPron()).ovrl);
     if (!it_notes->isPrec())
       it_notes->setPrec(voice_db->getVoice(it_notes->getPron()).prec);
-    if (++counter/notes.size()>percent+0.1 && (percent=floor(counter/notes.size()*10)/10.0)<1.0)
+    if (++counter/score->notes.size()>percent+0.1 && (percent=floor(counter/score->notes.size()*10)/10.0)<1.0)
       cout << percent*100 << "%..." << endl;
   }
-  score->setNotes(notes);
   cout << endl << "load finished" << endl << endl << endl;
 
   // arrange note params
@@ -120,9 +119,8 @@ bool Nakloid::vocalization()
   cout << endl << "arrange finished" << endl << endl << endl;
 
   // Singing Voice Synthesis
-  notes = score->getNotesList();
   BaseWavsOverlapper *overlapper = new BaseWavsOverlapper(format, score->getPitches());
-  for (list<Note>::iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
+  for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
     cout << "pron: " << it_notes->getPron() << ", "
       << "pron start: " << it_notes->getPronStart() << ", "
       << "pron end: " << it_notes->getPronEnd() << endl;
