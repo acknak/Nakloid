@@ -4,6 +4,7 @@
 #include <list>
 #include <vector>
 #include <algorithm>
+#include <boost/utility.hpp>
 #include "Arranger.h"
 #include "../Note.h"
 #include "../Score.h"
