@@ -179,8 +179,8 @@ void Score::noteParamChanged(Note *note)
   if (notes.size() == 0)
     return;
   list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
-  if ((note->isPrec() || note->isOvrl()) && it_tmp_note!=notes.begin())
-    (boost::prior(it_tmp_note))->setLack((note->getPrec()-note->getOvrl()));
+  if ((note->getPrec()>note->getOvrl()) && it_tmp_note!=notes.begin())
+    (boost::prior(it_tmp_note))->setLack(note->getPrec()-note->getOvrl());
   note->reloadVelocities();
 }
 
