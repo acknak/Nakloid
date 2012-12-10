@@ -2,10 +2,10 @@
 
 using namespace std;
 
-const unsigned short PitchArranger::overshoot_length = 100; //ms
-const double PitchArranger::overshoot_height = 5; //hz
-const unsigned short PitchArranger::preparation_length = 100; //ms
-const double PitchArranger::preparation_height = 5; //hz
+const unsigned short PitchArranger::overshoot_length = 50; //ms
+const double PitchArranger::overshoot_height = 3; //hz
+const unsigned short PitchArranger::preparation_length = 50; //ms
+const double PitchArranger::preparation_height = 3; //hz
 const unsigned short PitchArranger::vibrato_offset = 400; //ms
 const unsigned short PitchArranger::vibrato_width = 200; //ms
 const double PitchArranger::vibrato_depth = 3; //hz
