@@ -60,7 +60,9 @@ void BaseWavsMaker::setLobe(unsigned char lobe)
 
 long BaseWavsMaker::getRepStartPoint()
 {
-  return this->sub_rep_start;
+  long sub_rep_len = base_wavs.size() - 1 - (sub_rep_start-sub_start);
+  long base_pos = base_wavs.size() - 1 - (sub_rep_len/2);
+  return base_pos;
 }
 
 void BaseWavsMaker::setRepStart(long ms_rep_start, unsigned long fs)
