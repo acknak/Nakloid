@@ -114,7 +114,7 @@ bool PitchMarker::mark(vector<short> input)
     mark_list.push_back(mark_next+win_size-input.begin());
 
   short dist = *(++mark_list.begin())-mark_list.front();
-  while (mark_prev-input.begin() > max(dist,win_size)*1.5) {
+  while (mark_prev-input.begin()>max(dist,win_size)*1.5 && dist>0) {
     int tmp = mark_list.size();
     vector<double> xcorr_win = xcorr(mark_prev+dist, mark_prev, -win_size);
     dist = max_element(xcorr_win.begin(),xcorr_win.end())-xcorr_win.begin();
