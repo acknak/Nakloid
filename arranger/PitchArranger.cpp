@@ -16,6 +16,7 @@ void PitchArranger::arrange(Score *score)
 
   for (list<Note>::iterator it_notes=score->notes.begin();it_notes!=score->notes.end();++it_notes) {
     vibrato(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd());
+    interpolation(pitches.begin(), it_notes->getPronStart(), it_notes->getPronEnd(), it_notes->getBasePitchHz());
     if (it_notes!=score->notes.begin() && it_notes->getStart()==boost::prior(it_notes)->getEnd())
       overshoot(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd(), *(pitches.begin()+boost::prior(it_notes)->getEnd()-1));
     if (it_notes!=--score->notes.end() && it_notes->getEnd()==boost::next(it_notes)->getStart())
@@ -66,4 +67,11 @@ void PitchArranger::preparation(vector<double>::iterator it_pitches_begin, vecto
   else
     for (int i=0; i<rit_pitches_end-rit_pitches_begin; i++)
       *(rit_pitches_begin+i) += -diff + (diff/(rit_pitches_end-rit_pitches_begin)*i);
+}
+
+void PitchArranger::interpolation(vector<double>::iterator it_pitches, unsigned long ms_pron_start, unsigned long ms_pron_end, double target_pitch)
+{
+  for (int i=0; i<ms_pron_end-ms_pron_start; i++)
+    if (*(it_pitches+ms_pron_start) == 0)
+      *(it_pitches+ms_pron_start) = target_pitch;
 }

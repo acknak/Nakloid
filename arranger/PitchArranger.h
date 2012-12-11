@@ -24,6 +24,7 @@ class PitchArranger : Arranger {
   static void vibrato(std::vector<double>::iterator it_pitches_begin, std::vector<double>::iterator it_pitches_end);
   static void overshoot(std::vector<double>::iterator it_pitches_begin, std::vector<double>::iterator it_pitches_end, double target_pitch);
   static void preparation(std::vector<double>::iterator it_pitches_begin, std::vector<double>::iterator it_pitches_end, double target_pitch);
+  static void interpolation(std::vector<double>::iterator it_pitches, unsigned long ms_pron_start, unsigned long ms_pron_end, double target_pitch);
 };
 
 #endif
