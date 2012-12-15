@@ -1,6 +1,7 @@
 #include "Utilities.h"
 
 using namespace std;
+using namespace nak;
 
 namespace nak {
   // Nakloid
@@ -46,69 +47,55 @@ void nak::parse(string path_ini)
   boost::property_tree::ptree ptree;
   try {
   	read_ini(path_ini, ptree);
-  } catch (...) {
+  } catch (boost::property_tree::ini_parser_error &e) {
     cerr << "[nak::parse] can't find Nakloid.ini" << endl;
     return;
   }
 
-  try {
-    string tmp = ptree.get<string>("Nakloid.score_mode");
-    if (tmp == "ust")
-      score_mode = score_mode_ust;
-    else if (tmp == "smf")
-      score_mode = score_mode_smf;
-    else if (tmp == "nak")
-      score_mode = score_mode_nak;
-    else
-      throw;
-  } catch (...) {
+  string tmp = ptree.get<string>("Nakloid.score_mode", "ust");
+  if (tmp == "ust")
+    score_mode = score_mode_ust;
+  else if (tmp == "smf")
+    score_mode = score_mode_smf;
+  else if (tmp == "nak")
+    score_mode = score_mode_nak;
+  else {
     cerr << "[nak::parse] can't recognize score_mode" << endl;
     return;
   }
 
   switch (score_mode) {
   case score_mode_ust:
-    ptree2var<string>(&path_ust, ptree, "Nakloid.path_ust");
+    path_ust = ptree.get<string>("Nakloid.path_ust", path_ust);
     break;
   case score_mode_smf:
-    ptree2var<string>(&path_smf, ptree, "Nakloid.path_smf");
-    ptree2var<short>(&track, ptree, "Nakloid.track");
-    ptree2var<string>(&path_lyric, ptree, "Nakloid.path_lyric");
+    path_smf = ptree.get<string>("Nakloid.path_smf", path_smf);
+    track = ptree.get<short>("Nakloid.track", track);
+    path_lyric = ptree.get<string>("Nakloid.path_lyric", path_lyric);
     break;
   case score_mode_nak:
     break;
   }
-  ptree2var<string>(&singer, ptree, "Nakloid.singer");
-  ptree2var<string>(&path_song, ptree, "Nakloid.path_song");
-  ptree2var<unsigned long>(&margin, ptree, "Nakloid.margin");
-  ptree2var<bool>(&cache, ptree, "Nakloid.cache");
-  ptree2var<unsigned short>(&pitch_margin, ptree, "PitchMarker.pitch_margin");
-  ptree2var<unsigned short>(&ms_front_edge, ptree, "NoteArranger.ms_front_edge");
-  ptree2var<unsigned short>(&ms_back_edge, ptree, "NoteArranger.ms_back_edge");
-  ptree2var<bool>(&sharpen_front, ptree, "NoteArranger.sharpen_front");
-  ptree2var<bool>(&sharpen_back, ptree, "NoteArranger.sharpen_back");
-  ptree2var<unsigned short>(&ms_overshoot, ptree, "PitchArranger.ms_overshoot");
-  ptree2var<double>(&pitch_overshoot, ptree, "PitchArranger.pitch_overshoot");
-  ptree2var<unsigned short>(&ms_preparation, ptree, "PitchArranger.ms_preparation");
-  ptree2var<double>(&pitch_preparation, ptree, "PitchArranger.pitch_preparation");
-  ptree2var<unsigned short>(&ms_vibrato_offset, ptree, "PitchArranger.ms_vibrato_offset");
-  ptree2var<unsigned short>(&ms_vibrato_width, ptree, "PitchArranger.ms_vibrato_width");
-  ptree2var<double>(&pitch_vibrato, ptree, "PitchArranger.pitch_vibrato");
-  ptree2var<bool>(&vibrato, ptree, "PitchArranger.vibrato");
-  ptree2var<bool>(&overshoot, ptree, "PitchArranger.overshoot");
-  ptree2var<bool>(&preparation, ptree, "PitchArranger.preparation");
-  ptree2var<bool>(&interpolation, ptree, "PitchArranger.interpolation");
-}
-
-template <class T> void nak::ptree2var(T *var, boost::property_tree::ptree ptree, string path)
-{
-    cout << path << endl;
-  try {
-    *var = ptree.get<T>(path);
-  } catch (...) {
-    cerr << "[nak::ptree2var] can't find "+path << endl;
-  }
-  return;
+  singer = ptree.get<string>("Nakloid.singer", singer);
+  path_song = ptree.get<string>("Nakloid.path_song", path_song);
+  margin = ptree.get<unsigned long>("Nakloid.margin", margin);
+  cache = ptree.get<bool>("Nakloid.cache", cache);
+  pitch_margin = ptree.get<unsigned short>("PitchMarker.pitch_margin", pitch_margin);
+  ms_front_edge = ptree.get<unsigned short>("NoteArranger.ms_front_edge", ms_front_edge);
+  ms_back_edge = ptree.get<unsigned short>("NoteArranger.ms_back_edge", ms_back_edge);
+  sharpen_front = ptree.get<bool>("NoteArranger.sharpen_front", sharpen_front);
+  sharpen_back = ptree.get<bool>("NoteArranger.sharpen_back", sharpen_back);
+  ms_overshoot = ptree.get<unsigned short>("PitchArranger.ms_overshoot", ms_overshoot);
+  pitch_overshoot = ptree.get<double>("PitchArranger.pitch_overshoot", pitch_overshoot);
+  ms_preparation = ptree.get<unsigned short>("PitchArranger.ms_preparation", ms_preparation);
+  pitch_preparation = ptree.get<double>("PitchArranger.pitch_preparation", pitch_preparation);
+  ms_vibrato_offset = ptree.get<unsigned short>("PitchArranger.ms_vibrato_offset", ms_vibrato_offset);
+  ms_vibrato_width = ptree.get<unsigned short>("PitchArranger.ms_vibrato_width", ms_vibrato_width);
+  pitch_vibrato = ptree.get<double>("PitchArranger.pitch_vibrato", pitch_vibrato);
+  vibrato = ptree.get<bool>("PitchArranger.vibrato", vibrato);
+  overshoot = ptree.get<bool>("PitchArranger.overshoot", overshoot);
+  preparation = ptree.get<bool>("PitchArranger.preparation", preparation);
+  interpolation = ptree.get<bool>("PitchArranger.interpolation", interpolation);
 }
 
 unsigned long nak::ms2pos(unsigned long ms, WavFormat format)

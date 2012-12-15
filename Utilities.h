@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <exception>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
@@ -47,10 +48,8 @@ namespace nak {
   extern bool preparation;
   extern bool interpolation;
 
-  // parser
+  // Nakloid.ini parser
   extern void parse(std::string path_ini);
-  template <class T>
-  extern void ptree2var(T *var, boost::property_tree::ptree ptree, std::string path);
 
   // tools
   extern unsigned long ms2pos(unsigned long ms, WavFormat format);
