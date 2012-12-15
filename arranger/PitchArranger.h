@@ -4,12 +4,11 @@
 #include <cmath>
 #include <vector>
 #include <boost/utility.hpp>
-#include "Arranger.h"
 #include "../Score.h"
-#include "../Parameters.h"
+#include "../Utilities.h"
 #include "../parser/WavFormat.h"
 
-class PitchArranger : Arranger {
+class PitchArranger {
  public:
   static void arrange(Score *score);
 

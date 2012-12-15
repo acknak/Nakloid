@@ -10,13 +10,13 @@
 #include <algorithm>
 
 #include "BaseWav.h"
-#include "../arranger/Arranger.h"
+#include "../Utilities.h"
 #include "../parser/WavFormat.h"
 #include "../parser/WavData.h"
 #include "../parser/WavParser.h"
 
 // Refference Object
-class BaseWavsOverlapper : Arranger {
+class BaseWavsOverlapper {
  public:
   BaseWavsOverlapper(WavFormat format, std::list<double> pitches);
   BaseWavsOverlapper(WavFormat format, std::vector<double> pitches);

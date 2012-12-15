@@ -18,9 +18,9 @@ BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<double> pitches)
   while (tmp_ms < pitches.size()) {
     if (pitches[tmp_ms] > 0) {
       if (!is_note_on)
-        tmp_pitchmarks.push_back(ms2pos(tmp_ms, format));
+        tmp_pitchmarks.push_back(nak::ms2pos(tmp_ms, format));
       tmp_pitchmarks.push_back(tmp_pitchmarks.back()+(1.0/pitches[tmp_ms]*format.dwSamplesPerSec));
-      tmp_ms = pos2ms(tmp_pitchmarks.back(), format);
+      tmp_ms = nak::pos2ms(tmp_pitchmarks.back(), format);
       is_note_on = true;
     } else {
       tmp_ms++;
@@ -46,8 +46,8 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
 
   unsigned long fade_start = (bwc.base_wavs.begin()+bwc.format.dwRepeatStart)->fact.dwPosition;
   unsigned long fade_last = bwc.base_wavs.back().fact.dwPosition;
-  vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(ms2pos(ms_start,format));
-  vector<unsigned long>::iterator it_end_pitchmarks = pos2it(ms2pos(ms_end,format));
+  vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(nak::ms2pos(ms_start,format));
+  vector<unsigned long>::iterator it_end_pitchmarks = pos2it(nak::ms2pos(ms_end,format));
   vector<unsigned long>::iterator it_pitchmarks = it_begin_pitchmarks;
   cout << "base_wav size:" << bwc.base_wavs.size() << endl;
   cout << "fade_start:" << fade_start << ", fade_last:" << fade_last << endl;
@@ -75,7 +75,7 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
       win.erase(win.end()-(win_end-pitchmarks.back()), win.end());
       win_end = pitchmarks.back();
     }
-    unsigned long ms_dist = pos2ms(*it_pitchmarks-*it_begin_pitchmarks,format);
+    unsigned long ms_dist = nak::pos2ms(*it_pitchmarks-*it_begin_pitchmarks,format);
     //double scale = sqrt((*(it_pitchmarks+1)-*it_pitchmarks) / (double)ms2pos(1000.0/bwc.format.wF0, format));
     //scale *= ((ms_dist<velocities.size())?velocities[ms_dist]:velocities.back())/100.0;
     double scale = ((ms_dist<velocities.size())?velocities[ms_dist]:velocities.back())/100.0;
@@ -101,7 +101,7 @@ void BaseWavsOverlapper::outputWav(string output)
 
 void BaseWavsOverlapper::outputWav(string output, unsigned long ms_margin)
 {
-  output_wav.insert(output_wav.begin(), ms2pos(ms_margin, format), 0);
+  output_wav.insert(output_wav.begin(), nak::ms2pos(ms_margin, format), 0);
   outputWav(output);
 }
 

@@ -114,7 +114,7 @@ bool BaseWavsMaker::makeBaseWavs()
   // make base wavs
   base_wavs.clear();
   vector<short> target = makeBaseWav(pitches,sub_rep_start).data.getDataVector();
-  double target_rms = getRMS(target);
+  double target_rms = nak::getRMS(target);
   //short target_max = *max_element(target.begin(),target.end());
   //short target_min = *min_element(target.begin(),target.end());
   base_wavs.reserve(sub_end-sub_start);
@@ -122,19 +122,19 @@ bool BaseWavsMaker::makeBaseWavs()
     BaseWav tmp_base_wav = makeBaseWav(pitches, i);
     tmp_base_wav.fact.dwPosition -= pitch_marks[sub_start];
     if (i > sub_rep_start)
-      //tmp_base_wav.data.setData(normalize(tmp_base_wav.data.getDataVector(),target_max,target_min));
-      tmp_base_wav.data.setData(normalize(tmp_base_wav.data.getDataVector(),target_rms));
+      //tmp_base_wav.data.setData(nak::normalize(tmp_base_wav.data.getDataVector(),target_max,target_min));
+      tmp_base_wav.data.setData(nak::normalize(tmp_base_wav.data.getDataVector(),target_rms));
     base_wavs.push_back(tmp_base_wav);
   }
 
   // make self fade
   long sub_rep_len = base_wavs.size() - 1 - (sub_rep_start-sub_start);
   long base_pos = base_wavs.size() - 1 - (sub_rep_len/2);
-  vector<double> filter = getTri(sub_rep_len);
+  vector<double> filter = nak::getTri(sub_rep_len);
   filter.erase(filter.begin()+(filter.size()/2), filter.end());
-  //double target_rms = getRMS(base_wavs[sub_rep_start].data.getDataVector());
-  //double target_mean = getMean(base_wavs[sub_rep_start].data.getDataVector());
-  //double target_var = getVar(base_wavs[sub_rep_start].data.getDataVector(), target_mean);
+  //double target_rms = nak::getRMS(base_wavs[sub_rep_start].data.getDataVector());
+  //double target_mean = nak::getMean(base_wavs[sub_rep_start].data.getDataVector());
+  //double target_var = nak::getVar(base_wavs[sub_rep_start].data.getDataVector(), target_mean);
   //vector<short> target = base_wavs[sub_rep_start].data.getDataVector();
   //short target_max = *max_element(target.begin(),test.end());
   //short target_min = *min_element(target.begin(),test.end());
@@ -198,7 +198,7 @@ BaseWav BaseWavsMaker::makeBaseWav(vector<long> pitches, int point)
   BaseWav base_wav;
   long win_start = pitch_marks[point] - (pitches[point]*lobe);
   long win_end = pitch_marks[point] + (pitches[point]*lobe);
-  vector<double> filter = getLanczos(pitches[point]*lobe*2+1 ,lobe);
+  vector<double> filter = nak::getLanczos(pitches[point]*lobe*2+1 ,lobe);
   base_wav.fact.dwPitchLeft = pitches[point] * lobe;
   base_wav.fact.dwPitchRight = pitches[point] * lobe;
   base_wav.fact.dwPosition = pitch_marks[point];
@@ -210,105 +210,4 @@ BaseWav BaseWavsMaker::makeBaseWav(vector<long> pitches, int point)
   base_wav.data.setData(base_wav_data);
 
   return base_wav;
-}
-
-double BaseWavsMaker::getRMS(vector<short> wav)
-{
-  double rms = 0.0;
-  for (int i=0; i<wav.size(); i++)
-    rms += pow((double)wav[i], 2) / wav.size();
-  return sqrt(rms);
-}
-
-double BaseWavsMaker::getMean(vector<short> wav)
-{
-  double mean = 0.0;
-  for (int i=0; i<wav.size(); i++)
-    mean += wav[i] / (double)wav.size();
-  return mean;
-}
-
-double BaseWavsMaker::getVar(vector<short> wav, double mean)
-{
-  double var = 0.0;
-  for (int i=0; i<wav.size(); i++)
-    var += pow(wav[i]-mean, 2) / wav.size();
-  return sqrt(var);
-}
-
-vector<short> BaseWavsMaker::normalize(vector<short> wav, double target_rms)
-{
-  double scale = target_rms / getRMS(wav);
-  for (int i=0; i<wav.size(); i++)
-    wav[i] = wav[i] * scale;
-  return wav;
-}
-
-vector<short> BaseWavsMaker::normalize(vector<short> wav, double target_mean, double target_var)
-{
-  double wav_mean = getMean(wav);
-  double wav_var = getVar(wav, wav_mean);
-  for (int i=0; i<wav.size(); i++)
-    wav[i] = (wav[i]+(target_mean-wav_mean)) * (target_var/wav_var);
-  return wav;
-}
-
-vector<short> BaseWavsMaker::normalize(vector<short> wav, short target_max, short target_min)
-{
-  short wav_max = *max_element(wav.begin(), wav.end());
-  short wav_min = *min_element(wav.begin(), wav.end());
-
-  for (int i=0; i<wav.size(); i++)
-    wav[i] -= ((wav_max+wav_min)/2.0);
-
-  for (int i=0; i<wav.size(); i++)
-    wav[i] *= ((double)target_max-target_min) / (wav_max-wav_min);
-
-  for (int i=0; i<wav.size(); i++)
-    wav[i] += (target_max+target_min)/2.0;
-
-  return wav;
-}
-
-vector<double> BaseWavsMaker::getTri(long len)
-{
-  vector<double> filter(len, 0);
-  for (int i=0; i<filter.size(); ++i) {
-    double x = (i+1.0) / (filter.size()+1.0);
-    filter[i] = 1.0 - 2*fabs(x-0.5);
-  }
-  return filter;
-}
-
-vector<double> BaseWavsMaker::getHann(long len)
-{
-  vector<double> filter(len, 0);
-  for (int i=0; i<filter.size(); ++i) {
-    double x = (i+1.0) / (filter.size()+1.0);
-    filter[i] = 0.5 - (0.5 * cos(2*M_PI*x));
-  }
-  return filter;
-}
-
-vector<double> BaseWavsMaker::getLanczos(long len, unsigned short lobe)
-{
-  vector<double> fore_filter(len/2, 0);
-  vector<double> aft_filter(len/2, 0);
-
-  for (int i=0; i<fore_filter.size(); i++) {
-    double x = (i+1.0) * lobe / aft_filter.size();
-    aft_filter[i] = sinc(x) * sinc(x/lobe);
-  }
-
-  reverse_copy(aft_filter.begin(), aft_filter.end(), fore_filter.begin());
-  if (len%2 > 0)
-    fore_filter.push_back(1.0);
-
-  fore_filter.insert(fore_filter.end(), aft_filter.begin(), aft_filter.end());
-  return fore_filter;
-}
-
-double BaseWavsMaker::sinc(double x)
-{
-  return sin(M_PI*x)/(M_PI*x);
 }

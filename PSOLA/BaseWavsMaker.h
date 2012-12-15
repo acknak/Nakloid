@@ -10,7 +10,7 @@
 #include <algorithm>
 
 #include "BaseWav.h"
-#include "../Parameters.h"
+#include "../Utilities.h"
 #include "../parser/WavData.h"
 
 // Refference Object
@@ -39,17 +39,6 @@ class BaseWavsMaker {
   BaseWavsMaker& operator=(const BaseWavsMaker& other);
 
   BaseWav makeBaseWav(std::vector<long> pitches, int sub);
-  std::vector<short> normalize(std::vector<short>wav, double target_rms);
-  std::vector<short> normalize(std::vector<short>wav, double target_mean, double target_var);
-  std::vector<short> normalize(std::vector<short>wav, short target_max, short target_min);
-  double getRMS(std::vector<short> wav);
-  double getMean(std::vector<short> wav);
-  double getVar(std::vector<short> wav, double mean);
-
-  std::vector<double> getHann(long len);
-  std::vector<double> getTri(long len);
-  std::vector<double> getLanczos(long len, unsigned short lobe);
-  double sinc(double x);
 
   std::vector<BaseWav> base_wavs;
   std::vector<short> voice;

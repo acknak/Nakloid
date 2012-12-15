@@ -1,9 +1,14 @@
-#ifndef Params_h
-#define Params_h
+#ifndef Utilities_h
+#define Utilities_h
 
+#include <cmath>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+
+#include "./parser/WavFormat.h"
 
 namespace nak {
   // Nakloid
@@ -46,6 +51,26 @@ namespace nak {
   extern void parse(std::string path_ini);
   template <class T>
   extern void ptree2var(T *var, boost::property_tree::ptree ptree, std::string path);
+
+  // tools
+  extern unsigned long ms2pos(unsigned long ms, WavFormat format);
+  extern unsigned long pos2ms(unsigned long pos, WavFormat format);
+
+  extern std::vector<short> normalize(std::vector<short>wav, double target_rms);
+  extern std::vector<short> normalize(std::vector<short>wav, double target_mean, double target_var);
+  extern std::vector<short> normalize(std::vector<short>wav, short target_max, short target_min);
+  extern double getRMS(std::vector<short> wav);
+  extern double getMean(std::vector<short> wav);
+  extern double getVar(std::vector<short> wav, double mean);
+
+  extern std::vector<double> getHann(long len);
+  extern std::vector<double> getTri(long len);
+  extern std::vector<double> getLanczos(long len, unsigned short lobe);
+  extern double sinc(double x);
 }
 
+#endif
+
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
 #endif

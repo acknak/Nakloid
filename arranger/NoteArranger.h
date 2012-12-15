@@ -5,13 +5,12 @@
 #include <vector>
 #include <algorithm>
 #include <boost/utility.hpp>
-#include "Arranger.h"
 #include "../Note.h"
 #include "../Score.h"
-#include "../Parameters.h"
+#include "../Utilities.h"
 #include "../PSOLA/BaseWav.h"
 
-class NoteArranger : Arranger {
+class NoteArranger {
  public:
   static void arrange(Score *score);
 
