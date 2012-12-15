@@ -2,19 +2,6 @@ Nakloid
 ======================
 Nakloid: Unit-waveform-oriented Singing Voice Synthesis System
 
-sample code
-------
-    // sample.cpp
-    #include "Nakloid.h"
-    int main () {
-      Nakloid *nakloid = new Nakloid("./input/input.ust");
-    //Nakloid *nakloid = new Nakloid("voiceDB", "./input/score.mid", 1, "./input/lyric.txt", "./output/output.wav");
-    //nakloid->setMargin(1000);
-      nakloid->vocalization();
-      delete nakloid;
-      return 0;
-    }
-
 required
 ------
 * [FFTW](http://www.fftw.org/)
