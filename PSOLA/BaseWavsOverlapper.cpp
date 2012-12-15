@@ -76,8 +76,6 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
       win_end = pitchmarks.back();
     }
     unsigned long ms_dist = nak::pos2ms(*it_pitchmarks-*it_begin_pitchmarks,format);
-    //double scale = sqrt((*(it_pitchmarks+1)-*it_pitchmarks) / (double)ms2pos(1000.0/bwc.format.wF0, format));
-    //scale *= ((ms_dist<velocities.size())?velocities[ms_dist]:velocities.back())/100.0;
     double scale = ((ms_dist<velocities.size())?velocities[ms_dist]:velocities.back())/100.0;
     for (int i=0; i<win_end-win_start; i++)
       output_wav[win_start+i] += win[i] * scale;
