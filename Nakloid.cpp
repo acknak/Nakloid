@@ -182,4 +182,10 @@ int main()
   nakloid->setMargin(nak::margin);
   nakloid->vocalization();
   delete nakloid;
+
+  cin.sync();
+  cout << endl << endl << endl << "Press Enter/Return to continue..." << endl;
+  cin.get();
+
+  return 0;
 }
