@@ -83,7 +83,7 @@ unsigned long Note::getStart()
 
 unsigned long Note::getPronStart()
 {
-  unsigned long tmp = self.start - (getPrec()-((getOvrl()<0)?getOvrl():0));
+  long tmp = self.start - (getPrec()-((getOvrl()<0)?getOvrl():0));
   return tmp>0?tmp:0;
 }
 
@@ -106,7 +106,7 @@ unsigned long Note::getEnd()
 
 unsigned long Note::getPronEnd()
 {
-  unsigned long tmp = self.end - getLack();
+  long tmp = self.end - getLack();
   return tmp>0?tmp:0;
 }
 
