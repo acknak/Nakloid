@@ -43,8 +43,8 @@ class BaseWavsMaker {
   std::vector<BaseWav> base_wavs;
   std::vector<short> voice;
   std::vector<long> pitch_marks;
-  unsigned short pos_offs;
-  unsigned short pos_blnk;
+  long pos_offs;
+  long pos_blnk;
   long pos_rep_start;
   unsigned char lobe;
   long sub_start;

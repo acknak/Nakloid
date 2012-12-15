@@ -31,27 +31,23 @@ bool VoiceDB::initVoiceMap(string filename)
     boost::algorithm::split(v1, buf, boost::is_any_of("="));
     boost::algorithm::split(v2, v1[1], boost::is_any_of(","));
     string filename = v1[0].substr(0, v1[0].find_last_of(wav_ext)-wav_ext.size()+1);
-    if (v2[0] == "") {
-      if (v2[0] == filename)
-        continue;
-      else
-        v2[0] = filename;
-    }
     short tmp;
-    voice_map[v2[0]].filename = filename;
-    voice_map[v2[0]].offs = (((tmp=boost::lexical_cast<short>(v2[1]))>0))?tmp:0;
-    voice_map[v2[0]].cons = (((tmp=boost::lexical_cast<short>(v2[2]))>0))?tmp:0;
-    voice_map[v2[0]].blnk = (((tmp=boost::lexical_cast<short>(v2[3]))>0))?tmp:0;
-    voice_map[v2[0]].prec = boost::lexical_cast<short>(v2[4]);
-    voice_map[v2[0]].ovrl = boost::lexical_cast<short>(v2[5]);
-    voice_map[v2[0]].is_normalize = (v2.size()>6)?((tmp=boost::lexical_cast<short>(v2[6]))>0):true;
+    voice_map[filename].filename = filename;
+    voice_map[filename].offs = (((tmp=boost::lexical_cast<short>(v2[1]))>0))?tmp:0;
+    voice_map[filename].cons = (((tmp=boost::lexical_cast<short>(v2[2]))>0))?tmp:0;
+    voice_map[filename].blnk = (((tmp=boost::lexical_cast<short>(v2[3]))>0))?tmp:0;
+    voice_map[filename].prec = boost::lexical_cast<short>(v2[4]);
+    voice_map[filename].ovrl = boost::lexical_cast<short>(v2[5]);
     if (v1[0].find(wav_ext) == string::npos)
-      voice_map[v2[0]].frq = 260.0;
+      voice_map[filename].frq = 260.0;
     else {
       ifstream ifs_frq(("vocal/"+singer+"/"+filename+"_wav.frq").c_str(), ios::binary);
       ifs_frq.seekg(sizeof(char)*12, ios_base::beg);
-      ifs_frq.read((char*)&(voice_map[v2[0]].frq), sizeof(double));
+      ifs_frq.read((char*)&(voice_map[filename].frq), sizeof(double));
     }
+    // alias
+    if (v2[0]!="" && filename!=v2[0])
+      voice_map[v2[0]] = voice_map[filename];
   }
   return true;
 }

@@ -122,6 +122,7 @@ bool BaseWavsMaker::makeBaseWavs()
     BaseWav tmp_base_wav = makeBaseWav(pitches, i);
     tmp_base_wav.fact.dwPosition -= pitch_marks[sub_start];
     if (i > sub_rep_start)
+      //tmp_base_wav.data.setData(tmp_base_wav.data.getDataVector());
       //tmp_base_wav.data.setData(nak::normalize(tmp_base_wav.data.getDataVector(),target_max,target_min));
       tmp_base_wav.data.setData(nak::normalize(tmp_base_wav.data.getDataVector(),target_rms));
     base_wavs.push_back(tmp_base_wav);
