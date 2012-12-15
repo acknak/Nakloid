@@ -2,7 +2,6 @@
 /input/*
 /output/*
 /vocal/*
-main.cpp
 *.dll
 
 # Visual C++ files

@@ -2,8 +2,6 @@
 
 using namespace std;
 
-const char VoiceDB::base_wavs_lobe = 3;
-
 VoiceDB::VoiceDB()
 {
   singer = "";
@@ -68,7 +66,7 @@ Voice VoiceDB::getVoice(string pron)
     BaseWavsContainer bwc;
     BaseWavsFileIO *bwc_io = new BaseWavsFileIO();
 
-    if (bwc_io->isBaseWavsContainerFile("vocal/"+singer+"/"+voice_map[pron].filename+".bwc")) {
+    if (nak::cache && bwc_io->isBaseWavsContainerFile("vocal/"+singer+"/"+voice_map[pron].filename+".bwc")) {
       voice_map[pron].bwc = ((BaseWavsContainer)bwc_io->get("vocal/"+singer+"/"+voice_map[pron].filename+".bwc"));
     } else {
       // get wav data
@@ -92,7 +90,6 @@ Voice VoiceDB::getVoice(string pron)
         BaseWavsMaker *maker = new BaseWavsMaker();
         maker->setPitchMarks(input_pitch_marks);
         maker->setVoice(wav_data);
-        maker->setLobe(base_wavs_lobe);
         maker->setRange(voice_map[pron].offs, voice_map[pron].blnk, fs);
         maker->setRepStart(voice_map[pron].cons, fs);
         maker->makeBaseWavs();
@@ -104,11 +101,13 @@ Voice VoiceDB::getVoice(string pron)
         delete maker;
 
         // output bwc
-        bwc.format.setDefaultValues();
-        bwc.format.chunkSize += BaseWavsFormat::wAdditionalSize + sizeof(short);
-        bwc.format.wFormatTag = BaseWavsFormat::BaseWavsFormatTag;
-        bwc.format.dwSamplesPerSec = wav_parser.getFormat().dwSamplesPerSec;
-        bwc_io->set("vocal/"+singer+"/"+voice_map[pron].filename+".bwc", bwc);
+        if (nak::cache) {
+          bwc.format.setDefaultValues();
+          bwc.format.chunkSize += BaseWavsFormat::wAdditionalSize + sizeof(short);
+          bwc.format.wFormatTag = BaseWavsFormat::BaseWavsFormatTag;
+          bwc.format.dwSamplesPerSec = wav_parser.getFormat().dwSamplesPerSec;
+          bwc_io->set("vocal/"+singer+"/"+voice_map[pron].filename+".bwc", bwc);
+        }
 
         voice_map[pron].bwc = bwc;
       }

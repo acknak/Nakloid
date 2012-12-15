@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "BaseWav.h"
+#include "../Parameters.h"
 #include "../parser/WavData.h"
 
 // Refference Object
@@ -29,7 +30,6 @@ class BaseWavsMaker {
   void setPitchMarks(std::vector<long> pitch_marks);
   void setPitchMarks(std::list<long> pitch_marks);
   unsigned char getLobe();
-  void setLobe(unsigned char lobe);
   long getRepStartPoint();
   void setRepStart(long ms_rep_start, unsigned long fs);
   void setRange(unsigned short ms_offs, unsigned short ms_blnk, unsigned long fs);

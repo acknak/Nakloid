@@ -10,6 +10,7 @@
 #include <algorithm>
  
 #include "fftw3.h"
+#include "../Parameters.h"
 #include "../parser/WavData.h"
 
 // Refference Object

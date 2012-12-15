@@ -40,8 +40,6 @@ class VoiceDB {
   void setSinger(std::string singer);
   std::string getSinger();
 
-  const static char base_wavs_lobe;
-
  private:
   VoiceDB(const VoiceDB& other);
   VoiceDB& operator=(const VoiceDB& other);

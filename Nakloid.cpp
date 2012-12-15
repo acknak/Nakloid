@@ -162,3 +162,24 @@ long Nakloid::getMargin()
 {
   return this->margin;
 }
+
+/*
+ * main
+ */
+int main()
+{
+  nak::parse("Nakloid.ini");
+
+  Nakloid *nakloid;
+  switch(nak::score_mode){
+  case nak::score_mode_ust:
+    nakloid = new Nakloid(nak::path_ust); break;
+  case nak::score_mode_smf:
+    nakloid = new Nakloid(nak::singer, nak::path_smf, nak::track, nak::path_lyric, nak::path_song); break;
+  case nak::score_mode_nak:
+    break;
+  }
+  nakloid->setMargin(nak::margin);
+  nakloid->vocalization();
+  delete nakloid;
+}

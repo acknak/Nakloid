@@ -10,6 +10,7 @@
 #include <algorithm>
 #include "Score.h"
 #include "VoiceDB.h"
+#include "Parameters.h"
 #include "arranger/NoteArranger.h"
 #include "arranger/PitchArranger.h"
 #include "parser/WavFormat.h"
@@ -46,11 +47,5 @@ class Nakloid {
   WavFormat format;
   unsigned long margin;
 };
-
-typedef struct {
-  unsigned long pos;
-  unsigned long ms_start;
-  unsigned long ms_end;
-} pitch_mark;
 
 #endif

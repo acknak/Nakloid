@@ -6,18 +6,11 @@
 #include <boost/utility.hpp>
 #include "Arranger.h"
 #include "../Score.h"
+#include "../Parameters.h"
 #include "../parser/WavFormat.h"
 
 class PitchArranger : Arranger {
  public:
-  const static unsigned short overshoot_length;
-  const static double overshoot_height;
-  const static unsigned short preparation_length;
-  const static double preparation_height;
-  const static unsigned short vibrato_offset;
-  const static unsigned short vibrato_width;
-  const static double vibrato_depth;
-
   static void arrange(Score *score);
 
  private:

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-BaseWavsMaker::BaseWavsMaker():lobe(1),pos_rep_start(0),pos_offs(0),pos_blnk(0),sub_start(0),sub_end(0),sub_rep_start(0){}
+BaseWavsMaker::BaseWavsMaker():lobe(nak::base_wavs_lobe),pos_rep_start(0),pos_offs(0),pos_blnk(0),sub_start(0),sub_end(0),sub_rep_start(0){}
 
 BaseWavsMaker::~BaseWavsMaker(){}
 
@@ -51,11 +51,6 @@ void BaseWavsMaker::setPitchMarks(list<long> pitch_marks)
 unsigned char BaseWavsMaker::getLobe()
 {
   return lobe;
-}
-
-void BaseWavsMaker::setLobe(unsigned char lobe)
-{
-  this->lobe = lobe;
 }
 
 long BaseWavsMaker::getRepStartPoint()

@@ -107,24 +107,28 @@ bool PitchMarker::mark(vector<short> input)
   // pitch marking
   while (input.end()-mark_next > win_size*1.5) {
     vector<double> xcorr_win = xcorr(it_start, mark_next, win_size);
-    long dist = max_element(xcorr_win.begin(),xcorr_win.end())-xcorr_win.begin();
+    unsigned short pitch_margin = max((unsigned short)(xcorr_win.size()/2), nak::pitch_margin);
+    long dist = max_element(xcorr_win.begin()+(xcorr_win.size()/2)-pitch_margin,
+      xcorr_win.begin()+(xcorr_win.size()/2)+pitch_margin)-xcorr_win.begin();
     mark_list.push_back((mark_next+=dist)-input.begin());
   }
   if (input.end()-mark_next > win_size)
     mark_list.push_back(mark_next+win_size-input.begin());
 
-  short dist = *(++mark_list.begin())-mark_list.front();
-  while (mark_prev-input.begin()>max(dist,win_size)*1.5 && dist>0) {
+  long dist = *(++mark_list.begin())-mark_list.front();
+  while (mark_prev-input.begin()>max(dist,(long)win_size)*1.5 && dist>0) {
     int tmp = mark_list.size();
     vector<double> xcorr_win = xcorr(mark_prev+dist, mark_prev, -win_size);
-    dist = max_element(xcorr_win.begin(),xcorr_win.end())-xcorr_win.begin();
+    unsigned short pitch_margin = max((unsigned short)(xcorr_win.size()/2), nak::pitch_margin);
+    dist = max_element(xcorr_win.begin()+(xcorr_win.size()/2)-pitch_margin,
+      xcorr_win.begin()+(xcorr_win.size()/2)+pitch_margin)-xcorr_win.begin();
     if (mark_prev-input.begin() < dist)
       break;
     else
       mark_list.push_front((mark_prev-=dist)-input.begin());
   }
-  if (mark_prev-input.begin() > max(dist,win_size))
-    mark_list.push_front(mark_prev-max(dist,win_size)-input.begin());
+  if (mark_prev-input.begin() > max(dist,(long)win_size))
+    mark_list.push_front(mark_prev-max(dist,(long)win_size)-input.begin());
   mark_list.push_front(0);
 
   cout << "----- finish pitch marking -----" << endl << endl;
