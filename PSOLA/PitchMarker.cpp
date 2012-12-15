@@ -101,8 +101,28 @@ bool PitchMarker::mark(vector<short> input)
     vector<short>::iterator it_min = min_element(input.begin()+cons_pos, input.begin()+cons_pos+win_size);
     it_start = (*it_max>-*it_min)?it_max:it_min;
   }
+  vector<double> filter = nak::getHann(win_size/2);
+  double max_point = 0.0;
+  vector<short>::iterator it_tmp_max;
+  for (int i=-win_size/4; i<win_size/4; i++) {
+    if (it_start-input.begin()<-i || i>input.end()-1-it_start)
+      continue;
+    vector<short> tmp_input(it_start+i-(win_size/4), it_start+i+(win_size/4));
+    double tmp_max_point = 0.0;
+    double tmp_mean = nak::getMean(tmp_input);
+    for (int j=0; j<min(tmp_input.size(),filter.size()); j++)
+      tmp_max_point += pow((tmp_input[j]-tmp_mean)*filter[j], 2);
+      //tmp_max_point += pow((tmp_input[j]-tmp_mean)*filter[j]/(*it_start-tmp_mean), 2);
+    if (tmp_max_point > max_point) {
+      max_point = tmp_max_point;
+      it_tmp_max = it_start + i;
+    }
+  }
+  it_start = it_tmp_max;
   mark_list.push_back((mark_prev=mark_next=it_start)-input.begin());
   cout << "win_size:" << win_size << ", start:" << it_start-input.begin() << ", input.size:" << input.size() << endl;
+
+  //vector<double> tmp_input(it_start-(win_size), it_start+(win_size));
 
   // pitch marking
   while (input.end()-mark_next > win_size*1.5) {
@@ -119,7 +139,7 @@ bool PitchMarker::mark(vector<short> input)
   while (mark_prev-input.begin()>max(dist,(long)win_size)*1.5 && dist>0) {
     int tmp = mark_list.size();
     vector<double> xcorr_win = xcorr(mark_prev+dist, mark_prev, -win_size);
-    unsigned short pitch_margin = max((unsigned short)(xcorr_win.size()/2), nak::pitch_margin);
+    unsigned short pitch_margin = min((unsigned short)(xcorr_win.size()/2), nak::pitch_margin);
     dist = max_element(xcorr_win.begin()+(xcorr_win.size()/2)-pitch_margin,
       xcorr_win.begin()+(xcorr_win.size()/2)+pitch_margin)-xcorr_win.begin();
     if (mark_prev-input.begin() < dist)
