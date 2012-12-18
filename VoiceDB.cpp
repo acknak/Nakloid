@@ -31,6 +31,7 @@ bool VoiceDB::initVoiceMap(string filename)
     boost::algorithm::split(v1, buf, boost::is_any_of("="));
     boost::algorithm::split(v2, v1[1], boost::is_any_of(","));
     string filename = v1[0].substr(0, v1[0].find_last_of(wav_ext)-wav_ext.size()+1);
+    string pron = (filename==v2[0]||v2[0]==""||voice_map.count(filename)==0)?filename:v2[0];
     short tmp;
     voice_map[filename].filename = filename;
     voice_map[filename].offs = (((tmp=boost::lexical_cast<short>(v2[1]))>0))?tmp:0;
