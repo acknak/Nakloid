@@ -29,6 +29,12 @@ namespace nak {
   // BaseWavsMaker
   extern unsigned char base_wavs_lobe;
 
+  // BaseWavsOverlapper
+  extern bool compressor;
+  extern double threshold_x;
+  extern double threshold_y;
+  extern double max_volume;
+
   // NoteArranger
   extern unsigned short ms_front_edge;
   extern unsigned short ms_back_edge;

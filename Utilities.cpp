@@ -21,6 +21,12 @@ namespace nak {
   // BaseWavsMarker
   unsigned char base_wavs_lobe = 3;
 
+  // BaseWavsOverlapper
+  bool compressor = true;
+  double max_volume = 0.8;
+  double threshold_x = 0.6;
+  double threshold_y = 0.8;
+
   // NoteArranger
   unsigned short ms_front_edge = 30;
   unsigned short ms_back_edge = 30;
@@ -81,6 +87,11 @@ void nak::parse(string path_ini)
   margin = ptree.get<unsigned long>("Nakloid.margin", margin);
   cache = ptree.get<bool>("Nakloid.cache", cache);
   pitch_margin = ptree.get<unsigned short>("PitchMarker.pitch_margin", pitch_margin);
+  base_wavs_lobe = ptree.get<unsigned char>("BaseWavsMaker.base_wavs_lobe", base_wavs_lobe);
+  compressor = ptree.get<bool>("BaseWavsOverlapper.compressor", compressor);
+  threshold_x = ptree.get<double>("BaseWavsOverlapper.threshold_x", threshold_x);
+  threshold_y = ptree.get<double>("BaseWavsOverlapper.threshold_y", threshold_y);
+  max_volume = ptree.get<double>("BaseWavsOverlapper.max_volume", max_volume);
   ms_front_edge = ptree.get<unsigned short>("NoteArranger.ms_front_edge", ms_front_edge);
   ms_back_edge = ptree.get<unsigned short>("NoteArranger.ms_back_edge", ms_back_edge);
   sharpen_front = ptree.get<bool>("NoteArranger.sharpen_front", sharpen_front);

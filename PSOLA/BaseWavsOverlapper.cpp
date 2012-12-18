@@ -88,12 +88,37 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
 
 void BaseWavsOverlapper::outputWav(string output)
 {
+  if (nak::compressor) {
+    if (nak::max_volume > 1.0)
+      nak::max_volume = 1.0;
+    else if (nak::max_volume < 0)
+      nak::max_volume = 0;
+    long tmp_max_volume = *max_element(output_wav.begin(), output_wav.end());
+    double tmp_max_db = log10((double)tmp_max_volume) * 20;
+    double border_db_x = log10(pow(32767*nak::max_volume,2.0)) * 10 * nak::threshold_x;
+    double slope_fore = nak::threshold_y / nak::threshold_x;
+    double border_db_y = border_db_x * slope_fore;
+    double slope_aft =  (border_db_y/nak::threshold_y-border_db_y) / (tmp_max_db-border_db_x);
+    for (int i=0; i<output_wav.size(); i++) {
+      if (output_wav[i] == 0)
+        continue;
+      double tmp_db = log10(pow(output_wav[i],2.0)) * 10;
+      if (tmp_db < border_db_x) {
+        double test = pow(10, (tmp_db*slope_fore-tmp_db)/20);
+        output_wav[i] *= test;
+      } else {
+        double test = pow(10, ((tmp_db-border_db_x)*slope_aft+border_db_y-tmp_db)/20);
+        output_wav[i] *= test;
+      }
+    }
+  }
+  vector<short> tmp_output_wav(output_wav.begin(), output_wav.end());
   long size = output_wav.size()*sizeof(short);
   ofstream ofs(output.c_str(), ios_base::out|ios_base::trunc|ios_base::binary);
   WavParser::setWavHeader(&ofs, format, size+28);
   ofs.write((char*)WavFormat::data, sizeof(char)*4);
   ofs.write((char*)&size, sizeof(long));
-  ofs.write((char*)(&output_wav[0]), size);
+  ofs.write((char*)(&tmp_output_wav[0]), size);
   ofs.close();
 }
 

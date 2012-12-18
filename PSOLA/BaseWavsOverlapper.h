@@ -2,6 +2,7 @@
 #define BaseWavsOverlapper_h
 
 #include <list>
+#include <cmath>
 #include <vector>
 #include <string>
 #include <limits>
@@ -39,7 +40,7 @@ class BaseWavsOverlapper {
 
   WavFormat format;
   std::vector<unsigned long> pitchmarks;
-  std::vector<short> output_wav;
+  std::vector<long> output_wav;
 };
 
 #endif
