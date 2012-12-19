@@ -72,7 +72,7 @@ void Score::loadSmf(string input, unsigned short track, string path_lyric)
   }
   list<Note>::iterator it_notes = notes.begin();
   list<string>::iterator it_prons = prons.begin();
-  for (; it_notes!=notes.end()||it_prons!=prons.end(); ++it_notes,++it_prons)
+  for (; it_notes!=notes.end()&&it_prons!=prons.end(); ++it_notes,++it_prons)
     (*it_notes).setPron(*it_prons);
 
   if (pitches.empty())
