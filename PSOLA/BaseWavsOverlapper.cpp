@@ -89,6 +89,7 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
 void BaseWavsOverlapper::outputWav(string output)
 {
   if (nak::compressor) {
+    cout << endl << "compressing..." << endl << endl;
     if (nak::max_volume > 1.0)
       nak::max_volume = 1.0;
     else if (nak::max_volume < 0)
@@ -111,6 +112,7 @@ void BaseWavsOverlapper::outputWav(string output)
         output_wav[i] *= test;
       }
     }
+    cout << endl << "finish compressing" << endl << endl;
   }
   vector<short> tmp_output_wav(output_wav.begin(), output_wav.end());
   long size = output_wav.size()*sizeof(short);
