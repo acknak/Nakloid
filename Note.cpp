@@ -168,7 +168,7 @@ void Note::setVelocities(vector<unsigned char> velocities)
   if (velocities.size() == self.velocities.size())
     self.velocities = velocities;
   else
-    cerr << "[Note::setVelocities()] Velocity length differ from Note on time" << endl;
+    cerr << "[Note::setVelocities] velocity length differ from Note on time" << endl;
 }
 
 unsigned short Note::getLack()

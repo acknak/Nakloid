@@ -19,7 +19,8 @@ Score::Score(string singer, string input_smf, short track, string path_lyric, st
 
 Score::~Score()
 {
-  cout << "----- finish score loading -----" << endl;
+  if (nak::log)
+    cout << "----- finish score loading -----" << endl;
 }
 
 bool Score::isScoreLoaded()
@@ -29,7 +30,8 @@ bool Score::isScoreLoaded()
 
 void Score::loadSmf(string input, unsigned short track, string path_lyric)
 {
-  cout << "----- start score(smf) loading -----" << endl;
+  if (nak::log)
+    cout << "----- start score(smf) loading -----" << endl;
 
   // load lyric txt
   list<string> prons;
@@ -57,7 +59,7 @@ void Score::loadSmf(string input, unsigned short track, string path_lyric)
     ifstream ifs;
     ifs.open(input.c_str(), ios::in|ios::binary);
     if (!ifs) {
-      cerr << input << " cannot open\n";
+      cerr << "[Score::loadSmf] " << input << " cannot open\n";
       return;
     }
     Note *note = 0;
@@ -67,7 +69,7 @@ void Score::loadSmf(string input, unsigned short track, string path_lyric)
     }
   }
   if (notes.size() == 0) {
-    cerr << "cannot read notes" << endl;
+    cerr << "[Score::loadSmf] cannot read notes" << endl;
     return;
   }
   list<Note>::iterator it_notes = notes.begin();
@@ -81,8 +83,9 @@ void Score::loadSmf(string input, unsigned short track, string path_lyric)
 
 void Score::loadUst(string path_ust)
 {
-  cout << "----- start score(ust) loading -----" << endl;
-  cout << "ust: " << path_ust << endl;
+  if (nak::log)
+    cout << "----- start score(ust) loading -----" << endl
+      << "ust: " << path_ust << endl;
 
   // read ust
   ifstream ifs(path_ust.c_str());
@@ -116,7 +119,10 @@ void Score::loadUst(string path_ust)
       setSinger(".."+buf_vector[1]);
     }
     if (buf_vector[0] == "OutFile") {
-      setSongPath("./output/"+buf_vector[1]+".wav");
+      boost::algorithm::replace_all(buf_vector[1], "%", "/");
+      if (buf_vector[1][0] != '/')
+        buf_vector[1] = "/" + buf_vector[1];
+      setSongPath("."+buf_vector[1]);
     }
     if (buf_vector[0] == "Length")
       if (buf_vector[1]!="" && (tmp=boost::lexical_cast<short>(buf_vector[1]))>0)

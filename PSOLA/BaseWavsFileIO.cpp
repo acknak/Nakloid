@@ -74,7 +74,7 @@ BaseWavsContainer BaseWavsFileIO::get(string filename)
         if (ifs.eof())
           break;
         ifs.seekg(chunkSize, ios::cur);
-        cerr << "bwc reading err: fact chunk not found" << endl;
+        cerr << "[BaseWavsFileIO::get] fact chunk not found" << endl;
         continue;
       } else {
         ifs.read((char*)&(tmp_base_wav.fact.dwPitchLeft), sizeof(long));
@@ -87,7 +87,7 @@ BaseWavsContainer BaseWavsFileIO::get(string filename)
       ifs.read((char*)&chunkSize, sizeof(long));
       if (!WavFormat::isDataTag(tag)) {
         ifs.seekg(chunkSize, ios::cur);
-        cerr << "bwc reading err: data chunk not found" << endl;
+        cerr << "[BaseWavsFileIO::get] data chunk not found" << endl;
         continue;
       } else {
         vector<short> tmp_wav_data_vector(chunkSize/sizeof(short), 0);

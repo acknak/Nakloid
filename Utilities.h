@@ -13,6 +13,9 @@
 
 namespace nak {
   // Nakloid
+  extern bool cache;
+  extern bool log;
+
   extern enum ScoreMode{score_mode_ust, score_mode_smf, score_mode_nak} score_mode;
   extern std::string singer;
   extern std::string path_ust;
@@ -21,13 +24,13 @@ namespace nak {
   extern std::string path_lyric;
   extern std::string path_song;
   extern unsigned long margin;
-  extern bool cache;
 
   // PitchMarker
   extern unsigned short pitch_margin;
 
   // BaseWavsMaker
   extern unsigned char base_wavs_lobe;
+  extern bool is_normalize;
 
   // BaseWavsOverlapper
   extern bool compressor;
@@ -36,6 +39,7 @@ namespace nak {
   extern double max_volume;
 
   // NoteArranger
+  extern bool vowel_combining;
   extern unsigned short ms_front_edge;
   extern unsigned short ms_back_edge;
   extern bool sharpen_front;

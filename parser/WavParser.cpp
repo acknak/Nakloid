@@ -55,20 +55,20 @@ list<WavData> WavParser::getDataChunks()
 bool WavParser::isWavFile()
 {
   if (input.empty()) {
-    cerr << "input is NULL" << endl;
+    cerr << "[WavParser::isWavFile] input is NULL" << endl;
     return false;
   }
 
   ifstream ifs(input.c_str(), ios::in | ios::binary);
   if (!ifs) {
-    cerr << "file '" << input << "' cannot open" << endl;
+    cerr << "[WavParser::isWavFile] file '" << input << "' cannot open" << endl;
     return false;
   }
 
   char tag[4];
   ifs.read((char*)&tag, sizeof(char)*4);
   if (!WavFormat::isRiffTag(tag)) {
-    cerr << "error: file '" << input << "' is not RIFF format";
+    cerr << "[WavParser::isWavFile] file '" << input << "' is not RIFF format";
     return false;
   }
 
@@ -76,7 +76,7 @@ bool WavParser::isWavFile()
 
   ifs.read((char*)&tag, sizeof(char)*4);
   if (!WavFormat::isWaveTag(tag)) {
-      cerr << "error: file '" << input << "' is not WAV" << endl;
+      cerr << "[WavParser::isWavFile] file '" << input << "' is not WAV" << endl;
     return false;
   }
 
@@ -85,7 +85,7 @@ bool WavParser::isWavFile()
   short format;
   ifs.read((char*)&format, sizeof(short));
   if (format != 1){
-    cerr << "error: file '" << input << "' is not LinearPCM" << endl;
+    cerr << "[WavParser::isWavFile] file '" << input << "' is not LinearPCM" << endl;
     return false;
   }
 
@@ -147,7 +147,7 @@ bool WavParser::parse()
     } else {
       // other chunk
       if (WavFormat::isTag(tag))
-        cerr << endl << "*** unknown tag found at WavParser ***" << endl << endl;
+        cerr << endl << "[WavParser::parse] unknown tag found at WavParser" << endl << endl;
       ifs.seekg(chunk_size, ios_base::cur);
     }
 

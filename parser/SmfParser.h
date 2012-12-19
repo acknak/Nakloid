@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include "SmfHandler.h"
+#include "../Utilities.h"
 
 // Reference Object
 class SmfParser {

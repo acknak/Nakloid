@@ -29,13 +29,13 @@ SmfParser::SmfParser(string filename, SmfHandler* handler)
 bool SmfParser::isSmfFile()
 {
   if (input.empty()) {
-    cout << "input is NULL" << endl;
+    cerr << "[SmfParser::isSmfFile] input is NULL" << endl;
     return false;
   }
 
   ifstream ifs(input.c_str(), ios::in | ios::binary);
   if (!ifs) {
-    cout << "file '" << input << "' cannot open" << endl;
+    cerr << "[SmfParser::isSmfFile] file '" << input << "' cannot open" << endl;
     return false;
   }
 
@@ -43,7 +43,7 @@ bool SmfParser::isSmfFile()
   for (int i=0; i<10; i++) {
     ifs.read((char*)&data, sizeof(char));
     if (data != mthd[i]) {
-      cout << "error: file '" << input << "' is not Vsq or SMF(format 1)" << endl;
+      cerr << "[SmfParser::isSmfFile] file '" << input << "' is not SMF(format 1)" << endl;
       return false;
     } 
   }
@@ -80,7 +80,8 @@ bool SmfParser::parse()
     (*it)->smfInfo(num_track, timebase);
 
   // parse data chunk
-  cout << "num_track:" << num_track << endl;
+  if (nak::log)
+    cout << "num_track:" << num_track << endl;
   for (int i=0; i<num_track; i++) {
     for (it=handlers.begin(); it!=handlers.end(); it++)
       (*it)->trackChange(i);
@@ -89,7 +90,7 @@ bool SmfParser::parse()
     for (int j=0; j<4; j++) {
       ifs.read((char*)&data, sizeof(char));
       if (data != mtrk[j]) {
-        cout << "error: " << i << "th MTrk cannot find" << endl;
+        cerr << "[SmfParser::parse] " << i << "th MTrk cannot find" << endl;
         return false;
       }
     }
@@ -101,7 +102,8 @@ bool SmfParser::parse()
       datasize <<= 8;
       datasize += (long)data;
     }
-    cout << i << "th chunk data size: " << datasize << endl;
+    if (nak::log)
+      cout << i << "th chunk data size: " << datasize << endl;
 
     // get chunk data
     unsigned char status = 0;
@@ -177,7 +179,8 @@ bool SmfParser::parse()
     }
   }
 
-  cout << "convert finished"<< endl;
+  if (nak::log)
+    cout << "convert finished"<< endl;
   return true;
 }
 

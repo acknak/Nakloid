@@ -51,7 +51,7 @@ bool Nakloid::setScore(string path_ust)
 
   score = new Score(path_ust);
   if (score == 0 || !score->isScoreLoaded()) {
-    cerr << "score hasn't loaded" << endl;
+    cerr << "[Nakloid::setScore] ust score hasn't loaded" << endl;
     return false;
   }
 
@@ -69,7 +69,7 @@ bool Nakloid::setScore(string singer, string path_smf, short track, string path_
 
   score = new Score(singer, path_smf, track, path_lyric, path_song);
   if (score == 0 || !score->isScoreLoaded()) {
-    cerr << "score hasn't loaded" << endl;
+    cerr << "[Nacloid::getScore] smf score hasn't loaded" << endl;
     return false;
   }
 
@@ -81,21 +81,33 @@ bool Nakloid::setScore(string singer, string path_smf, short track, string path_
 bool Nakloid::vocalization()
 {
   if (score == 0) {
-    cerr << "score hasn't loaded" << endl;
+    cerr << "[Nakloid::vocalization] score hasn't loaded" << endl;
     return false;
   }
 
   if (voice_db == 0) {
-    cerr << "can't find voiceDB" << endl;
+    cerr << "[Nakloid::vocalization] can't find voiceDB" << endl;
     return false;
   }
 
-  cout << "----- start vocalization -----" << endl << endl;
+  if (nak::log)
+    cout << "----- start vocalization -----" << endl << endl;
 
   // set note params from voiceDB
-  cout << endl << "loading voiceDB..." << endl << endl;
+  if (nak::log)
+    cout << endl << "loading voiceDB..." << endl << endl;
   double counter=0, percent=0;
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
+    // vowel combining
+    /*
+    if (nak::vowel_combining)
+      if (it_notes!=score->notes.begin() && it_notes->getStart()==boost::prior(it_notes)->getEnd())
+        it_notes->setPron("* "+it_notes->getPron());
+      else
+        it_notes->setPron("- "+it_notes->getPron());
+    */
+
+    // set overlap range & preceding utterance
     if (it_notes == score->notes.begin()) {
       short ovrl = it_notes->isOvrl()?it_notes->getOvrl():voice_db->getVoice(it_notes->getPron()).ovrl;
       short prec = it_notes->isPrec()?it_notes->getPrec():voice_db->getVoice(it_notes->getPron()).prec;
@@ -107,30 +119,37 @@ bool Nakloid::vocalization()
       it_notes->setOvrl(voice_db->getVoice(it_notes->getPron()).ovrl);
     if (!it_notes->isPrec())
       it_notes->setPrec(voice_db->getVoice(it_notes->getPron()).prec);
-    if (++counter/score->notes.size()>percent+0.1 && (percent=floor(counter/score->notes.size()*10)/10.0)<1.0)
+
+    // show progress
+    if (nak::log && ++counter/score->notes.size()>percent+0.1 && (percent=floor(counter/score->notes.size()*10)/10.0)<1.0)
       cout << percent*100 << "%..." << endl;
   }
-  cout << endl << "load finished" << endl << endl << endl;
+  if (nak::log)
+    cout << endl << "load finished" << endl << endl << endl;
 
   // arrange note params
-  cout << endl << "arrange params..." << endl << endl;
+  if (nak::log)
+    cout << endl << "arrange params..." << endl << endl;
   NoteArranger::arrange(score);
   PitchArranger::arrange(score);
-  cout << endl << "arrange finished" << endl << endl << endl;
+  if (nak::log)
+    cout << endl << "arrange finished" << endl << endl << endl;
 
   // Singing Voice Synthesis
   BaseWavsOverlapper *overlapper = new BaseWavsOverlapper(format, score->getPitches());
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
-    cout << "pron: " << it_notes->getPron() << ", "
-      << "pron start: " << it_notes->getPronStart() << ", "
-      << "pron end: " << it_notes->getPronEnd() << endl;
+    if (nak::log)
+      cout << "pron: " << it_notes->getPron() << ", "
+        << "pron start: " << it_notes->getPronStart() << ", "
+        << "pron end: " << it_notes->getPronEnd() << endl;
     overlapper->overlapping(it_notes->getPronStart(), it_notes->getPronEnd(),
       voice_db->getVoice(it_notes->getPron()).bwc, it_notes->getVelocities());
   }
   overlapper->outputWav(score->getSongPath(), margin);
   delete overlapper;
 
-  cout << "----- vocalization finished -----" << endl << endl;
+  if (nak::log)
+    cout << "----- vocalization finished -----" << endl << endl;
   return true;
 }
 
@@ -183,9 +202,10 @@ int main()
   nakloid->vocalization();
   delete nakloid;
 
-  cin.sync();
-  cout << endl << endl << endl << "Press Enter/Return to continue..." << endl;
-  cin.get();
-
+  if (nak::log) {
+    cin.sync();
+    cout << endl << endl << endl << "Press Enter/Return to continue..." << endl;
+    cin.get();
+  }
   return 0;
 }

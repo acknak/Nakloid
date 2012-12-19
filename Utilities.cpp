@@ -5,6 +5,9 @@ using namespace nak;
 
 namespace nak {
   // Nakloid
+  bool cache = false;
+  bool log = false;
+
   enum ScoreMode score_mode = score_mode_ust;
   string path_ust = "score.ust";
   string path_smf = "score.mid";
@@ -13,13 +16,13 @@ namespace nak {
   string path_lyric = "lyric.txt";
   string path_song = "song.wav";
   unsigned long margin = 0;
-  bool cache = true;
 
   // PitchMarker
   unsigned short pitch_margin = 10;
 
   // BaseWavsMarker
   unsigned char base_wavs_lobe = 3;
+  bool is_normalize = false;
 
   // BaseWavsOverlapper
   bool compressor = false;
@@ -28,10 +31,11 @@ namespace nak {
   double threshold_y = 0.8;
 
   // NoteArranger
+  bool vowel_combining = false;
   unsigned short ms_front_edge = 30;
   unsigned short ms_back_edge = 30;
   bool sharpen_front = false;
-  bool sharpen_back = true;
+  bool sharpen_back = false;
 
   // PitchArranger
   unsigned short ms_overshoot = 50;
@@ -41,10 +45,10 @@ namespace nak {
   unsigned short ms_vibrato_offset = 400;
   unsigned short ms_vibrato_width = 200;
   double pitch_vibrato = 3.0;
-  bool vibrato = true;
-  bool overshoot = true;
-  bool preparation = true;
-  bool interpolation = true;
+  bool vibrato = false;
+  bool overshoot = false;
+  bool preparation = false;
+  bool interpolation = false;
 }
 
 // parser
@@ -58,6 +62,8 @@ void nak::parse(string path_ini)
     return;
   }
 
+  cache = ptree.get<bool>("Nakloid.cache", cache);
+  log = ptree.get<bool>("Nakloid.log", log);
   string tmp = ptree.get<string>("Nakloid.score_mode", "ust");
   if (tmp == "ust")
     score_mode = score_mode_ust;
@@ -69,7 +75,6 @@ void nak::parse(string path_ini)
     cerr << "[nak::parse] can't recognize score_mode" << endl;
     return;
   }
-
   switch (score_mode) {
   case score_mode_ust:
     path_ust = ptree.get<string>("Nakloid.path_ust", path_ust);
@@ -85,13 +90,14 @@ void nak::parse(string path_ini)
   singer = ptree.get<string>("Nakloid.singer", singer);
   path_song = ptree.get<string>("Nakloid.path_song", path_song);
   margin = ptree.get<unsigned long>("Nakloid.margin", margin);
-  cache = ptree.get<bool>("Nakloid.cache", cache);
   pitch_margin = ptree.get<unsigned short>("PitchMarker.pitch_margin", pitch_margin);
   base_wavs_lobe = ptree.get<unsigned char>("BaseWavsMaker.base_wavs_lobe", base_wavs_lobe);
+  is_normalize = ptree.get<unsigned char>("BaseWavsMaker.normalize", is_normalize);
   compressor = ptree.get<bool>("BaseWavsOverlapper.compressor", compressor);
   threshold_x = ptree.get<double>("BaseWavsOverlapper.threshold_x", threshold_x);
   threshold_y = ptree.get<double>("BaseWavsOverlapper.threshold_y", threshold_y);
   max_volume = ptree.get<double>("BaseWavsOverlapper.max_volume", max_volume);
+  vowel_combining = ptree.get<bool>("NoteArranger.vowel_combining", vowel_combining);
   ms_front_edge = ptree.get<unsigned short>("NoteArranger.ms_front_edge", ms_front_edge);
   ms_back_edge = ptree.get<unsigned short>("NoteArranger.ms_back_edge", ms_back_edge);
   sharpen_front = ptree.get<bool>("NoteArranger.sharpen_front", sharpen_front);
