@@ -22,7 +22,7 @@ namespace nak {
   unsigned char base_wavs_lobe = 3;
 
   // BaseWavsOverlapper
-  bool compressor = true;
+  bool compressor = false;
   double max_volume = 0.8;
   double threshold_x = 0.6;
   double threshold_y = 0.8;
