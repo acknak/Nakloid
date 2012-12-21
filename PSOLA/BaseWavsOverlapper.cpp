@@ -2,13 +2,13 @@
 
 using namespace std;
 
-BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, list<double> pitches)
+BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, list<float> pitches)
 {
-  vector<double> pitches_vector(pitches.begin(), pitches.end());
+  vector<float> pitches_vector(pitches.begin(), pitches.end());
   BaseWavsOverlapper(format, pitches_vector);
 }
 
-BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<double> pitches)
+BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<float> pitches)
 {
   this->format = format;
   unsigned long tmp_ms = 0;
@@ -108,13 +108,10 @@ void BaseWavsOverlapper::outputWav(string output)
       if (output_wav[i] == 0)
         continue;
       double tmp_db = log10(pow(output_wav[i],2.0)) * 10;
-      if (tmp_db < border_db_x) {
-        double test = pow(10, (tmp_db*slope_fore-tmp_db)/20);
-        output_wav[i] *= test;
-      } else {
-        double test = pow(10, ((tmp_db-border_db_x)*slope_aft+border_db_y-tmp_db)/20);
-        output_wav[i] *= test;
-      }
+      if (tmp_db < border_db_x)
+        output_wav[i] *= pow(10, (tmp_db*slope_fore-tmp_db)/20);
+      else
+        output_wav[i] *= pow(10, ((tmp_db-border_db_x)*slope_aft+border_db_y-tmp_db)/20);
     }
     if (nak::log)
       cout << endl << "finish compressing" << endl << endl;

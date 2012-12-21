@@ -214,12 +214,12 @@ void Score::setSongPath(string path_song)
   this->path_song = path_song;
 }
 
-vector<double> Score::getPitches()
+vector<float> Score::getPitches()
 {
   return pitches;
 }
 
-void Score::setPitches(vector<double> pitches)
+void Score::setPitches(vector<float> pitches)
 {
   this->pitches = pitches;
 }

@@ -19,8 +19,8 @@
 // Refference Object
 class BaseWavsOverlapper {
  public:
-  BaseWavsOverlapper(WavFormat format, std::list<double> pitches);
-  BaseWavsOverlapper(WavFormat format, std::vector<double> pitches);
+  BaseWavsOverlapper(WavFormat format, std::list<float> pitches);
+  BaseWavsOverlapper(WavFormat format, std::vector<float> pitches);
   virtual ~BaseWavsOverlapper();
 
   bool overlapping(unsigned long ms_start, unsigned long ms_end, BaseWavsContainer bwc, std::vector<unsigned char> velocities);

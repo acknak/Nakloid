@@ -40,8 +40,8 @@ class Score : public SmfHandler {
   void setSinger(std::string singer);
   std::string getSongPath();
   void setSongPath(std::string path_song);
-  std::vector<double> getPitches();
-  void setPitches(std::vector<double> pitches);
+  std::vector<float> getPitches();
+  void setPitches(std::vector<float> pitches);
 
   // extension method
   void smfInfo(short, short);
@@ -58,7 +58,7 @@ class Score : public SmfHandler {
   std::string path_song;
   unsigned short timebase;
   unsigned long tempo;
-  std::vector<double> pitches;
+  std::vector<float> pitches;
   unsigned short track;
   bool is_parse;
   unsigned long time_parse;

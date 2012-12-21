@@ -4,7 +4,7 @@ using namespace std;
 
 void PitchArranger::arrange(Score *score)
 {
-  vector<double> pitches = score->getPitches();
+  vector<float> pitches = score->getPitches();
 
   for (list<Note>::iterator it_notes=score->notes.begin();it_notes!=score->notes.end();++it_notes) {
     if (nak::vibrato)
@@ -22,7 +22,7 @@ void PitchArranger::arrange(Score *score)
   score->setPitches(pitches);
 }
 
-void PitchArranger::vibrato(vector<double>::iterator it_pitches_begin, vector<double>::iterator it_pitches_end)
+void PitchArranger::vibrato(vector<float>::iterator it_pitches_begin, vector<float>::iterator it_pitches_end)
 {
   if ((it_pitches_end-it_pitches_begin) > nak::ms_vibrato_offset) {
     unsigned long vibrato_length = (it_pitches_end-it_pitches_begin) - nak::ms_vibrato_offset;
@@ -31,9 +31,9 @@ void PitchArranger::vibrato(vector<double>::iterator it_pitches_begin, vector<do
   }
 }
 
-void PitchArranger::overshoot(vector<double>::iterator it_pitches_begin, vector<double>::iterator it_pitches_end, double target_pitch)
+void PitchArranger::overshoot(vector<float>::iterator it_pitches_begin, vector<float>::iterator it_pitches_end, float target_pitch)
 {
-  double diff = (*it_pitches_begin-target_pitch);
+  float diff = (*it_pitches_begin-target_pitch);
 
   if (it_pitches_end-it_pitches_begin > nak::ms_overshoot)
     for (int i=0; i<nak::ms_overshoot/2; i++) {
@@ -47,11 +47,11 @@ void PitchArranger::overshoot(vector<double>::iterator it_pitches_begin, vector<
       *(it_pitches_begin+i) += -diff + (diff/(it_pitches_end-it_pitches_begin)*i);
 }
 
-void PitchArranger::preparation(vector<double>::iterator it_pitches_begin, vector<double>::iterator it_pitches_end, double target_pitch)
+void PitchArranger::preparation(vector<float>::iterator it_pitches_begin, vector<float>::iterator it_pitches_end, float target_pitch)
 {
-  vector<double>::reverse_iterator rit_pitches_begin(it_pitches_end);
-  vector<double>::reverse_iterator rit_pitches_end(it_pitches_begin);
-  double diff = (*rit_pitches_begin-target_pitch) / 2;
+  vector<float>::reverse_iterator rit_pitches_begin(it_pitches_end);
+  vector<float>::reverse_iterator rit_pitches_end(it_pitches_begin);
+  float diff = (*rit_pitches_begin-target_pitch) / 2;
 
   if (rit_pitches_end-rit_pitches_begin > nak::ms_preparation)
     for (int i=0; i<nak::ms_preparation/2; i++) {
@@ -65,7 +65,7 @@ void PitchArranger::preparation(vector<double>::iterator it_pitches_begin, vecto
       *(rit_pitches_begin+i) += -diff + (diff/(rit_pitches_end-rit_pitches_begin)*i);
 }
 
-void PitchArranger::interpolation(vector<double>::iterator it_pitches, unsigned long ms_pron_start, unsigned long ms_pron_end, double target_pitch)
+void PitchArranger::interpolation(vector<float>::iterator it_pitches, unsigned long ms_pron_start, unsigned long ms_pron_end, float target_pitch)
 {
   for (unsigned long i=0; i<ms_pron_end-ms_pron_start; i++)
     if (*(it_pitches+ms_pron_start+i) == 0)
