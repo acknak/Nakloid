@@ -176,12 +176,12 @@ void Note::setVelocities(vector<short> velocities)
     cerr << "[Note::setVelocities] velocity length differ from Note on time" << endl;
 }
 
-unsigned short Note::getLack()
+short Note::getLack()
 {
   return self.lack;
 }
 
-void Note::setLack(unsigned short lack)
+void Note::setLack(short lack)
 {
   self.lack = lack;
 }

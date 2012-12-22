@@ -15,7 +15,7 @@ typedef struct {
   unsigned char base_pitch;
   short base_velocity;
   std::vector<short> velocities;
-  unsigned short lack;
+  short lack;
   short *prec;
   short *ovrl;
 } NoteFrame;
@@ -51,8 +51,8 @@ class Note {
   short getBaseVelocity();
   std::vector<short> getVelocities();
   void setVelocities(std::vector<short> velocities);
-  unsigned short getLack();
-  void setLack(unsigned short lack);
+  short getLack();
+  void setLack(short lack);
   bool isPrec();
   short getPrec() const;
   void setPrec(short prec);

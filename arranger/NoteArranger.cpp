@@ -13,7 +13,7 @@ void NoteArranger::arrange(Score *score)
     if (it_notes!=--score->notes.end() && boost::next(it_notes)->getStart()==it_notes->getEnd() && boost::next(it_notes)->getOvrl()>0)
       ms_back_edge = boost::next(it_notes)->getOvrl();
 
-    if (nak::sharpen_front)
+    if (nak::sharpen_front && it_notes!=score->notes.begin() && boost::prior(it_notes)->getEnd()==it_notes->getStart())
       sharpen_front(velocities.begin(), min(ms_front_edge, range));
     if (nak::sharpen_back)
       sharpen_back(velocities.rbegin(), min(ms_back_edge, range));
