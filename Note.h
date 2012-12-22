@@ -13,8 +13,8 @@ typedef struct {
   unsigned long end;
   std::string pron;
   unsigned char base_pitch;
-  unsigned char base_velocity;
-  std::vector<unsigned char> velocities;
+  short base_velocity;
+  std::vector<short> velocities;
   unsigned short lack;
   short *prec;
   short *ovrl;
@@ -24,7 +24,7 @@ typedef struct {
 class Note {
  public:
   Note(Score *score, unsigned long id);
-  Note(Score *score, unsigned long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, unsigned char base_velocity);
+  Note(Score *score, unsigned long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short base_velocity);
   Note(const Note& other);
   ~Note();
 
@@ -47,9 +47,10 @@ class Note {
   double getBasePitchHz();
   void setBasePitch(unsigned char base_pitch);
   void reloadVelocities();
-  void reloadVelocities(unsigned char base_velocity);
-  std::vector<unsigned char> getVelocities();
-  void setVelocities(std::vector<unsigned char> velocities);
+  void reloadVelocities(short base_velocity);
+  short getBaseVelocity();
+  std::vector<short> getVelocities();
+  void setVelocities(std::vector<short> velocities);
   unsigned short getLack();
   void setLack(unsigned short lack);
   bool isPrec();

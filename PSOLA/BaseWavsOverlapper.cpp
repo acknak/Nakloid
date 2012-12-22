@@ -34,7 +34,7 @@ BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<float> pitches)
 
 BaseWavsOverlapper::~BaseWavsOverlapper(){}
 
-bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_end, BaseWavsContainer bwc, vector<unsigned char> velocities)
+bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_end, BaseWavsContainer bwc, vector<short> velocities)
 {
   if (pitchmarks.empty())
     return false;

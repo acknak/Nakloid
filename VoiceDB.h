@@ -34,6 +34,7 @@ class VoiceDB {
   bool initVoiceMap();
   bool initVoiceMap(std::string filename);
   Voice getVoice(std::string pron);
+  bool isPron(std::string pron);
 
   // accessor
   void setSinger(std::string singer);

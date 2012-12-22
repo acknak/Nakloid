@@ -23,7 +23,7 @@ class BaseWavsOverlapper {
   BaseWavsOverlapper(WavFormat format, std::vector<float> pitches);
   virtual ~BaseWavsOverlapper();
 
-  bool overlapping(unsigned long ms_start, unsigned long ms_end, BaseWavsContainer bwc, std::vector<unsigned char> velocities);
+  bool overlapping(unsigned long ms_start, unsigned long ms_end, BaseWavsContainer bwc, std::vector<short> velocities);
   void outputWav(std::string output);
   void outputWav(std::string output, unsigned long ms_margin);
 

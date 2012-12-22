@@ -40,11 +40,11 @@ bool VoiceDB::initVoiceMap(string filename)
     voice_map[pron].prec = boost::lexical_cast<short>(v2[4]);
     voice_map[pron].ovrl = boost::lexical_cast<short>(v2[5]);
     if (v1[0].find(wav_ext) == string::npos)
-      voice_map[filename].frq = 260.0;
+      voice_map[pron].frq = 260.0;
     else {
       ifstream ifs_frq(("vocal/"+singer+"/"+filename+"_wav.frq").c_str(), ios::binary);
       ifs_frq.seekg(sizeof(char)*12, ios_base::beg);
-      ifs_frq.read((char*)&(voice_map[filename].frq), sizeof(double));
+      ifs_frq.read((char*)&(voice_map[pron].frq), sizeof(double));
     }
     // alias
     if (v2[0]!="" && pron != v2[0])
@@ -55,16 +55,23 @@ bool VoiceDB::initVoiceMap(string filename)
 
 Voice VoiceDB::getVoice(string pron)
 {
-  if ((voice_map.empty()&&!initVoiceMap()) || voice_map.find(pron)==voice_map.end())
+  if (!isPron(pron))
     return getNullVoice();
 
   if (voice_map[pron].bwc.base_wavs.empty()) {
     Voice tmp_voice = voice_map[pron];
     BaseWavsContainer bwc;
     BaseWavsFileIO *bwc_io = new BaseWavsFileIO();
+    string tmp_filename = pron;
+    if (voice_map[pron].filename != pron)
+      if (tmp_filename[1] == ' ')
+        if (tmp_filename[0] == '*')
+          tmp_filename.replace(0, 2, "_");
+        else if (tmp_filename[0] == '-')
+          tmp_filename.replace(0, 2, "-");
 
-    if (nak::cache && bwc_io->isBaseWavsContainerFile("vocal/"+singer+"/"+voice_map[pron].filename+".bwc")) {
-      voice_map[pron].bwc = ((BaseWavsContainer)bwc_io->get("vocal/"+singer+"/"+voice_map[pron].filename+".bwc"));
+    if (nak::cache && bwc_io->isBaseWavsContainerFile("vocal/"+singer+"/"+tmp_filename+".bwc")) {
+      voice_map[pron].bwc = ((BaseWavsContainer)bwc_io->get("vocal/"+singer+"/"+tmp_filename+".bwc"));
     } else {
       // get wav data
       WavParser wav_parser("vocal/"+singer+"/"+voice_map[pron].filename+".wav");
@@ -103,7 +110,7 @@ Voice VoiceDB::getVoice(string pron)
           bwc.format.chunkSize += BaseWavsFormat::wAdditionalSize + sizeof(short);
           bwc.format.wFormatTag = BaseWavsFormat::BaseWavsFormatTag;
           bwc.format.dwSamplesPerSec = wav_parser.getFormat().dwSamplesPerSec;
-          bwc_io->set("vocal/"+singer+"/"+voice_map[pron].filename+".bwc", bwc);
+          bwc_io->set("vocal/"+singer+"/"+tmp_filename+".bwc", bwc);
         }
 
         voice_map[pron].bwc = bwc;
@@ -112,6 +119,11 @@ Voice VoiceDB::getVoice(string pron)
   }
 
   return voice_map[pron];
+}
+
+bool VoiceDB::isPron(string pron)
+{
+  return !((voice_map.empty()&&!initVoiceMap()) || voice_map.count(pron)==0);
 }
 
 void VoiceDB::setSinger(string singer)

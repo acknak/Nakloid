@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <boost/utility.hpp>
 #include "Score.h"
 #include "VoiceDB.h"
 #include "Utilities.h"

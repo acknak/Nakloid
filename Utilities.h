@@ -12,10 +12,7 @@
 #include "./parser/WavFormat.h"
 
 namespace nak {
-  // Nakloid
-  extern bool cache;
-  extern bool log;
-
+  // General
   extern enum ScoreMode{score_mode_ust, score_mode_smf, score_mode_nak} score_mode;
   extern std::string singer;
   extern std::string path_ust;
@@ -24,6 +21,12 @@ namespace nak {
   extern std::string path_lyric;
   extern std::string path_song;
   extern unsigned long margin;
+
+  // Nakloid
+  extern bool cache;
+  extern bool log;
+  extern bool vowel_combining;
+  extern double vowel_combining_volume;
 
   // PitchMarker
   extern unsigned short pitch_margin;

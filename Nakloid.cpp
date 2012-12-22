@@ -85,6 +85,11 @@ bool Nakloid::vocalization()
     return false;
   }
 
+  if (score->notes.empty()) {
+    cerr << "[Nakloid::vocalization] notes hasn't loaded" << endl;
+    return false;
+  }
+
   if (voice_db == 0) {
     cerr << "[Nakloid::vocalization] can't find voiceDB" << endl;
     return false;
@@ -99,13 +104,17 @@ bool Nakloid::vocalization()
   double counter=0, percent=0;
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
     // vowel combining
-    /*
-    if (nak::vowel_combining)
-      if (it_notes!=score->notes.begin() && it_notes->getStart()==boost::prior(it_notes)->getEnd())
-        it_notes->setPron("* "+it_notes->getPron());
-      else
-        it_notes->setPron("- "+it_notes->getPron());
-    */
+    if (nak::vowel_combining) {
+      if (it_notes!=score->notes.begin() && boost::prior(it_notes)->getEnd()==it_notes->getStart()) {
+        if (voice_db->isPron("* "+it_notes->getPron())) {
+          it_notes->setPron("* "+it_notes->getPron());
+          it_notes->reloadVelocities(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
+        }
+      } else {
+        if (voice_db->isPron("- "+it_notes->getPron()))
+          it_notes->setPron("- "+it_notes->getPron());
+      }
+    }
 
     // set overlap range & preceding utterance
     if (it_notes == score->notes.begin()) {

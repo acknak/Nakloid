@@ -15,8 +15,8 @@ class NoteArranger {
   static void arrange(Score *score);
 
  private:
-  static void sharpen_front(std::vector<unsigned char>::iterator it_start, unsigned short range);
-  static void sharpen_back(std::vector<unsigned char>::reverse_iterator it_rstart, unsigned short range);
+  static void sharpen_front(std::vector<short>::iterator it_start, unsigned short range);
+  static void sharpen_back(std::vector<short>::reverse_iterator it_rstart, unsigned short range);
 };
 
 #endif

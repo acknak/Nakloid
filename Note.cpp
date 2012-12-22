@@ -8,7 +8,7 @@ Note::Note(Score *score, unsigned long id)
   initializeNoteFrame();
 }
 
-Note::Note(Score *score, unsigned long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, unsigned char base_velocity)
+Note::Note(Score *score, unsigned long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short base_velocity)
   :score(score),id(id)
 {
   initializeNoteFrame();
@@ -146,7 +146,12 @@ void Note::setBasePitch(unsigned char base_pitch)
   this->self.base_pitch = base_pitch;
 }
 
-vector<unsigned char> Note::getVelocities()
+short Note::getBaseVelocity()
+{
+  return self.base_velocity;
+}
+
+vector<short> Note::getVelocities()
 {
   return self.velocities;
 }
@@ -157,13 +162,13 @@ void Note::reloadVelocities()
     self.velocities.assign(getPronEnd()-getPronStart(), self.base_velocity);
 }
 
-void Note::reloadVelocities(unsigned char velocity)
+void Note::reloadVelocities(short velocity)
 {
   self.base_velocity = velocity;
   reloadVelocities();
 }
 
-void Note::setVelocities(vector<unsigned char> velocities)
+void Note::setVelocities(vector<short> velocities)
 {
   if (velocities.size() == self.velocities.size())
     self.velocities = velocities;
