@@ -79,6 +79,8 @@ namespace nak {
   extern std::vector<double> getTri(long len);
   extern std::vector<double> getLanczos(long len, unsigned short lobe);
   extern double sinc(double x);
+
+  extern bool isVowel(std::string pron);
 }
 
 #endif

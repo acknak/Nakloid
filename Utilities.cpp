@@ -242,3 +242,8 @@ double nak::sinc(double x)
 {
   return sin(M_PI*x)/(M_PI*x);
 }
+
+bool nak::isVowel(string pron)
+{
+  return (pron=="* ‚ "||pron=="* ‚¢"||pron=="* ‚¤"||pron=="* ‚¦"||pron=="* ‚¨"||pron=="* ‚ñ");
+}

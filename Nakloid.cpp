@@ -108,7 +108,8 @@ bool Nakloid::vocalization()
       if (it_notes!=score->notes.begin() && boost::prior(it_notes)->getEnd()==it_notes->getStart()) {
         if (voice_db->isPron("* "+it_notes->getPron())) {
           it_notes->setPron("* "+it_notes->getPron());
-          it_notes->reloadVelocities(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
+          if (nak::isVowel(it_notes->getPron()))
+            it_notes->reloadVelocities(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
         }
       } else {
         if (voice_db->isPron("- "+it_notes->getPron()))
