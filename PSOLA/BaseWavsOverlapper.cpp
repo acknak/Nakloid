@@ -98,7 +98,7 @@ void BaseWavsOverlapper::outputWav(string output)
       nak::max_volume = 1.0;
     else if (nak::max_volume < 0)
       nak::max_volume = 0;
-    long tmp_max_volume = *max_element(output_wav.begin(), output_wav.end());
+    long tmp_max_volume = max(*max_element(output_wav.begin(), output_wav.end()),*max_element(output_wav.begin(), output_wav.end())*-1);
     double tmp_max_db = log10((double)tmp_max_volume) * 20;
     double border_db_x = log10(pow(32767*nak::max_volume,2.0)) * 10 * nak::threshold_x;
     double slope_fore = nak::threshold_y / nak::threshold_x;

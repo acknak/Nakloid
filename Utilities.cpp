@@ -54,14 +54,17 @@ namespace nak {
 }
 
 // parser
-void nak::parse(string path_ini)
+bool nak::parse(string path_ini)
 {
   boost::property_tree::ptree ptree;
   try {
-  	read_ini(path_ini, ptree);
-  } catch (boost::property_tree::ini_parser_error &e) {
-    cerr << "[nak::parse] can't find Nakloid.ini" << endl;
-    return;
+    boost::property_tree::ini_parser::read_ini(path_ini, ptree);
+  } catch (boost::property_tree::ini_parser::ini_parser_error &e) {
+    cerr << e.message() << endl
+      << "[nak::parse] can't parse Nakloid.ini" << endl;
+    return false;
+  } catch (...) {
+    cerr << "[nak::parse] can't parse Nakloid.ini" << endl;
   }
 
   // General
@@ -74,7 +77,7 @@ void nak::parse(string path_ini)
     score_mode = score_mode_nak;
   else {
     cerr << "[nak::parse] can't recognize score_mode" << endl;
-    return;
+    return false;
   }
   switch (score_mode) {
   case score_mode_ust:
@@ -130,6 +133,8 @@ void nak::parse(string path_ini)
   overshoot = ptree.get<bool>("PitchArranger.overshoot", overshoot);
   preparation = ptree.get<bool>("PitchArranger.preparation", preparation);
   interpolation = ptree.get<bool>("PitchArranger.interpolation", interpolation);
+
+  return true;
 }
 
 unsigned long nak::ms2pos(unsigned long ms, WavFormat format)

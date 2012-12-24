@@ -197,7 +197,8 @@ long Nakloid::getMargin()
  */
 int main()
 {
-  nak::parse("Nakloid.ini");
+  if (!nak::parse("Nakloid.ini"))
+    return 1;
 
   Nakloid *nakloid;
   switch(nak::score_mode){

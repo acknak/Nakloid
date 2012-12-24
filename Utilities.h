@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <exception>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
@@ -62,7 +61,7 @@ namespace nak {
   extern bool interpolation;
 
   // Nakloid.ini parser
-  extern void parse(std::string path_ini);
+  extern bool parse(std::string path_ini);
 
   // tools
   extern unsigned long ms2pos(unsigned long ms, WavFormat format);
