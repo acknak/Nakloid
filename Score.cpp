@@ -125,21 +125,21 @@ void Score::loadUst(string path_ust)
       setSongPath("."+buf_vector[1]);
     }
     if (buf_vector[0] == "Length")
-      if (buf_vector[1]!="" && (tmp=boost::lexical_cast<short>(buf_vector[1]))>0)
+      if (buf_vector[1]!="" && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0)
         notes.back().setEnd(pos+=tmp, 480, 1.0/tempo*60000000);
     if (buf_vector[0] == "Lyric")
       notes.back().setPron(buf_vector[1]);
     if (buf_vector[0] == "NoteNum")
-      if (buf_vector[1]!="" && (tmp=boost::lexical_cast<short>(buf_vector[1]))>0)
+      if (buf_vector[1]!="" && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0)
         notes.back().setBasePitch(tmp);
     if (buf_vector[0] == "PreUtterance")
       if (buf_vector[1]!="")
-        notes.back().setPrec(boost::lexical_cast<short>(buf_vector[1]));
+        notes.back().setPrec(boost::lexical_cast<double>(buf_vector[1]));
     if (buf_vector[0] == "VoiceOverlap")
       if (buf_vector[1]!="")
-        notes.back().setOvrl(boost::lexical_cast<short>(buf_vector[1]));
+        notes.back().setOvrl(boost::lexical_cast<double>(buf_vector[1]));
     if (buf_vector[0] == "Intensity")
-      if (buf_vector[1]!="" && (tmp=boost::lexical_cast<short>(buf_vector[1]))>0)
+      if (buf_vector[1]!="" && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0)
         notes.back().reloadVelocities(tmp);
   }
   while (notes.back().getPron()=="R" || notes.back().getPron()=="")
