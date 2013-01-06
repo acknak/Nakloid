@@ -32,7 +32,7 @@ class BaseWavsMaker {
   unsigned char getLobe();
   long getRepStartPoint();
   void setRepStart(long ms_rep_start, unsigned long fs);
-  void setRange(unsigned short ms_offs, unsigned short ms_blnk, unsigned long fs);
+  void setRange(unsigned short ms_offs, short ms_blnk, unsigned long fs);
 
  private:
   BaseWavsMaker(const BaseWavsMaker& other);

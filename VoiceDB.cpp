@@ -36,7 +36,7 @@ bool VoiceDB::initVoiceMap(string filename)
     voice_map[pron].filename = filename;
     voice_map[pron].offs = (((tmp=boost::lexical_cast<double>(v2[1]))>0))?tmp:0;
     voice_map[pron].cons = (((tmp=boost::lexical_cast<double>(v2[2]))>0))?tmp:0;
-    voice_map[pron].blnk = (((tmp=boost::lexical_cast<double>(v2[3]))>0))?tmp:0;
+    voice_map[pron].blnk = boost::lexical_cast<double>(v2[3]);
     voice_map[pron].prec = boost::lexical_cast<double>(v2[4]);
     voice_map[pron].ovrl = boost::lexical_cast<double>(v2[5]);
     if (v1[0].find(wav_ext) == string::npos)

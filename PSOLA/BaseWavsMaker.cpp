@@ -65,10 +65,10 @@ void BaseWavsMaker::setRepStart(long ms_rep_start, unsigned long fs)
   this->pos_rep_start = ms_rep_start * fs / 1000;
 }
 
-void BaseWavsMaker::setRange(unsigned short ms_offs, unsigned short ms_blnk, unsigned long fs)
+void BaseWavsMaker::setRange(unsigned short ms_offs, short ms_blnk, unsigned long fs)
 {
-  this->pos_offs = ms_offs * fs / 1000;
-  this->pos_blnk = ms_blnk * fs / 1000;
+  this->pos_offs = ms_offs / 1000.0 * fs;
+  this->pos_blnk = ms_blnk / 1000.0 * fs;
 }
 
 bool BaseWavsMaker::makeBaseWavs()
@@ -92,10 +92,19 @@ bool BaseWavsMaker::makeBaseWavs()
     }
   }
   sub_tmp = 0;
-  for (int i=0; i<pitches.size(); i++) {
-    if (voice.size()-pos_blnk < (sub_tmp+=pitches[i])) {
-      sub_end = i;
-      break;
+  if (pos_blnk > 0) {
+    for (int i=0; i<pitches.size(); i++) {
+      if (voice.size()-pos_blnk < (sub_tmp+=pitches[i])) {
+        sub_end = i;
+        break;
+      }
+    }
+  } else {
+    for (int i=0; i<pitches.size(); i++) {
+      if (pos_offs - pos_blnk < (sub_tmp+=pitches[i])) {
+        sub_end = i;
+        break;
+      }
     }
   }
   sub_tmp = 0;

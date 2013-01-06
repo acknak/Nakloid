@@ -15,11 +15,11 @@
 
 typedef struct {
   std::string filename;
-  unsigned short offs; // offset(left blank)
-  unsigned short cons; // consonant part(unaltered range)
-  unsigned short blnk; // blank(right blank)
-  unsigned short prec; // preceding utterance
-  unsigned short ovrl; // overlap range
+  short offs; // offset(left blank)
+  short cons; // consonant part(unaltered range)
+  short blnk; // blank(right blank)
+  short prec; // preceding utterance
+  short ovrl; // overlap range
   double frq;
   BaseWavsContainer bwc;
 } Voice;
