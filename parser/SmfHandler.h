@@ -2,8 +2,8 @@
 #define SmfHandler_h
 
 #include <map>
-#include <fstream>
 #include <string>
+#include <fstream>
 
 enum MidiMsg{
   MIDI_MSG_NOTE_ON,

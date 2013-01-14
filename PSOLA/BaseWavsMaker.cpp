@@ -75,8 +75,8 @@ bool BaseWavsMaker::makeBaseWavs()
 {
   if (voice.size()==0 || pitch_marks.empty() || lobe==0)
     return false;
-  if (nak::log)
-    cout << "----- start making base wavs -----" << endl;
+
+  cout << "----- start making base wavs -----" << endl;
 
   vector<long> pitches(pitch_marks.size()-1, 0);
   for (int i=0; i<pitches.size(); i++)
@@ -116,11 +116,10 @@ bool BaseWavsMaker::makeBaseWavs()
       break;
     }
   }
-  if (nak::log)
-    cout << "pitches size:" << pitches.size() 
-      << ", sub_start:" << sub_start
-      << ", sub_rep_start:" << sub_rep_start
-      << ", sub_end:" << sub_end << endl;
+  cout << "pitches size:" << pitches.size() 
+       << ", sub_start:" << sub_start
+       << ", sub_rep_start:" << sub_rep_start
+       << ", sub_end:" << sub_end << endl;
 
   // make base wavs
   base_wavs.clear();
@@ -152,8 +151,7 @@ bool BaseWavsMaker::makeBaseWavs()
   //vector<short> target = base_wavs[sub_rep_start].data.getDataVector();
   //short target_max = *max_element(target.begin(),test.end());
   //short target_min = *min_element(target.begin(),test.end());
-  if (nak::log)
-    cout << "base_wavs size:" << base_wavs.size() << ", base_pos:" << base_pos << endl;
+  cout << "base_wavs size:" << base_wavs.size() << ", base_pos:" << base_pos << endl;
   for (int i=0; i<sub_rep_len/2; i++) {
     BaseWav fore_wav = base_wavs[(sub_rep_start-sub_start)+i];
     BaseWav aft_wav = base_wavs[base_pos+i];
@@ -203,8 +201,8 @@ bool BaseWavsMaker::makeBaseWavs()
     base_wavs[base_pos+i].data.setData(fade_wav_data);
   }
 
-  if (nak::log)
-    cout << "----- finish making base wavs -----" << endl << endl;
+  cout << "----- finish making base wavs -----" << endl << endl;
+
   return true;
 }
 

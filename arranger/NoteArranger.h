@@ -4,9 +4,8 @@
 #include <list>
 #include <vector>
 #include <algorithm>
-#include <boost/utility.hpp>
-#include "../Note.h"
-#include "../Score.h"
+#include "../score/Note.h"
+#include "../score/Score.h"
 #include "../Utilities.h"
 #include "../PSOLA/BaseWav.h"
 

@@ -3,8 +3,7 @@
 
 #include <cmath>
 #include <vector>
-#include <boost/utility.hpp>
-#include "../Score.h"
+#include "../score/Score.h"
 #include "../Utilities.h"
 #include "../parser/WavFormat.h"
 

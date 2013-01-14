@@ -5,20 +5,25 @@ using namespace nak;
 
 namespace nak {
   // General
-  enum ScoreMode score_mode = score_mode_ust;
-  string path_ust = "score.ust";
-  string path_smf = "score.mid";
-  string singer = "voiceDB";
-  short track = 1;
-  string path_lyric = "lyric.txt";
-  string path_song = "song.wav";
+  enum ScoreMode score_mode = score_mode_nml;
+  string path_pitches = "";
+  string path_singer = "";
+  string path_song = "";
   unsigned long margin = 0;
+
+  string path_nml = "score.nml";
+  string path_ust = "score.ust";
+  short track = 1;
+  string path_smf = "score.mid";
+  string path_lyric = "lyric.txt";
 
   // Nakloid
   bool cache = false;
-  bool log = false;
+  string path_log = "";
   bool vowel_combining = false;
   double vowel_combining_volume = 1.0;
+  string path_output_nml="";
+  string path_output_pit="";
 
   // PitchMarker
   unsigned short pitch_margin = 10;
@@ -69,37 +74,33 @@ bool nak::parse(string path_ini)
 
   // General
   string tmp = ptree.get<string>("General.score_mode", "ust");
-  if (tmp == "ust")
+  if (tmp == "nml") {
+    score_mode = score_mode_nml;
+    path_nml = ptree.get<string>("General.path_nml", path_nml);
+  } else if (tmp == "ust") {
     score_mode = score_mode_ust;
-  else if (tmp == "smf")
+    path_ust = ptree.get<string>("General.path_ust", path_ust);
+  } else if (tmp == "smf") {
     score_mode = score_mode_smf;
-  else if (tmp == "nak")
-    score_mode = score_mode_nak;
-  else {
+    track = ptree.get<short>("General.track", track);
+    path_smf = ptree.get<string>("General.path_smf", path_smf);
+    path_lyric = ptree.get<string>("General.path_lyric", path_lyric);
+  } else {
     cerr << "[nak::parse] can't recognize score_mode" << endl;
     return false;
   }
-  switch (score_mode) {
-  case score_mode_ust:
-    path_ust = ptree.get<string>("General.path_ust", path_ust);
-    break;
-  case score_mode_smf:
-    path_smf = ptree.get<string>("General.path_smf", path_smf);
-    track = ptree.get<short>("General.track", track);
-    path_lyric = ptree.get<string>("General.path_lyric", path_lyric);
-    break;
-  case score_mode_nak:
-    break;
-  }
-  singer = ptree.get<string>("General.singer", singer);
+  path_pitches = ptree.get<string>("General.path_pitches", path_pitches);
+  path_singer = ptree.get<string>("General.path_singer", path_singer);
   path_song = ptree.get<string>("General.path_song", path_song);
   margin = ptree.get<unsigned long>("General.margin", margin);
 
   // Nakloid
   cache = ptree.get<bool>("Nakloid.cache", cache);
-  log = ptree.get<bool>("Nakloid.log", log);
+  path_log = ptree.get<string>("Nakloid.path_log", path_log);
   vowel_combining = ptree.get<bool>("Nakloid.vowel_combining", vowel_combining);
   vowel_combining_volume = ptree.get<double>("Nakloid.vowel_combining_volume", vowel_combining_volume);
+  path_output_nml = ptree.get<string>("Nakloid.path_output_nml", path_output_nml);
+  path_output_pit = ptree.get<string>("Nakloid.path_output_pit", path_output_pit);
 
   // PitchMarker
   pitch_margin = ptree.get<unsigned short>("PitchMarker.pitch_margin", pitch_margin);

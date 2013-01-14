@@ -42,17 +42,17 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
     return false;
   if (bwc.base_wavs.empty())
     return false;
-  if (nak::log)
-    cout << "----- start overlapping -----" << endl;
+
+  cout << "----- start overlapping -----" << endl;
 
   unsigned long fade_start = (bwc.base_wavs.begin()+bwc.format.dwRepeatStart)->fact.dwPosition;
   unsigned long fade_last = bwc.base_wavs.back().fact.dwPosition;
   vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(nak::ms2pos(ms_start,format));
   vector<unsigned long>::iterator it_end_pitchmarks = pos2it(nak::ms2pos(ms_end,format));
   vector<unsigned long>::iterator it_pitchmarks = it_begin_pitchmarks;
-  if (nak::log)
-    cout << "base_wav size:" << bwc.base_wavs.size() << endl
-      << "fade_start:" << fade_start << ", fade_last:" << fade_last << endl;
+
+  cout << "base_wav size:" << bwc.base_wavs.size() << endl
+       << "fade_start:" << fade_start << ", fade_last:" << fade_last << endl;
 
   while (it_pitchmarks != it_end_pitchmarks) {
     // choose overlap base_wav
@@ -84,16 +84,15 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
     ++it_pitchmarks;
   }
 
-  if (nak::log)
-    cout << "----- finish overlapping -----" << endl << endl;
+  cout << "----- finish overlapping -----" << endl << endl;
+
   return true;
 }
 
 void BaseWavsOverlapper::outputWav(string output)
 {
   if (nak::compressor) {
-    if (nak::log)
-      cout << endl << "compressing..." << endl << endl;
+    cout << endl << "compressing..." << endl << endl;
     if (nak::max_volume > 1.0)
       nak::max_volume = 1.0;
     else if (nak::max_volume < 0)
@@ -113,8 +112,7 @@ void BaseWavsOverlapper::outputWav(string output)
       else
         output_wav[i] *= pow(10, ((tmp_db-border_db_x)*slope_aft+border_db_y-tmp_db)/20);
     }
-    if (nak::log)
-      cout << endl << "finish compressing" << endl << endl;
+    cout << endl << "finish compressing" << endl << endl;
   }
   vector<short> tmp_output_wav(output_wav.begin(), output_wav.end());
   long size = output_wav.size()*sizeof(short);

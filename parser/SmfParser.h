@@ -1,13 +1,12 @@
 #ifndef SmfParser_h
 #define SmfParser_h
 
+#include <vector>
 #include <string>
 #include <cstring>
-#include <vector>
 #include <fstream>
 #include <iostream>
 #include "SmfHandler.h"
-#include "../Utilities.h"
 
 // Reference Object
 class SmfParser {

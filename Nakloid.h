@@ -3,17 +3,21 @@
 
 #include <map>
 #include <list>
+#include <cstdio>
 #include <string>
 #include <vector>
 #include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <boost/utility.hpp>
-#include "Score.h"
 #include "VoiceDB.h"
 #include "Utilities.h"
 #include "arranger/NoteArranger.h"
 #include "arranger/PitchArranger.h"
+#include "score/Score.h"
+#include "score/ScoreNML.h"
+#include "score/ScoreUST.h"
+#include "score/ScoreSMF.h"
 #include "parser/WavFormat.h"
 #include "parser/WavData.h"
 #include "parser/WavParser.h"
@@ -23,13 +27,11 @@
 class Nakloid {
  public:
   Nakloid();
-  explicit Nakloid(std::string path_ust);
-  Nakloid(std::string singer, std::string path_smf, short track, std::string path_lyric, std::string path_song);
+  explicit Nakloid(nak::ScoreMode mode);
   virtual ~Nakloid();
 
-  void setDefaultFormat();
-  bool setScore(std::string path_ust);
-  bool setScore(std::string singer, std::string path_smf, short track, std::string path_lyric, std::string path_song);
+  void loadDefaultFormat();
+  bool loadScore(nak::ScoreMode mode);
   bool vocalization();
 
   // accessor

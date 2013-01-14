@@ -85,8 +85,8 @@ bool PitchMarker::mark(vector<short> input)
 {
   if (win_size <= 0)
     return false;
-  if (nak::log)
-    cout << "----- start pitch marking -----" << endl;
+
+  cout << "----- start pitch marking -----" << endl;
 
   vector<short>::iterator mark_next, mark_prev;
   mark_list.clear();
@@ -120,8 +120,8 @@ bool PitchMarker::mark(vector<short> input)
   }
   it_start = it_tmp_max;
   mark_list.push_back((mark_prev=mark_next=it_start)-input.begin());
-  if (nak::log)
-    cout << "win_size:" << win_size << ", start:" << it_start-input.begin() << ", input.size:" << input.size() << endl;
+
+  cout << "win_size:" << win_size << ", start:" << it_start-input.begin() << ", input.size:" << input.size() << endl;
 
   // pitch marking
   while (input.end()-mark_next > win_size*1.5) {
@@ -150,8 +150,8 @@ bool PitchMarker::mark(vector<short> input)
     mark_list.push_front(mark_prev-max(dist,(long)win_size)-input.begin());
   mark_list.push_front(0);
 
-  if (nak::log)
-    cout << "----- finish pitch marking -----" << endl << endl;
+  cout << "----- finish pitch marking -----" << endl << endl;
+
   return true;
 }
 

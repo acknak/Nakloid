@@ -4,26 +4,24 @@ using namespace std;
 
 VoiceDB::VoiceDB()
 {
-  singer = "";
+  path_singer = "";
 }
 
-VoiceDB::VoiceDB(string singer)
+VoiceDB::VoiceDB(string path_singer)
 {
   VoiceDB();
-  setSinger(singer);
+  setSingerPath(path_singer);
 }
 
 VoiceDB::~VoiceDB() {}
 
 bool VoiceDB::initVoiceMap()
 {
-  return initVoiceMap("vocal/"+singer+"/oto.ini");
+  return initVoiceMap(path_singer+"/oto.ini");
 }
 
 bool VoiceDB::initVoiceMap(string filename)
 {
-  this->singer = singer;
-
   ifstream ifs(filename.c_str());
   string buf, wav_ext=".wav";
   while(ifs && getline(ifs, buf)) {
@@ -42,7 +40,7 @@ bool VoiceDB::initVoiceMap(string filename)
     if (v1[0].find(wav_ext) == string::npos)
       voice_map[pron].frq = 260.0;
     else {
-      ifstream ifs_frq(("vocal/"+singer+"/"+filename+"_wav.frq").c_str(), ios::binary);
+      ifstream ifs_frq((path_singer+"/"+filename+"_wav.frq").c_str(), ios::binary);
       ifs_frq.seekg(sizeof(char)*12, ios_base::beg);
       ifs_frq.read((char*)&(voice_map[pron].frq), sizeof(double));
     }
@@ -70,11 +68,11 @@ Voice VoiceDB::getVoice(string pron)
         else if (tmp_filename[0] == '-')
           tmp_filename.replace(0, 2, "-");
 
-    if (nak::cache && bwc_io->isBaseWavsContainerFile("vocal/"+singer+"/"+tmp_filename+".bwc")) {
-      voice_map[pron].bwc = ((BaseWavsContainer)bwc_io->get("vocal/"+singer+"/"+tmp_filename+".bwc"));
+    if (nak::cache && bwc_io->isBaseWavsContainerFile(path_singer+"/"+tmp_filename+".bwc")) {
+      voice_map[pron].bwc = ((BaseWavsContainer)bwc_io->get(path_singer+"/"+tmp_filename+".bwc"));
     } else {
       // get wav data
-      WavParser wav_parser("vocal/"+singer+"/"+voice_map[pron].filename+".wav");
+      WavParser wav_parser(path_singer+"/"+voice_map[pron].filename+".wav");
       wav_parser.addTargetTrack(0);
       if (!wav_parser.parse()) {
         tmp_voice = getNullVoice();
@@ -110,7 +108,7 @@ Voice VoiceDB::getVoice(string pron)
           bwc.format.chunkSize += BaseWavsFormat::wAdditionalSize + sizeof(short);
           bwc.format.wFormatTag = BaseWavsFormat::BaseWavsFormatTag;
           bwc.format.dwSamplesPerSec = wav_parser.getFormat().dwSamplesPerSec;
-          bwc_io->set("vocal/"+singer+"/"+tmp_filename+".bwc", bwc);
+          bwc_io->set(path_singer+"/"+tmp_filename+".bwc", bwc);
         }
 
         voice_map[pron].bwc = bwc;
@@ -126,14 +124,14 @@ bool VoiceDB::isPron(string pron)
   return !((voice_map.empty()&&!initVoiceMap()) || voice_map.count(pron)==0);
 }
 
-void VoiceDB::setSinger(string singer)
+void VoiceDB::setSingerPath(string path_singer)
 {
-  this->singer = singer;
+  this->path_singer = path_singer;
 }
 
-string VoiceDB::getSinger()
+string VoiceDB::getSingerPath()
 {
-  return this->singer;
+  return this->path_singer;
 }
 
 Voice VoiceDB::getNullVoice()

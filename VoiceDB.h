@@ -28,7 +28,7 @@ typedef struct {
 class VoiceDB {
  public:
   VoiceDB();
-  VoiceDB(std::string singer);
+  VoiceDB(std::string path_singer);
   virtual ~VoiceDB();
 
   bool initVoiceMap();
@@ -37,8 +37,8 @@ class VoiceDB {
   bool isPron(std::string pron);
 
   // accessor
-  void setSinger(std::string singer);
-  std::string getSinger();
+  void setSingerPath(std::string path_singer);
+  std::string getSingerPath();
 
  private:
   VoiceDB(const VoiceDB& other);
@@ -46,7 +46,7 @@ class VoiceDB {
 
   Voice getNullVoice();
 
-  std::string singer;
+  std::string path_singer;
   std::map<std::string, Voice> voice_map;
 };
 

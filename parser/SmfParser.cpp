@@ -80,8 +80,7 @@ bool SmfParser::parse()
     (*it)->smfInfo(num_track, timebase);
 
   // parse data chunk
-  if (nak::log)
-    cout << "num_track:" << num_track << endl;
+  cout << "num_track:" << num_track << endl;
   for (int i=0; i<num_track; i++) {
     for (it=handlers.begin(); it!=handlers.end(); it++)
       (*it)->trackChange(i);
@@ -102,8 +101,7 @@ bool SmfParser::parse()
       datasize <<= 8;
       datasize += (long)data;
     }
-    if (nak::log)
-      cout << i << "th chunk data size: " << datasize << endl;
+    cout << i << "th chunk data size: " << datasize << endl;
 
     // get chunk data
     unsigned char status = 0;
@@ -179,8 +177,8 @@ bool SmfParser::parse()
     }
   }
 
-  if (nak::log)
-    cout << "convert finished"<< endl;
+  cout << "convert finished"<< endl;
+
   return true;
 }
 
