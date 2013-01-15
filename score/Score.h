@@ -35,6 +35,7 @@ class Score {
   void setSongPath(std::string path_song);
   std::string getSingerPath();
   void setSingerPath(std::string paht_singer);
+  bool isTempered();
 
  private:
   Score(const Score& other);
@@ -44,6 +45,7 @@ class Score {
   std::vector<float> pitches;
   std::string path_song;
   std::string path_singer;
+  bool is_tempered;
 };
 
 #endif

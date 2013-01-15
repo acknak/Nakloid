@@ -22,7 +22,6 @@ void ScoreUST::load(string input_ust)
   short tmp, tempo=120;
   unsigned long pos=0;
   notes.clear();
-  pitches.clear();
   while (ifs && getline(ifs, buf_str)) {
     if (buf_str == "[#SETTING]")
       continue;
@@ -73,7 +72,7 @@ void ScoreUST::load(string input_ust)
   while (notes.back().getPron()=="R" || notes.back().getPron()=="")
     notes.pop_back();
 
-  if (pitches.empty())
+  if (!is_tempered)
     reloadPitches();
 
   cout << "----- finish score(ust) loading -----" << endl;

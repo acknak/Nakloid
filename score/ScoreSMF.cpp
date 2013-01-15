@@ -58,7 +58,7 @@ bool ScoreSMF::load(string input, short track, string path_lyric)
   for (; it_notes!=notes.end()&&it_prons!=prons.end(); ++it_notes,++it_prons)
     (*it_notes).setPron(*it_prons);
 
-  if (pitches.empty())
+  if (!is_tempered)
     reloadPitches();
 
   cout << "----- finish score(smf) loading -----" << endl;

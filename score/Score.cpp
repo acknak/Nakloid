@@ -6,6 +6,9 @@ Score::Score(string input, string path_pitches, string path_song, string path_si
 {
   this->path_song = path_song;
   this->path_singer = path_singer;
+  if ((is_tempered=!path_pitches.empty())) {
+    inputPitches(path_pitches);
+  }
 }
 
 Score::~Score(){}
@@ -55,7 +58,8 @@ void Score::noteParamChanged(Note *note)
   list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
   if (it_tmp_note!=notes.begin()) {
     (boost::prior(it_tmp_note))->setLack(note->getPrec()-note->getOvrl());
-    (boost::prior(it_tmp_note))->reloadVelocities();
+    if (!isTempered)
+      (boost::prior(it_tmp_note))->reloadVelocities();
   }
 
   note->reloadVelocities();
@@ -93,4 +97,9 @@ string Score::getSingerPath()
 void Score::setSingerPath(string path_singer)
 {
   this->path_singer = path_singer;
+}
+
+bool Score::isTempered()
+{
+  return is_tempered;
 }

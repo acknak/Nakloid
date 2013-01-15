@@ -121,7 +121,8 @@ bool Nakloid::vocalization()
 
   // arrange note params
   cout << endl << "arrange params..." << endl << endl;
-  NoteArranger::arrange(score);
+  if (nak::score_mode != nak::score_mode_nml)
+    NoteArranger::arrange(score);
   if (nak::path_pitches.empty())
     PitchArranger::arrange(score);
   cout << endl << "arrange finished" << endl << endl << endl;
