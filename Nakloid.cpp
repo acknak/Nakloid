@@ -81,46 +81,49 @@ bool Nakloid::vocalization()
   cout << "----- start vocalization -----" << endl << endl;
 
   // set note params from voiceDB
-  cout << endl << "loading voiceDB..." << endl << endl;
-  double counter=0, percent=0;
-  for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
-    // vowel combining
-    if (nak::vowel_combining) {
-      if (it_notes!=score->notes.begin() && boost::prior(it_notes)->getEnd()==it_notes->getStart()) {
-        if (voice_db->isPron("* "+it_notes->getPron())) {
-          it_notes->setPron("* "+it_notes->getPron());
-          if (nak::isVowel(it_notes->getPron()))
-            it_notes->reloadVelocities(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
+  if (nak::score_mode != nak::score_mode_nml) {
+    cout << endl << "loading voiceDB..." << endl << endl;
+    double counter=0, percent=0;
+    for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
+      // vowel combining
+      if (nak::vowel_combining) {
+        if (it_notes!=score->notes.begin() && boost::prior(it_notes)->getEnd()==it_notes->getStart()) {
+          if (voice_db->isPron("* "+it_notes->getPron())) {
+            it_notes->setPron("* "+it_notes->getPron());
+            if (nak::isVowel(it_notes->getPron()))
+              it_notes->reloadVelocities(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
+          }
+        } else {
+          if (voice_db->isPron("- "+it_notes->getPron()))
+            it_notes->setPron("- "+it_notes->getPron());
         }
-      } else {
-        if (voice_db->isPron("- "+it_notes->getPron()))
-          it_notes->setPron("- "+it_notes->getPron());
       }
-    }
 
-    // set overlap range & preceding utterance
-    if (it_notes == score->notes.begin()) {
-      short ovrl = it_notes->isOvrl()?it_notes->getOvrl():voice_db->getVoice(it_notes->getPron()).ovrl;
-      short prec = it_notes->isPrec()?it_notes->getPrec():voice_db->getVoice(it_notes->getPron()).prec;
-      short tmp_margin = prec - ((ovrl<0)?ovrl:0);
-      if (max<unsigned long>(margin, tmp_margin) > it_notes->getStart())
-        margin = max<unsigned long>(margin, tmp_margin);
-    }
-    if (!it_notes->isOvrl())
-      it_notes->setOvrl(voice_db->getVoice(it_notes->getPron()).ovrl);
-    if (!it_notes->isPrec())
-      it_notes->setPrec(voice_db->getVoice(it_notes->getPron()).prec);
+      // set overlap range & preceding utterance
+      if (it_notes == score->notes.begin()) {
+        short ovrl = it_notes->isOvrl()?it_notes->getOvrl():voice_db->getVoice(it_notes->getPron()).ovrl;
+        short prec = it_notes->isPrec()?it_notes->getPrec():voice_db->getVoice(it_notes->getPron()).prec;
+        short tmp_margin = prec - ((ovrl<0)?ovrl:0);
+        if (max<unsigned long>(margin, tmp_margin) > it_notes->getStart())
+          margin = max<unsigned long>(margin, tmp_margin);
+      }
+      if (!it_notes->isOvrl())
+        it_notes->setOvrl(voice_db->getVoice(it_notes->getPron()).ovrl);
+      if (!it_notes->isPrec())
+        it_notes->setPrec(voice_db->getVoice(it_notes->getPron()).prec);
 
-    // show progress
-    if (++counter/score->notes.size()>percent+0.1 && (percent=floor(counter/score->notes.size()*10)/10.0)<1.0)
-      cout << percent*100 << "%..." << endl;
+      // show progress
+      if (++counter/score->notes.size()>percent+0.1 && (percent=floor(counter/score->notes.size()*10)/10.0)<1.0)
+        cout << percent*100 << "%..." << endl;
+    }
+    cout << endl << "load finished" << endl << endl << endl;
   }
-  cout << endl << "load finished" << endl << endl << endl;
 
   // arrange note params
   cout << endl << "arrange params..." << endl << endl;
   NoteArranger::arrange(score);
-  PitchArranger::arrange(score);
+  if (nak::path_pitches.empty())
+    PitchArranger::arrange(score);
   cout << endl << "arrange finished" << endl << endl << endl;
 
   // Singing Voice Synthesis
@@ -181,8 +184,16 @@ int main()
     freopen(nak::path_log.c_str(), "w", stdout);
 
   Nakloid *nakloid = new Nakloid(nak::score_mode);
+
+  if (!nak::path_pitches.empty())
+    nakloid->getScore()->inputPitches(nak::path_pitches);
+
   nakloid->setMargin(nak::margin);
   nakloid->vocalization();
+
+  if (!nak::path_output_pit.empty())
+    nakloid->getScore()->outputPitches(nak::path_output_pit);
+
   delete nakloid;
 
   if (nak::path_log.empty()) {

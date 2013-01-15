@@ -10,10 +10,10 @@ ScoreNML::ScoreNML(string input_nml, string path_pitches, string path_song, stri
 
 ScoreNML::~ScoreNML()
 {
-  cout << "----- finish score(nml) loading -----" << endl;
 }
 
 void ScoreNML::load(string input_nml)
 {
-
+  cout << "----- start score(nml) loading -----" << endl;
+  cout << "----- finish score(nml) loading -----" << endl;
 }

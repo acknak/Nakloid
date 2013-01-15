@@ -8,10 +8,7 @@ ScoreSMF::ScoreSMF(string input_smf, short track, string path_lyric, string path
   load(input_smf, track, path_lyric);
 }
 
-ScoreSMF::~ScoreSMF()
-{
-  cout << "----- finish score(smf) loading -----" << endl;
-}
+ScoreSMF::~ScoreSMF() {}
 
 bool ScoreSMF::load(string input, short track, string path_lyric)
 {
@@ -63,6 +60,8 @@ bool ScoreSMF::load(string input, short track, string path_lyric)
 
   if (pitches.empty())
     reloadPitches();
+
+  cout << "----- finish score(smf) loading -----" << endl;
 
   return true;
 }

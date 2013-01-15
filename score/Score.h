@@ -3,7 +3,9 @@
 
 #include <list>
 #include <string>
+#include <fstream>
 #include <boost/utility.hpp>
+#include <boost/filesystem.hpp>
 #include "Note.h"
 class Note;
 
@@ -16,6 +18,9 @@ class Score {
   virtual bool load();
   bool isScoreLoaded();
   void reloadPitches();
+
+  void inputPitches(std::string path_input_pitches);
+  void outputPitches(std::string path_output_pitches);
 
   // Note mediator
   void noteParamChanged(Note *note);

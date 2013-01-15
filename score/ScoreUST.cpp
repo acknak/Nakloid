@@ -8,10 +8,7 @@ ScoreUST::ScoreUST(string input_ust, string path_pitches, string path_song, stri
   load(input_ust);
 }
 
-ScoreUST::~ScoreUST()
-{
-  cout << "----- finish score(ust) loading -----" << endl;
-}
+ScoreUST::~ScoreUST(){}
 
 void ScoreUST::load(string input_ust)
 {
@@ -78,4 +75,6 @@ void ScoreUST::load(string input_ust)
 
   if (pitches.empty())
     reloadPitches();
+
+  cout << "----- finish score(ust) loading -----" << endl;
 }

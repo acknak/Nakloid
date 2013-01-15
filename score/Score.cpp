@@ -29,6 +29,21 @@ void Score::reloadPitches()
       pitches[i] = it->getBasePitchHz();
 }
 
+void Score::inputPitches(std::string path_input_pitches)
+{
+  ifstream ifs;
+  ifs.open(path_input_pitches, ios::binary);
+  unsigned long pitches_size = boost::filesystem::file_size(path_input_pitches);
+  pitches.assign(pitches_size/sizeof(float), 0.0);
+  ifs.read((char*)&(pitches[0]), pitches_size);
+}
+
+void Score::outputPitches(std::string path_output_pitches)
+{
+  ofstream ofs;
+  ofs.open(path_output_pitches, ios::binary);
+  ofs.write((char*)&(pitches[0]), pitches.size()*sizeof(float));
+}
 
 /*
  * Note mediator
