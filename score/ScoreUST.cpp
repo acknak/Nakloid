@@ -3,7 +3,7 @@
 using namespace std;
 
 ScoreUST::ScoreUST(string input_ust, string path_pitches, string path_song, string path_singer)
-  :Score(input_ust, path_pitches, path_song, path_singer)
+  :Score(input_ust, path_pitches, path_song, path_singer),id_parse(0)
 {
   load(input_ust);
 }
@@ -67,7 +67,7 @@ void ScoreUST::load(string input_ust)
         notes.back().setOvrl(boost::lexical_cast<double>(buf_vector[1]));
     if (buf_vector[0] == "Intensity")
       if (buf_vector[1]!="" && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0)
-        notes.back().reloadVelocities(tmp);
+        notes.back().setBaseVelocity(tmp);
   }
   while (notes.back().getPron()=="R" || notes.back().getPron()=="")
     notes.pop_back();

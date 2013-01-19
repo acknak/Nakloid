@@ -36,12 +36,18 @@ BaseWavsOverlapper::~BaseWavsOverlapper(){}
 
 bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_end, BaseWavsContainer bwc, vector<short> velocities)
 {
-  if (pitchmarks.empty())
+  if (pitchmarks.empty()) {
+    cerr << "[BaseWavsOverlapper::overlapping] pitchmarks not found" << endl;
     return false;
-  if (ms_start >= ms_end)
+  }
+  if (ms_start >= ms_end) {
+    cerr << "[BaseWavsOverlapper::overlapping] ms_start >= ms_end" << endl;
     return false;
-  if (bwc.base_wavs.empty())
+  }
+  if (bwc.base_wavs.empty()) {
+    cerr << "[BaseWavsOverlapper::overlapping] base_wavs not found" << endl;
     return false;
+  }
 
   cout << "----- start overlapping -----" << endl;
 

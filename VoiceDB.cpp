@@ -77,7 +77,6 @@ Voice VoiceDB::getVoice(string pron)
       if (!wav_parser.parse()) {
         tmp_voice = getNullVoice();
       } else {
-        wav_parser.normalize();
         vector<short> wav_data = (*(wav_parser.getDataChunks().begin())).getDataVector();
         unsigned long fs = wav_parser.getFormat().dwSamplesPerSec;
 

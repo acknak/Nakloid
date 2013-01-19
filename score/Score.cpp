@@ -51,18 +51,12 @@ void Score::outputPitches(std::string path_output_pitches)
 /*
  * Note mediator
  */
-void Score::noteParamChanged(Note *note)
+short Score::getNoteLack(Note *note)
 {
-  if (notes.size() == 0)
-    return;
   list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
-  if (it_tmp_note!=notes.begin()) {
-    (boost::prior(it_tmp_note))->setLack(note->getPrec()-note->getOvrl());
-    if (!isTempered)
-      (boost::prior(it_tmp_note))->reloadVelocities();
-  }
-
-  note->reloadVelocities();
+  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end())
+    return 0;
+  return boost::next(it_tmp_note)->getPrec() - boost::next(it_tmp_note)->getOvrl();
 }
 
 

@@ -91,7 +91,7 @@ bool Nakloid::vocalization()
           if (voice_db->isPron("* "+it_notes->getPron())) {
             it_notes->setPron("* "+it_notes->getPron());
             if (nak::isVowel(it_notes->getPron()))
-              it_notes->reloadVelocities(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
+              it_notes->setBaseVelocity(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
           }
         } else {
           if (voice_db->isPron("- "+it_notes->getPron()))

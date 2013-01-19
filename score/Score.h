@@ -23,7 +23,7 @@ class Score {
   void outputPitches(std::string path_output_pitches);
 
   // Note mediator
-  void noteParamChanged(Note *note);
+  short getNoteLack(Note *note);
 
   // member
   std::list<Note> notes;

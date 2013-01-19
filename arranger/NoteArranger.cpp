@@ -13,23 +13,7 @@ void NoteArranger::arrange(Score *score)
     if (it_notes!=--score->notes.end() && boost::next(it_notes)->getStart()==it_notes->getEnd() && boost::next(it_notes)->getOvrl()>0)
       ms_back_edge = boost::next(it_notes)->getOvrl();
 
-    if (nak::sharpen_front && it_notes!=score->notes.begin() && boost::prior(it_notes)->getEnd()==it_notes->getStart())
-      sharpen_front(velocities.begin(), min(ms_front_edge, range));
-    if (nak::sharpen_back)
-      sharpen_back(velocities.rbegin(), min(ms_back_edge, range));
-
-    it_notes->setVelocities(velocities);
+    it_notes->addVelocityPoint(ms_front_edge, it_notes->getBaseVelocity());
+    it_notes->addVelocityPoint(-ms_back_edge, it_notes->getBaseVelocity());
   }
-}
-
-void NoteArranger::sharpen_front(vector<short>::iterator it_start, unsigned short range)
-{
-  for (int i=1; i<=range; i++,++it_start)
-    *it_start *= i/(double)range;
-}
-
-void NoteArranger::sharpen_back(vector<short>::reverse_iterator it_rstart, unsigned short range)
-{
-  for (int i=1; i<=range; i++,++it_rstart)
-    *it_rstart *= i/(double)range;
 }

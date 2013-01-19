@@ -1,10 +1,13 @@
 #ifndef Note_h
 #define Note_h
 
+#include <map>
 #include <cmath>
 #include <vector>
 #include <string>
+#include <utility>
 #include <iostream>
+#include <boost/utility.hpp>
 #include "Score.h"
 class Score;
 
@@ -14,8 +17,7 @@ typedef struct {
   std::string pron;
   unsigned char base_pitch;
   short base_velocity;
-  std::vector<short> velocities;
-  short lack;
+  std::list<std::pair<long,short>> velocities;
   short *prec;
   short *ovrl;
 } NoteFrame;
@@ -46,13 +48,11 @@ class Note {
   unsigned char getBasePitch();
   double getBasePitchHz();
   void setBasePitch(unsigned char base_pitch);
-  void reloadVelocities();
-  void reloadVelocities(short base_velocity);
   short getBaseVelocity();
+  void setBaseVelocity(short base_velocity);
+  void addVelocityPoint(long ms, short vel);
   std::vector<short> getVelocities();
-  void setVelocities(std::vector<short> velocities);
   short getLack();
-  void setLack(short lack);
   bool isPrec();
   short getPrec() const;
   void setPrec(short prec);

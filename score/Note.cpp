@@ -65,7 +65,6 @@ bool Note::operator==(const Note& other) const
   is_eq &= (self.base_pitch == other.self.base_pitch);
   is_eq &= (self.base_velocity == other.self.base_velocity);
   is_eq &= (self.velocities == other.self.velocities);
-  is_eq &= (self.lack == other.self.lack);
   is_eq &= (this->getPrec() == other.getPrec());
   is_eq &= (this->getOvrl() == other.getOvrl());
   return is_eq;
@@ -90,8 +89,6 @@ unsigned long Note::getPronStart()
 void Note::setStart(unsigned long ms_start)
 {
   this->self.start = ms_start;
-  if (self.start < self.end)
-    score->noteParamChanged(this);
 }
 
 void Note::setStart(unsigned long deltatime, unsigned short timebase, unsigned long tempo)
@@ -113,7 +110,6 @@ unsigned long Note::getPronEnd()
 void Note::setEnd(unsigned long ms_end)
 {
   self.end = ms_end;
-  score->noteParamChanged(this);
 }
 
 void Note::setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo)
@@ -151,39 +147,47 @@ short Note::getBaseVelocity()
   return self.base_velocity;
 }
 
+void Note::setBaseVelocity(short base_velocity)
+{
+  self.base_velocity = base_velocity;
+}
+
+void Note::addVelocityPoint(long ms, short vel)
+{
+  self.velocities.push_back(make_pair(ms, vel));
+}
+
 vector<short> Note::getVelocities()
 {
-  return self.velocities;
-}
+  long velocities_size = getPronEnd()-getPronStart();
+  vector<short> velocities(velocities_size, 0);
 
-void Note::reloadVelocities()
-{
-  if (getPronStart() < getPronEnd())
-    self.velocities.assign(getPronEnd()-getPronStart(), self.base_velocity);
-}
+  map<long,short> tmp_vels;
+  for (list<pair<long,short>>::iterator it=self.velocities.begin(); it!=self.velocities.end(); ++it) {
+    long tmp_ms = (it->first)<0?velocities_size+it->first:it->first;
+    if (tmp_ms < velocities_size)
+      tmp_vels[tmp_ms] = it->second;
+  }
 
-void Note::reloadVelocities(short velocity)
-{
-  self.base_velocity = velocity;
-  reloadVelocities();
-}
+  if (tmp_vels.size() == 0)
+    velocities.assign(velocities_size, self.base_velocity);
+  else {
+    if (tmp_vels.find(0) == tmp_vels.end())
+      tmp_vels[0] = 0;
+    if (tmp_vels.find(velocities_size-1) == tmp_vels.end())
+      tmp_vels[velocities_size-1] = 0;
+    for (map<long,short>::iterator it=++tmp_vels.begin(); it!=tmp_vels.end(); ++it)
+      for (int i=0; i<it->first-boost::prior(it)->first; i++)
+        velocities[i+boost::prior(it)->first] = 
+          1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second;
+  }
 
-void Note::setVelocities(vector<short> velocities)
-{
-  if (velocities.size() == self.velocities.size())
-    self.velocities = velocities;
-  else
-    cerr << "[Note::setVelocities] velocity length differ from Note on time" << endl;
+  return velocities;
 }
 
 short Note::getLack()
 {
-  return self.lack;
-}
-
-void Note::setLack(short lack)
-{
-  self.lack = lack;
+  return score->getNoteLack(this);
 }
 
 bool Note::isPrec()
@@ -198,8 +202,11 @@ short Note::getPrec() const
 
 void Note::setPrec(short prec)
 {
+  if (self.prec != 0) {
+    delete self.prec;
+    self.prec = 0;
+  }
   self.prec = new short (prec);
-  score->noteParamChanged(this);
 }
 
 bool Note::isOvrl()
@@ -214,8 +221,11 @@ short Note::getOvrl() const
 
 void Note::setOvrl(short ovrl)
 {
+  if (self.ovrl != 0) {
+    delete self.ovrl;
+    self.ovrl = 0;
+  }
   self.ovrl = new short (ovrl);
-  score->noteParamChanged(this);
 }
 
 void Note::initializeNoteFrame()
@@ -225,7 +235,6 @@ void Note::initializeNoteFrame()
   self.pron = "";
   self.base_pitch = 0x45;
   self.base_velocity = 100;
-  self.lack = 0;
   self.prec = 0;
   self.ovrl = 0;
 }
