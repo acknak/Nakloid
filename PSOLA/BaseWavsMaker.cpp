@@ -195,9 +195,9 @@ bool BaseWavsMaker::makeBaseWavs()
     //base_wavs[base_pos+i].data.setData(base_wavs[sub_rep_start].data.getDataVector());
     //base_wavs[base_pos+i].fact = base_wavs[sub_rep_start].fact;
 
-    //base_wavs[base_pos+i].data.setData(normalize(fade_wav_data, target_max, target_min, target_mean));
-    //base_wavs[base_pos+i].data.setData(normalize(fade_wav_data, target_mean, target_var));
-    //base_wavs[base_pos+i].data.setData(normalize(fade_wav_data, target_rms));
+    //base_wavs[base_pos+i].data.setData(nak::normalize(fade_wav_data, target_max, target_min, target_mean));
+    //base_wavs[base_pos+i].data.setData(nak::normalize(fade_wav_data, target_mean, target_var));
+    //base_wavs[base_pos+i].data.setData(nak::normalize(fade_wav_data, target_rms));
     base_wavs[base_pos+i].data.setData(fade_wav_data);
   }
 
