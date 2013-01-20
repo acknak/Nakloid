@@ -188,7 +188,8 @@ vector<short> Note::getVelocities()
     for (map<long,short>::iterator it=++tmp_vels.begin(); it!=tmp_vels.end(); ++it)
       for (int i=0; i<it->first-boost::prior(it)->first; i++)
         velocities[i+boost::prior(it)->first] = 
-          1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second;
+          (1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second)
+          *self.base_velocity/100.0;
   }
 
   return velocities;
