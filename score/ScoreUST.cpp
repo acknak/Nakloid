@@ -68,9 +68,41 @@ void ScoreUST::load(string input_ust)
     if (buf_vector[0] == "Intensity")
       if (buf_vector[1]!="" && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0)
         notes.back().setBaseVelocity(tmp);
+    if (buf_vector[0] == "Envelope") {
+      vector<string> env_str_vector;
+      vector<short> env_sht_vector;
+      boost::algorithm::split(env_str_vector, buf_vector[1], boost::is_any_of(","));
+      if (env_str_vector.size() >= 7) {
+        for (int i=0; i<env_str_vector.size(); i++) {
+          short tmp = 0;
+          try {
+            env_sht_vector.push_back(boost::lexical_cast<double>(env_str_vector[i]));
+          } catch (...) {
+            env_sht_vector.push_back(0);
+          }
+        }
+        notes.back().addVelocityPoint(env_sht_vector[0], env_sht_vector[3]);
+        notes.back().addVelocityPoint(env_sht_vector[0]+env_sht_vector[1], env_sht_vector[4]);
+        if (env_str_vector.size() == 7) {
+          notes.back().addVelocityPoint(-env_sht_vector[2], env_sht_vector[5]);
+          notes.back().addVelocityPoint(-1, env_sht_vector[6]);
+        } else if (env_str_vector.size() >= 9) {
+          notes.back().addVelocityPoint(-env_sht_vector[2]-env_sht_vector[8], env_sht_vector[5]);
+          notes.back().addVelocityPoint(-env_sht_vector[8], env_sht_vector[6]);
+          if (env_str_vector.size() >= 11)
+            notes.back().addVelocityPoint(env_sht_vector[0]+env_sht_vector[1]+env_sht_vector[9], env_sht_vector[10]);
+        }
+      }
+    }
   }
   while (notes.back().getPron()=="R" || notes.back().getPron()=="")
     notes.pop_back();
+  for (list<Note>::iterator it=notes.begin(); it!=notes.end(); ++it) {
+    if (it->getVelocityPointNum() == 0) {
+      it->addVelocityPoint(10, 100);
+      it->addVelocityPoint(-35, 100);
+    }
+  }
 
   if (!is_tempered)
     reloadPitches();

@@ -51,6 +51,7 @@ class Note {
   short getBaseVelocity();
   void setBaseVelocity(short base_velocity);
   void addVelocityPoint(long ms, short vel);
+  short getVelocityPointNum();
   std::vector<short> getVelocities();
   short getLack();
   bool isPrec();

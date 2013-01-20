@@ -104,6 +104,10 @@ unsigned long Note::getEnd()
 unsigned long Note::getPronEnd()
 {
   long tmp = self.end - getLack();
+  if (getPronStart() > tmp) {
+    cerr << "[Note::getPronEnd] pron_start > pron_end" << endl;
+    return getPronStart();
+  }
   return tmp>0?tmp:0;
 }
 
@@ -157,6 +161,11 @@ void Note::addVelocityPoint(long ms, short vel)
   self.velocities.push_back(make_pair(ms, vel));
 }
 
+short Note::getVelocityPointNum()
+{
+  return self.velocities.size();
+}
+
 vector<short> Note::getVelocities()
 {
   long velocities_size = getPronEnd()-getPronStart();
@@ -165,7 +174,7 @@ vector<short> Note::getVelocities()
   map<long,short> tmp_vels;
   for (list<pair<long,short>>::iterator it=self.velocities.begin(); it!=self.velocities.end(); ++it) {
     long tmp_ms = (it->first)<0?velocities_size+it->first:it->first;
-    if (tmp_ms < velocities_size)
+    if (tmp_ms < velocities_size && tmp_ms > 0)
       tmp_vels[tmp_ms] = it->second;
   }
 
