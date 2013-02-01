@@ -7,7 +7,7 @@ Score::Score(string input, string path_pitches, string path_song, string path_si
   this->path_song = path_song;
   this->path_singer = path_singer;
   if ((is_tempered=!path_pitches.empty())) {
-    inputPitches(path_pitches);
+    loadPitches(path_pitches);
   }
 }
 
@@ -32,7 +32,7 @@ void Score::reloadPitches()
       pitches[i] = it->getBasePitchHz();
 }
 
-void Score::inputPitches(std::string path_input_pitches)
+void Score::loadPitches(std::string path_input_pitches)
 {
   ifstream ifs;
   ifs.open(path_input_pitches, ios::binary);
@@ -41,7 +41,7 @@ void Score::inputPitches(std::string path_input_pitches)
   ifs.read((char*)&(pitches[0]), pitches_size);
 }
 
-void Score::outputPitches(std::string path_output_pitches)
+void Score::savePitches(std::string path_output_pitches)
 {
   ofstream ofs;
   ofs.open(path_output_pitches, ios::binary);

@@ -93,7 +93,7 @@ void Note::setStart(unsigned long ms_start)
 
 void Note::setStart(unsigned long deltatime, unsigned short timebase, unsigned long tempo)
 {
-  setStart(tick2ms(deltatime, timebase, tempo));
+  setStart(nak::tick2ms(deltatime, timebase, tempo));
 }
 
 unsigned long Note::getEnd()
@@ -118,7 +118,7 @@ void Note::setEnd(unsigned long ms_end)
 
 void Note::setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo)
 {
-  setEnd(tick2ms(deltatime, timebase, tempo));
+  setEnd(nak::tick2ms(deltatime, timebase, tempo));
 }
 
 string Note::getPron()
@@ -247,9 +247,4 @@ void Note::initializeNoteFrame()
   self.base_velocity = 100;
   self.prec = 0;
   self.ovrl = 0;
-}
-
-unsigned long Note::tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo)
-{
-  return (unsigned long)(((double)tick) / timebase * (tempo/1000.0));
 }

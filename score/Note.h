@@ -9,6 +9,7 @@
 #include <iostream>
 #include <boost/utility.hpp>
 #include "Score.h"
+#include "../Utilities.h"
 class Score;
 
 typedef struct {
@@ -61,13 +62,12 @@ class Note {
   short getOvrl() const;
   void setOvrl(short ovrl);
 
- private:
+ protected:
   Score *score;
   unsigned long id;
   NoteFrame self;
 
   void initializeNoteFrame();
-  unsigned long tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
 };
 
 #endif

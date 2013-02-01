@@ -77,6 +77,7 @@ namespace nak {
   // tools
   extern unsigned long ms2pos(unsigned long ms, WavFormat format);
   extern unsigned long pos2ms(unsigned long pos, WavFormat format);
+  extern unsigned long tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
 
   extern std::vector<short> normalize(std::vector<short>wav, double target_rms);
   extern std::vector<short> normalize(std::vector<short>wav, double target_mean, double target_var);

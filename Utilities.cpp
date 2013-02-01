@@ -148,6 +148,11 @@ unsigned long nak::pos2ms(unsigned long pos, WavFormat format)
   return (unsigned long)(pos/(double)format.dwSamplesPerSec*1000);
 }
 
+unsigned long nak::tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo)
+{
+  return (unsigned long)(((double)tick) / timebase * (tempo/1000.0));
+}
+
 double nak::getRMS(vector<short> wav)
 {
   double rms = 0.0;

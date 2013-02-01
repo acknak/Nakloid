@@ -19,8 +19,8 @@ class Score {
   bool isScoreLoaded();
   void reloadPitches();
 
-  void inputPitches(std::string path_input_pitches);
-  void outputPitches(std::string path_output_pitches);
+  void loadPitches(std::string path_input_pitches);
+  void savePitches(std::string path_output_pitches);
 
   // Note mediator
   short getNoteLack(Note *note);

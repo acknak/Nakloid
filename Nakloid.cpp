@@ -79,6 +79,7 @@ bool Nakloid::vocalization()
   }
 
   cout << "----- start vocalization -----" << endl << endl;
+  setMargin(nak::margin);
 
   // set note params from voiceDB
   if (nak::score_mode != nak::score_mode_nml) {
@@ -185,15 +186,10 @@ int main()
     freopen(nak::path_log.c_str(), "w", stdout);
 
   Nakloid *nakloid = new Nakloid(nak::score_mode);
-
-  if (!nak::path_pitches.empty())
-    nakloid->getScore()->inputPitches(nak::path_pitches);
-
-  nakloid->setMargin(nak::margin);
   nakloid->vocalization();
 
   if (!nak::path_output_pit.empty())
-    nakloid->getScore()->outputPitches(nak::path_output_pit);
+    nakloid->getScore()->savePitches(nak::path_output_pit);
 
   delete nakloid;
 
