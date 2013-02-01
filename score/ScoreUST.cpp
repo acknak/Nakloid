@@ -134,6 +134,8 @@ void ScoreUST::load(string input_ust)
       vector<short> note_velocities = it_notes->getVelocities();
       long note_start_ms = it_notes->getPronStart();
       long note_end_ms = it_notes->getPronEnd();
+      if (it_pitches->second.size() == 0)
+        it_pitches->second.push_back(0);
       for (int i=0; i<it_pitches->second.size(); i++) {
         long tick_start_ms = note_start_ms + nak::tick2ms(i*5, 480, 1.0/it_pitches->first*60000000);
         long tick_end_ms = note_start_ms + nak::tick2ms((i+1)*5, 480, 1.0/it_pitches->first*60000000);
@@ -145,7 +147,7 @@ void ScoreUST::load(string input_ust)
         if (i == it_pitches->second.size()-1) {
           for (int j=tick_end_ms; j<note_end_ms; j++) {
             pitches[j] = tmp_pitch;
-            velocities[j] = note_velocities.back();
+            velocities[j] = note_velocities[j-tick_end_ms];
           }
         }
         for (int j=0; j<tick_end_ms-tick_start_ms; j++) {
