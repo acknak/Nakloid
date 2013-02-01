@@ -36,6 +36,7 @@ class Note {
   bool operator!=(const Note& other) const;
 
   // accessor
+  unsigned long getId();
   unsigned long getStart();
   unsigned long getPronStart();
   void setStart(unsigned long ms_start);

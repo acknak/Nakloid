@@ -75,6 +75,11 @@ bool Note::operator!=(const Note& other) const
     return !(*this == other);
 }
 
+unsigned long Note::getId()
+{
+  return id;
+}
+
 unsigned long Note::getStart()
 {
   return self.start;
