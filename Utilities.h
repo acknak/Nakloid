@@ -69,7 +69,6 @@ namespace nak {
   extern bool vibrato;
   extern bool overshoot;
   extern bool preparation;
-  extern bool interpolation;
 
   // Nakloid.ini parser
   extern bool parse(std::string path_ini);

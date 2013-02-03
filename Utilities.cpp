@@ -55,7 +55,6 @@ namespace nak {
   bool vibrato = false;
   bool overshoot = false;
   bool preparation = false;
-  bool interpolation = false;
 }
 
 // parser
@@ -133,7 +132,6 @@ bool nak::parse(string path_ini)
   vibrato = ptree.get<bool>("PitchArranger.vibrato", vibrato);
   overshoot = ptree.get<bool>("PitchArranger.overshoot", overshoot);
   preparation = ptree.get<bool>("PitchArranger.preparation", preparation);
-  interpolation = ptree.get<bool>("PitchArranger.interpolation", interpolation);
 
   return true;
 }
