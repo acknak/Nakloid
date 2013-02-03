@@ -13,8 +13,8 @@
 class Score;
 
 typedef struct {
-  unsigned long start;
-  unsigned long end;
+  long start;
+  long end;
   std::string pron;
   unsigned char base_pitch;
   short base_velocity;

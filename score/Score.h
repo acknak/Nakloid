@@ -24,6 +24,8 @@ class Score {
 
   // Note mediator
   short getNoteLack(Note *note);
+  long getNoteNextDist(Note *note);
+  long getNotePrevDist(Note *note);
 
   // member
   std::list<Note> notes;

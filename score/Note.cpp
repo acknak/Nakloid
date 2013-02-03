@@ -87,7 +87,7 @@ unsigned long Note::getStart()
 
 unsigned long Note::getPronStart()
 {
-  long tmp = self.start - (getPrec()-((getOvrl()<0)?getOvrl():0));
+  long tmp = self.start - getPrec();
   return tmp>0?tmp:0;
 }
 
@@ -108,7 +108,7 @@ unsigned long Note::getEnd()
 
 unsigned long Note::getPronEnd()
 {
-  long tmp = self.end - getLack();
+  long tmp = self.end - (score->getNoteNextDist(this)>0?0:getLack());
   if (getPronStart() > tmp) {
     cerr << "[Note::getPronEnd] pron_start > pron_end" << endl;
     return getPronStart();

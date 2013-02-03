@@ -59,6 +59,21 @@ short Score::getNoteLack(Note *note)
   return boost::next(it_tmp_note)->getPrec() - boost::next(it_tmp_note)->getOvrl();
 }
 
+long Score::getNoteNextDist(Note *note)
+{
+  list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
+  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end())
+    return 0;
+  return boost::next(it_tmp_note)->getStart() - note->getEnd();
+}
+
+long Score::getNotePrevDist(Note *note)
+{
+  list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
+  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==notes.begin())
+    return 0;
+  return note->getStart() - boost::prior(it_tmp_note)->getEnd();
+}
 
 /*
  * accessor
