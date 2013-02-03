@@ -28,7 +28,7 @@ namespace nak {
   // General smf
   extern short track;
   extern std::string path_smf;
-  extern std::string path_lyric;
+  extern std::string path_lyrics;
 
   // Nakloid
   extern bool cache;

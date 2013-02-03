@@ -2,21 +2,21 @@
 
 using namespace std;
 
-ScoreSMF::ScoreSMF(string input_smf, short track, string path_lyric, string path_pitches, string path_song, string path_singer)
+ScoreSMF::ScoreSMF(string input_smf, short track, string path_lyrics, string path_pitches, string path_song, string path_singer)
   :Score(input_smf, path_pitches, path_song, path_singer),timebase(0),tempo(0),track(0),is_parse(false),time_parse(0),id_parse(0)
 {
-  load(input_smf, track, path_lyric);
+  load(input_smf, track, path_lyrics);
 }
 
 ScoreSMF::~ScoreSMF() {}
 
-bool ScoreSMF::load(string input, short track, string path_lyric)
+bool ScoreSMF::load(string input, short track, string path_lyrics)
 {
   cout << "----- start score(smf) loading -----" << endl;
 
-  // load lyric txt
+  // load lyrics txt
   list<string> prons;
-  ifstream ifs(path_lyric.c_str());
+  ifstream ifs(path_lyrics.c_str());
   string buf_str;
 
   while (ifs && getline(ifs, buf_str)) {

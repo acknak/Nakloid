@@ -49,7 +49,7 @@ bool Nakloid::loadScore(nak::ScoreMode mode)
   case nak::score_mode_ust:
     score=new ScoreUST(nak::path_ust, nak::path_pitches, nak::path_song, nak::path_singer); break;
   case nak::score_mode_smf:
-    score=new ScoreSMF(nak::path_smf, nak::track, nak::path_lyric, nak::path_pitches, nak::path_song, nak::path_singer); break;
+    score=new ScoreSMF(nak::path_smf, nak::track, nak::path_lyrics, nak::path_pitches, nak::path_song, nak::path_singer); break;
   }
   if (score == 0 || !score->isScoreLoaded()) {
     cerr << "[Nakloid::loadScore] score hasn't loaded" << endl;

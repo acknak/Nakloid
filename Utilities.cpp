@@ -15,7 +15,7 @@ namespace nak {
   string path_ust = "score.ust";
   short track = 1;
   string path_smf = "score.mid";
-  string path_lyric = "lyric.txt";
+  string path_lyrics = "lyrics.txt";
 
   // Nakloid
   bool cache = false;
@@ -83,7 +83,7 @@ bool nak::parse(string path_ini)
     score_mode = score_mode_smf;
     track = ptree.get<short>("General.track", track);
     path_smf = ptree.get<string>("General.path_smf", path_smf);
-    path_lyric = ptree.get<string>("General.path_lyric", path_lyric);
+    path_lyrics = ptree.get<string>("General.path_lyrics", path_lyrics);
   } else {
     cerr << "[nak::parse] can't recognize score_mode" << endl;
     return false;
