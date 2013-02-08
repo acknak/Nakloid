@@ -15,7 +15,7 @@
 #include "arranger/NoteArranger.h"
 #include "arranger/PitchArranger.h"
 #include "score/Score.h"
-#include "score/ScoreNML.h"
+#include "score/ScoreNAK.h"
 #include "score/ScoreUST.h"
 #include "score/ScoreSMF.h"
 #include "parser/WavFormat.h"

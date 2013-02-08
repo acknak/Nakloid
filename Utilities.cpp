@@ -5,13 +5,13 @@ using namespace nak;
 
 namespace nak {
   // General
-  enum ScoreMode score_mode = score_mode_nml;
+  enum ScoreMode score_mode = score_mode_nak;
   string path_pitches = "";
   string path_singer = "";
   string path_song = "";
   unsigned long margin = 0;
 
-  string path_nml = "score.nml";
+  string path_nak = "score.nak";
   string path_ust = "score.ust";
   short track = 1;
   string path_smf = "score.mid";
@@ -22,7 +22,7 @@ namespace nak {
   string path_log = "";
   bool vowel_combining = false;
   double vowel_combining_volume = 1.0;
-  string path_output_nml="";
+  string path_output_nak="";
   string path_output_pit="";
 
   // PitchMarker
@@ -73,9 +73,9 @@ bool nak::parse(string path_ini)
 
   // General
   string tmp = ptree.get<string>("General.score_mode", "ust");
-  if (tmp == "nml") {
-    score_mode = score_mode_nml;
-    path_nml = ptree.get<string>("General.path_nml", path_nml);
+  if (tmp == "nak") {
+    score_mode = score_mode_nak;
+    path_nak = ptree.get<string>("General.path_nak", path_nak);
   } else if (tmp == "ust") {
     score_mode = score_mode_ust;
     path_ust = ptree.get<string>("General.path_ust", path_ust);
@@ -98,7 +98,7 @@ bool nak::parse(string path_ini)
   path_log = ptree.get<string>("Nakloid.path_log", path_log);
   vowel_combining = ptree.get<bool>("Nakloid.vowel_combining", vowel_combining);
   vowel_combining_volume = ptree.get<double>("Nakloid.vowel_combining_volume", vowel_combining_volume);
-  path_output_nml = ptree.get<string>("Nakloid.path_output_nml", path_output_nml);
+  path_output_nak = ptree.get<string>("Nakloid.path_output_nak", path_output_nak);
   path_output_pit = ptree.get<string>("Nakloid.path_output_pit", path_output_pit);
 
   // PitchMarker

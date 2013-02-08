@@ -13,14 +13,14 @@
 
 namespace nak {
   // General
-  extern enum ScoreMode{score_mode_nml, score_mode_ust, score_mode_smf} score_mode;
+  extern enum ScoreMode{score_mode_nak, score_mode_ust, score_mode_smf} score_mode;
   extern std::string path_pitches;
   extern std::string path_singer;
   extern std::string path_song;
   extern unsigned long margin;
 
-  // General nml
-  extern std::string path_nml;
+  // General nak
+  extern std::string path_nak;
 
   // General ust
   extern std::string path_ust;
@@ -35,7 +35,7 @@ namespace nak {
   extern std::string path_log;
   extern bool vowel_combining;
   extern double vowel_combining_volume;
-  extern std::string path_output_nml;
+  extern std::string path_output_nak;
   extern std::string path_output_pit;
 
   // PitchMarker

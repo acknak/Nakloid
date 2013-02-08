@@ -44,8 +44,8 @@ bool Nakloid::loadScore(nak::ScoreMode mode)
   }
 
   switch(mode){
-  case nak::score_mode_nml:
-    score=new ScoreNML(nak::path_nml, nak::path_pitches, nak::path_song, nak::path_singer); break;
+  case nak::score_mode_nak:
+    score=new ScoreNAK(nak::path_nak, nak::path_pitches, nak::path_song, nak::path_singer); break;
   case nak::score_mode_ust:
     score=new ScoreUST(nak::path_ust, nak::path_pitches, nak::path_song, nak::path_singer); break;
   case nak::score_mode_smf:
@@ -82,7 +82,7 @@ bool Nakloid::vocalization()
   setMargin(nak::margin);
 
   // set note params from voiceDB
-  if (nak::score_mode != nak::score_mode_nml) {
+  if (nak::score_mode != nak::score_mode_nak) {
     cout << endl << "loading voiceDB..." << endl << endl;
     double counter=0, percent=0;
     for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
@@ -122,7 +122,7 @@ bool Nakloid::vocalization()
 
   // arrange note params
   cout << endl << "arrange params..." << endl << endl;
-  if (nak::score_mode != nak::score_mode_nml)
+  if (nak::score_mode != nak::score_mode_nak)
     NoteArranger::arrange(score);
   if (nak::path_pitches.empty())
     PitchArranger::arrange(score);
