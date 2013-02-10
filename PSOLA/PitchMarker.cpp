@@ -170,8 +170,9 @@ vector<double> PitchMarker::xcorr(vector<short>::iterator it_start, vector<short
   fftw_complex *out3 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
 
   for (int i=0; i<fftlen; i++)
-    in1[i][0] = in1[i][1] = in2[i][0] = in2[i][1] = 0;  if (exp_dist > 0) {
-  for (int i=0; i<win_size; i++) {
+    in1[i][0] = in1[i][1] = in2[i][0] = in2[i][1] = 0;
+  if (exp_dist > 0) {
+    for (int i=0; i<win_size; i++) {
       in1[i][0] = (*(it_start-(win_size/2)+i)) * filter[i];
       in2[i+win_size][0] = *(it_base+(win_size/2)+i) * filter[i];
     }

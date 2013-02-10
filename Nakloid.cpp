@@ -121,12 +121,14 @@ bool Nakloid::vocalization()
   }
 
   // arrange note params
-  if (nak::score_mode==nak::score_mode_nak && !nak::path_pitches.empty())
-    cout << endl << "arrange params..." << endl << endl;
-  if (nak::score_mode != nak::score_mode_nak)
+  if (nak::score_mode != nak::score_mode_nak) {
+    cout << endl << "arrange note params..." << endl << endl;
     NoteArranger::arrange(score);
-  if (nak::path_pitches.empty())
+  }
+  if (nak::path_pitches.empty()) {
+    cout << endl << "arrange pitch params..." << endl << endl;
     PitchArranger::arrange(score);
+  }
   if (nak::score_mode==nak::score_mode_nak && !nak::path_pitches.empty())
     cout << endl << "arrange finished" << endl << endl << endl;
 
@@ -183,8 +185,12 @@ int main()
 {
   setlocale(LC_CTYPE, "");
 
-  if (!nak::parse("Nakloid.ini"))
+  if (!nak::parse("Nakloid.ini")) {
+    cin.sync();
+    cout << endl << endl << endl << "can not open Nakloid.ini" << endl;
+    cin.get();
     return 1;
+  }
 
   if (!nak::path_log.empty())
     freopen(nak::path_log.c_str(), "w", stdout);
