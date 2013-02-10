@@ -53,6 +53,7 @@ class Note {
   short getBaseVelocity();
   void setBaseVelocity(short base_velocity);
   void addVelocityPoint(long ms, short vel);
+  std::list<std::pair<long,short>> getVelocityPoints();
   short getVelocityPointNum();
   std::vector<short> getVelocities();
   short getLack();

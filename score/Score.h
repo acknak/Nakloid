@@ -4,8 +4,11 @@
 #include <list>
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <boost/utility.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include "Note.h"
 class Note;
 
@@ -19,6 +22,7 @@ class Score {
   bool isScoreLoaded();
   void reloadPitches();
 
+  void saveScore(std::string path_nak);
   void loadPitches(std::string path_input_pitches);
   void savePitches(std::string path_output_pitches);
 

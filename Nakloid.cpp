@@ -179,6 +179,8 @@ long Nakloid::getMargin()
  */
 int main()
 {
+  setlocale(LC_CTYPE, "");
+
   if (!nak::parse("Nakloid.ini"))
     return 1;
 
@@ -187,6 +189,9 @@ int main()
 
   Nakloid *nakloid = new Nakloid(nak::score_mode);
   nakloid->vocalization();
+
+  if (!nak::path_output_nak.empty())
+    nakloid->getScore()->saveScore(nak::path_output_nak);
 
   if (!nak::path_output_pit.empty())
     nakloid->getScore()->savePitches(nak::path_output_pit);
@@ -198,5 +203,6 @@ int main()
     cout << endl << endl << endl << "Press Enter/Return to continue..." << endl;
     cin.get();
   }
+
   return 0;
 }

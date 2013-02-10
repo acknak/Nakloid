@@ -32,6 +32,44 @@ void Score::reloadPitches()
       pitches[i] = it->getBasePitchHz();
 }
 
+void Score::saveScore(string path_nak)
+{
+  if (!isScoreLoaded()) {
+    cerr << "score hasn't loaded" << endl;
+    return;
+  }
+  boost::property_tree::wptree pt, pt_notes;
+  for (list<Note>::iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
+    boost::property_tree::wptree pt_note, pt_vel_points;
+    pt_note.put(L"id", it_notes->getId());
+    {
+      wchar_t *wcs = new wchar_t[it_notes->getPron().length() + 1];
+	    mbstowcs(wcs, it_notes->getPron().c_str(), it_notes->getPron().length() + 1);
+	    wstring test = wcs;
+	    delete [] wcs;
+      pt_note.put(L"pron", test);
+    }
+    pt_note.put(L"start", it_notes->getStart());
+    pt_note.put(L"end", it_notes->getEnd());
+    pt_note.put(L"prec", it_notes->getPrec());
+    pt_note.put(L"ovrl", it_notes->getOvrl());
+    pt_note.put(L"vel", it_notes->getBaseVelocity());
+    pt_note.put(L"pitch", it_notes->getBasePitch());
+    list<pair<long, short>> vel_points = it_notes->getVelocityPoints();
+    for (list<pair<long, short>>::iterator it_vel_points=vel_points.begin(); it_vel_points!=vel_points.end(); ++it_vel_points) {
+      boost::property_tree::wptree pt_vel_point;
+      wstringstream tmp_vel_point;
+      tmp_vel_point << it_vel_points->first << L"," << it_vel_points->second;
+      pt_vel_point.put(L"", tmp_vel_point.str());
+      pt_vel_points.push_back(make_pair(L"", pt_vel_point));
+    }
+    pt_note.add_child(L"vel_points", pt_vel_points);
+    pt_notes.push_back(make_pair(L"", pt_note));
+  }
+  pt.add_child(L"Score.notes", pt_notes);
+  write_json(path_nak, pt);
+}
+
 void Score::loadPitches(std::string path_input_pitches)
 {
   ifstream ifs;

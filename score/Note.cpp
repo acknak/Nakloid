@@ -166,6 +166,11 @@ void Note::addVelocityPoint(long ms, short vel)
   self.velocities.push_back(make_pair(ms, vel));
 }
 
+list<pair<long,short>> Note::getVelocityPoints()
+{
+  return self.velocities;
+}
+
 short Note::getVelocityPointNum()
 {
   return self.velocities.size();
