@@ -54,5 +54,8 @@ void ScoreNAK::load(string path_nak)
     notes.push_back(*tmp_note);
   }
 
+  if (!is_tempered)
+    reloadPitches();
+
   cout << "----- finish score(NAK) loading -----" << endl;
 }
