@@ -121,12 +121,14 @@ bool Nakloid::vocalization()
   }
 
   // arrange note params
-  cout << endl << "arrange params..." << endl << endl;
+  if (nak::score_mode==nak::score_mode_nak && !nak::path_pitches.empty())
+    cout << endl << "arrange params..." << endl << endl;
   if (nak::score_mode != nak::score_mode_nak)
     NoteArranger::arrange(score);
   if (nak::path_pitches.empty())
     PitchArranger::arrange(score);
-  cout << endl << "arrange finished" << endl << endl << endl;
+  if (nak::score_mode==nak::score_mode_nak && !nak::path_pitches.empty())
+    cout << endl << "arrange finished" << endl << endl << endl;
 
   // Singing Voice Synthesis
   BaseWavsOverlapper *overlapper = new BaseWavsOverlapper(format, score->getPitches());
