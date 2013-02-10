@@ -45,9 +45,9 @@ void ScoreNAK::load(string path_nak)
     if (boost::optional<unsigned char> pitch = pt_note.get_optional<unsigned char>(L"pitch"))
       tmp_note->setBasePitch(pitch.get());
     BOOST_FOREACH (const boost::property_tree::wptree::value_type& child_vel_points, pt_note.get_child(L"vel_points")) {
-      const boost::property_tree::wptree& pt_vel_points = child_vel_points.second;
+      wstring ws = child_vel_points.second.get_value<wstring>();
       vector<wstring> v;
-      boost::algorithm::split(v, pt_vel_points.get_value<wstring>(), boost::is_any_of(","));
+      boost::algorithm::split(v, ws, boost::is_any_of(L","));
       if (v.size() == 2)
         tmp_note->addVelocityPoint(boost::lexical_cast<long>(v[0]), boost::lexical_cast<short>(v[1]));
     }

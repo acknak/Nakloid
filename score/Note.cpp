@@ -166,7 +166,7 @@ void Note::addVelocityPoint(long ms, short vel)
   self.velocities.push_back(make_pair(ms, vel));
 }
 
-list<pair<long,short>> Note::getVelocityPoints()
+list< pair<long,short> > Note::getVelocityPoints()
 {
   return self.velocities;
 }
@@ -182,7 +182,7 @@ vector<short> Note::getVelocities()
   vector<short> velocities(velocities_size, 0);
 
   map<long,short> tmp_vels;
-  for (list<pair<long,short>>::iterator it=self.velocities.begin(); it!=self.velocities.end(); ++it) {
+  for (list< pair<long,short> >::iterator it=self.velocities.begin(); it!=self.velocities.end(); ++it) {
     long tmp_ms = (it->first)<0?velocities_size+it->first:it->first;
     if (tmp_ms < velocities_size && tmp_ms > 0)
       tmp_vels[tmp_ms] = it->second;

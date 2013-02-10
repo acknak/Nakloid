@@ -55,8 +55,8 @@ void Score::saveScore(string path_nak)
     pt_note.put(L"ovrl", it_notes->getOvrl());
     pt_note.put(L"vel", it_notes->getBaseVelocity());
     pt_note.put(L"pitch", it_notes->getBasePitch());
-    list<pair<long, short>> vel_points = it_notes->getVelocityPoints();
-    for (list<pair<long, short>>::iterator it_vel_points=vel_points.begin(); it_vel_points!=vel_points.end(); ++it_vel_points) {
+    list< pair<long, short> > vel_points = it_notes->getVelocityPoints();
+    for (list< pair<long, short> >::iterator it_vel_points=vel_points.begin(); it_vel_points!=vel_points.end(); ++it_vel_points) {
       boost::property_tree::wptree pt_vel_point;
       wstringstream tmp_vel_point;
       tmp_vel_point << it_vel_points->first << L"," << it_vel_points->second;
@@ -73,7 +73,7 @@ void Score::saveScore(string path_nak)
 void Score::loadPitches(std::string path_input_pitches)
 {
   ifstream ifs;
-  ifs.open(path_input_pitches, ios::binary);
+  ifs.open(path_input_pitches.c_str(), ios::binary);
   unsigned long pitches_size = boost::filesystem::file_size(path_input_pitches);
   pitches.assign(pitches_size/sizeof(float), 0.0);
   ifs.read((char*)&(pitches[0]), pitches_size);
@@ -82,7 +82,7 @@ void Score::loadPitches(std::string path_input_pitches)
 void Score::savePitches(std::string path_output_pitches)
 {
   ofstream ofs;
-  ofs.open(path_output_pitches, ios::binary);
+  ofs.open(path_output_pitches.c_str(), ios::binary);
   ofs.write((char*)&(pitches[0]), pitches.size()*sizeof(float));
 }
 

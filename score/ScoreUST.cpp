@@ -19,7 +19,7 @@ void ScoreUST::load(string input_ust)
   ifstream ifs(input_ust.c_str());
   string buf_str;
   list<string> buf_list;
-  list<pair<short, vector<short>>> pitches_ust;
+  list< pair< short, vector<short> > > pitches_ust;
   short tmp, tempo=120;
   unsigned long pos=0;
   notes.clear();
@@ -129,7 +129,7 @@ void ScoreUST::load(string input_ust)
     pitches.assign(tmp_length, 0);
     vector<long> velocities(tmp_length, 0);
     list<Note>::iterator it_notes = notes.begin();
-    list<pair<short, vector<short>>>::iterator it_pitches = pitches_ust.begin();
+    list< pair< short, vector<short> > >::iterator it_pitches = pitches_ust.begin();
     do {
       vector<short> note_velocities = it_notes->getVelocities();
       long note_start_ms = it_notes->getPronStart();

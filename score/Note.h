@@ -18,7 +18,7 @@ typedef struct {
   std::string pron;
   unsigned char base_pitch;
   short base_velocity;
-  std::list<std::pair<long,short>> velocities;
+  std::list< std::pair<long,short> > velocities;
   short *prec;
   short *ovrl;
 } NoteFrame;
@@ -53,7 +53,7 @@ class Note {
   short getBaseVelocity();
   void setBaseVelocity(short base_velocity);
   void addVelocityPoint(long ms, short vel);
-  std::list<std::pair<long,short>> getVelocityPoints();
+  std::list< std::pair<long,short> > getVelocityPoints();
   short getVelocityPointNum();
   std::vector<short> getVelocities();
   short getLack();
