@@ -15,7 +15,7 @@
 // Reference Object
 class ScoreUST : public Score {
  public:
-  ScoreUST(std::string input_ust, std::string path_pitches, std::string path_song, std::string path_singer);
+  ScoreUST(std::string input_ust, std::string path_song, std::string path_singer);
   virtual ~ScoreUST();
 
   void load(std::string input_ust);

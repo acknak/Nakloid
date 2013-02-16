@@ -12,7 +12,7 @@
 // Reference Object
 class ScoreSMF : public Score, public SmfHandler {
  public:
-  ScoreSMF(std::string input_smf, short track, std::string path_lyrics, std::string path_pitches, std::string path_song, std::string path_singer);
+  ScoreSMF(std::string input_smf, short track, std::string path_lyrics, std::string path_song, std::string path_singer);
   virtual ~ScoreSMF();
 
   bool load(std::string input_smf, short track, std::string path_lyrics);

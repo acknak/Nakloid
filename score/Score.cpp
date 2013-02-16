@@ -2,13 +2,10 @@
 
 using namespace std;
 
-Score::Score(string input, string path_pitches, string path_song, string path_singer)
+Score::Score(string input, string path_song, string path_singer)
 {
   this->path_song = path_song;
   this->path_singer = path_singer;
-  if ((is_tempered=!path_pitches.empty())) {
-    loadPitches(path_pitches);
-  }
 }
 
 Score::~Score(){}
@@ -70,13 +67,43 @@ void Score::saveScore(string path_nak)
   write_json(path_nak, pt);
 }
 
-void Score::loadPitches(std::string path_input_pitches)
+bool Score::loadPitchesFromPit(std::string path_input_pitches)
 {
   ifstream ifs;
   ifs.open(path_input_pitches.c_str(), ios::binary);
-  unsigned long pitches_size = boost::filesystem::file_size(path_input_pitches);
-  pitches.assign(pitches_size/sizeof(float), 0.0);
-  ifs.read((char*)&(pitches[0]), pitches_size);
+  if (ifs) {
+    unsigned long pitches_size = boost::filesystem::file_size(path_input_pitches);
+    pitches.assign(pitches_size/sizeof(float), 0.0);
+    ifs.read((char*)&(pitches[0]), pitches_size);
+    return (is_tempered=true);
+  } else {
+    cerr << "[Score::loadPitches] can't open pitches data" << endl;
+  }
+  return false;
+}
+
+bool Score::loadPitchesFromLf0(std::string path_input_pitches)
+{
+  ifstream ifs;
+  ifs.open(path_input_pitches.c_str(), ios::binary);
+  if (ifs) {
+    unsigned long pitches_size = boost::filesystem::file_size(path_input_pitches);
+    vector<float> tmp_pitches(pitches_size/sizeof(float), 0.0);
+    pitches.assign(pitches_size*nak::pitch_frame_length/sizeof(float), 0.0);
+    ifs.read((char*)&(tmp_pitches[0]), pitches_size);
+    for (int i=0; i<tmp_pitches.size(); i++) {
+      if (tmp_pitches[i] == -1e+10)
+        tmp_pitches[i] = 0.0;
+      else
+        tmp_pitches[i] = exp(tmp_pitches[i]);
+    }
+    for (int i=0; i<pitches.size(); i++)
+      pitches[i] = tmp_pitches[i/5];
+    return (is_tempered=true);
+  } else {
+    cerr << "[Score::loadPitches] can't open pitches data" << endl;
+  }
+  return false;
 }
 
 void Score::savePitches(std::string path_output_pitches)

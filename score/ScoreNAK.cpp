@@ -2,8 +2,8 @@
 
 using namespace std;
 
-ScoreNAK::ScoreNAK(string input_NAK, string path_pitches, string path_song, string path_singer)
-  :Score(input_NAK, path_pitches, path_song, path_singer)
+ScoreNAK::ScoreNAK(string input_NAK, string path_song, string path_singer)
+  :Score(input_NAK, path_song, path_singer)
 {
   load(input_NAK);
 }

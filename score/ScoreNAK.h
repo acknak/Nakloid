@@ -17,7 +17,7 @@
 // Reference Object
 class ScoreNAK : public Score {
  public:
-  ScoreNAK(std::string input_nak, std::string path_pitches, std::string path_song, std::string path_singer);
+  ScoreNAK(std::string input_nak, std::string path_song, std::string path_singer);
   virtual ~ScoreNAK();
 
   void load(std::string path_nak);

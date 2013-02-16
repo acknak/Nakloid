@@ -14,10 +14,12 @@
 namespace nak {
   // General
   extern enum ScoreMode{score_mode_nak, score_mode_ust, score_mode_smf} score_mode;
+  extern enum PitchesMode{pitches_mode_pit, pitches_mode_lf0, pitches_mode_none} pitches_mode;
   extern std::string path_pitches;
   extern std::string path_singer;
   extern std::string path_song;
   extern unsigned long margin;
+  extern unsigned char pitch_frame_length;
 
   // General nak
   extern std::string path_nak;
@@ -69,6 +71,7 @@ namespace nak {
   extern bool vibrato;
   extern bool overshoot;
   extern bool preparation;
+  extern bool interpolation;
 
   // Nakloid.ini parser
   extern bool parse(std::string path_ini);

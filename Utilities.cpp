@@ -6,10 +6,12 @@ using namespace nak;
 namespace nak {
   // General
   enum ScoreMode score_mode = score_mode_nak;
+  enum PitchesMode pitches_mode = pitches_mode_none;
   string path_pitches = "";
   string path_singer = "";
   string path_song = "";
   unsigned long margin = 0;
+  unsigned char pitch_frame_length = 1;
 
   string path_nak = "score.nak";
   string path_ust = "score.ust";
@@ -55,6 +57,7 @@ namespace nak {
   bool vibrato = false;
   bool overshoot = false;
   bool preparation = false;
+  bool interpolation = false;
 }
 
 // parser
@@ -72,14 +75,14 @@ bool nak::parse(string path_ini)
   }
 
   // General
-  string tmp = ptree.get<string>("General.score_mode", "ust");
-  if (tmp == "nak") {
+  string tmp_score = ptree.get<string>("General.score_mode", "nak");
+  if (tmp_score == "nak") {
     score_mode = score_mode_nak;
     path_nak = ptree.get<string>("General.path_nak", path_nak);
-  } else if (tmp == "ust") {
+  } else if (tmp_score == "ust") {
     score_mode = score_mode_ust;
     path_ust = ptree.get<string>("General.path_ust", path_ust);
-  } else if (tmp == "smf") {
+  } else if (tmp_score == "smf") {
     score_mode = score_mode_smf;
     track = ptree.get<short>("General.track", track);
     path_smf = ptree.get<string>("General.path_smf", path_smf);
@@ -88,10 +91,19 @@ bool nak::parse(string path_ini)
     cerr << "[nak::parse] can't recognize score_mode" << endl;
     return false;
   }
+  string tmp_pitches = ptree.get<string>("General.pitches_mode", "");
+  if (tmp_pitches == "pit") {
+    pitches_mode = pitches_mode_pit;
+  } else if (tmp_pitches == "lf0") {
+    pitches_mode = pitches_mode_lf0;
+  } else {
+    pitches_mode = pitches_mode_none;
+  }
   path_pitches = ptree.get<string>("General.path_pitches", path_pitches);
   path_singer = ptree.get<string>("General.path_singer", path_singer);
   path_song = ptree.get<string>("General.path_song", path_song);
   margin = ptree.get<unsigned long>("General.margin", margin);
+  pitch_frame_length = ptree.get<unsigned char>("General.pitch_frame_length", pitch_frame_length);
 
   // Nakloid
   cache = ptree.get<bool>("Nakloid.cache", cache);
@@ -132,6 +144,7 @@ bool nak::parse(string path_ini)
   vibrato = ptree.get<bool>("PitchArranger.vibrato", vibrato);
   overshoot = ptree.get<bool>("PitchArranger.overshoot", overshoot);
   preparation = ptree.get<bool>("PitchArranger.preparation", preparation);
+  interpolation = ptree.get<bool>("PitchArranger.interpolation", interpolation);
 
   return true;
 }

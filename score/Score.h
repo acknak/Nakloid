@@ -15,7 +15,7 @@ class Note;
 // Reference Object
 class Score {
  public:
-  Score(std::string input, std::string path_pitches, std::string path_song, std::string path_singer);
+  Score(std::string input, std::string path_song, std::string path_singer);
   virtual ~Score();
 
   virtual bool load();
@@ -23,7 +23,8 @@ class Score {
   void reloadPitches();
 
   void saveScore(std::string path_nak);
-  void loadPitches(std::string path_input_pitches);
+  bool loadPitchesFromPit(std::string path_input_pitches);
+  bool loadPitchesFromLf0(std::string path_input_pitches);
   void savePitches(std::string path_output_pitches);
 
   // Note mediator

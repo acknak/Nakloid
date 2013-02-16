@@ -43,20 +43,27 @@ bool Nakloid::loadScore(nak::ScoreMode mode)
     score = 0;
   }
 
+  // load score
   switch(mode){
   case nak::score_mode_nak:
-    score=new ScoreNAK(nak::path_nak, nak::path_pitches, nak::path_song, nak::path_singer); break;
+    score=new ScoreNAK(nak::path_nak, nak::path_song, nak::path_singer); break;
   case nak::score_mode_ust:
-    score=new ScoreUST(nak::path_ust, nak::path_pitches, nak::path_song, nak::path_singer); break;
+    score=new ScoreUST(nak::path_ust, nak::path_song, nak::path_singer); break;
   case nak::score_mode_smf:
-    score=new ScoreSMF(nak::path_smf, nak::track, nak::path_lyrics, nak::path_pitches, nak::path_song, nak::path_singer); break;
+    score=new ScoreSMF(nak::path_smf, nak::track, nak::path_lyrics, nak::path_song, nak::path_singer); break;
   }
   if (score == 0 || !score->isScoreLoaded()) {
     cerr << "[Nakloid::loadScore] score hasn't loaded" << endl;
     return false;
   }
 
-  voice_db = new VoiceDB(score->getSingerPath());
+  // load pitches
+  if (nak::pitches_mode == nak::pitches_mode_pit)
+    score->loadPitchesFromPit(nak::path_pitches);
+  else if (nak::pitches_mode == nak::pitches_mode_lf0)
+    score->loadPitchesFromLf0(nak::path_pitches);
+  else
+    score->reloadPitches();
 
   return true;
 }
@@ -73,6 +80,7 @@ bool Nakloid::vocalization()
     return false;
   }
 
+  voice_db = new VoiceDB(score->getSingerPath());
   if (voice_db == 0) {
     cerr << "[Nakloid::vocalization] can't find voiceDB" << endl;
     return false;
@@ -125,7 +133,7 @@ bool Nakloid::vocalization()
     cout << endl << "arrange note params..." << endl << endl;
     NoteArranger::arrange(score);
   }
-  if (nak::path_pitches.empty()) {
+  if (nak::overshoot||nak::preparation||nak::vibrato||nak::interpolation) {
     cout << endl << "arrange pitch params..." << endl << endl;
     PitchArranger::arrange(score);
   }

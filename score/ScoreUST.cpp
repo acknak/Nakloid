@@ -2,8 +2,8 @@
 
 using namespace std;
 
-ScoreUST::ScoreUST(string input_ust, string path_pitches, string path_song, string path_singer)
-  :Score(input_ust, path_pitches, path_song, path_singer),id_parse(0)
+ScoreUST::ScoreUST(string input_ust, string path_song, string path_singer)
+  :Score(input_ust, path_song, path_singer),id_parse(0)
 {
   load(input_ust);
 }
