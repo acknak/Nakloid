@@ -68,10 +68,12 @@ namespace nak {
   extern unsigned short ms_vibrato_offset;
   extern unsigned short ms_vibrato_width;
   extern double pitch_vibrato;
+  extern double finefluctuation_deviation;
   extern bool vibrato;
   extern bool overshoot;
   extern bool preparation;
   extern bool interpolation;
+  extern bool finefluctuation;
 
   // Nakloid.ini parser
   extern bool parse(std::string path_ini);

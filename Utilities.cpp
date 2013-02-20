@@ -54,10 +54,12 @@ namespace nak {
   unsigned short ms_vibrato_offset = 400;
   unsigned short ms_vibrato_width = 200;
   double pitch_vibrato = 3.0;
+  double finefluctuation_deviation = 0.5;
   bool vibrato = false;
   bool overshoot = false;
   bool preparation = false;
   bool interpolation = false;
+  bool finefluctuation = false;
 }
 
 // parser
@@ -141,10 +143,12 @@ bool nak::parse(string path_ini)
   ms_vibrato_offset = ptree.get<unsigned short>("PitchArranger.ms_vibrato_offset", ms_vibrato_offset);
   ms_vibrato_width = ptree.get<unsigned short>("PitchArranger.ms_vibrato_width", ms_vibrato_width);
   pitch_vibrato = ptree.get<double>("PitchArranger.pitch_vibrato", pitch_vibrato);
+  finefluctuation_deviation = ptree.get<double>("PitchArranger.finefluctuation_deviation", finefluctuation_deviation);
   vibrato = ptree.get<bool>("PitchArranger.vibrato", vibrato);
   overshoot = ptree.get<bool>("PitchArranger.overshoot", overshoot);
   preparation = ptree.get<bool>("PitchArranger.preparation", preparation);
   interpolation = ptree.get<bool>("PitchArranger.interpolation", interpolation);
+  finefluctuation = ptree.get<bool>("PitchArranger.finefluctuation", finefluctuation);
 
   return true;
 }

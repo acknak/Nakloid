@@ -19,6 +19,16 @@ void PitchArranger::arrange(Score *score)
         preparation(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd(), *(pitches.begin()+boost::next(it_notes)->getStart()));
   }
 
+  if (nak::finefluctuation) {
+    boost::minstd_rand gen;
+    boost::normal_distribution<> dst( 0.0, nak::finefluctuation_deviation );
+	  boost::variate_generator<boost::minstd_rand&, boost::normal_distribution<>> rand( gen, dst );
+    for (vector<float>::iterator it_pitch=pitches.begin();it_pitch!=pitches.end();++it_pitch) {
+      if (*it_pitch > 0)
+        *it_pitch += rand();
+    }
+  }
+
   score->setPitches(pitches);
 }
 
