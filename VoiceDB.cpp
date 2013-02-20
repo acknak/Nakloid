@@ -17,12 +17,26 @@ VoiceDB::~VoiceDB() {}
 
 bool VoiceDB::initVoiceMap()
 {
-  return initVoiceMap(path_singer+"/oto.ini");
+  namespace fs = boost::filesystem;
+  const fs::path path(path_singer);
+
+  if (fs::is_directory(path)) {
+    BOOST_FOREACH(const fs::path& p, std::make_pair(fs::recursive_directory_iterator(path), fs::recursive_directory_iterator())) {
+      if (p.leaf().string() == "oto.ini")
+        initVoiceMap(p.string());
+    }
+    if (voice_map.size() > 0)
+      return true;
+  }
+
+  cerr << "[VoiceDB::initVoiceMap] path_singer is invalid" << endl;
+  return false;
 }
 
-bool VoiceDB::initVoiceMap(string filename)
+bool VoiceDB::initVoiceMap(string path_oto_ini)
 {
-  ifstream ifs(filename.c_str());
+  ifstream ifs(path_oto_ini.c_str());
+  boost::filesystem::path path_ini(path_oto_ini);
   string buf, wav_ext=".wav";
   while(ifs && getline(ifs, buf)) {
     vector<string> v1, v2;
@@ -31,6 +45,7 @@ bool VoiceDB::initVoiceMap(string filename)
     string filename = v1[0].substr(0, v1[0].find_last_of(wav_ext)-wav_ext.size()+1);
     string pron = (filename==v2[0]||v2[0]==""||voice_map.count(filename)==0)?filename:v2[0];
     short tmp;
+    voice_map[pron].path = path_ini.parent_path().string();
     voice_map[pron].filename = filename;
     voice_map[pron].offs = (((tmp=boost::lexical_cast<double>(v2[1]))>0))?tmp:0;
     voice_map[pron].cons = (((tmp=boost::lexical_cast<double>(v2[2]))>0))?tmp:0;
@@ -40,7 +55,7 @@ bool VoiceDB::initVoiceMap(string filename)
     if (v1[0].find(wav_ext) == string::npos)
       voice_map[pron].frq = 260.0;
     else {
-      ifstream ifs_frq((path_singer+"/"+filename+"_wav.frq").c_str(), ios::binary);
+      ifstream ifs_frq((path_ini.parent_path().string()+"/"+filename+"_wav.frq").c_str(), ios::binary);
       ifs_frq.seekg(sizeof(char)*12, ios_base::beg);
       ifs_frq.read((char*)&(voice_map[pron].frq), sizeof(double));
     }
@@ -68,11 +83,11 @@ Voice VoiceDB::getVoice(string pron)
         else if (tmp_filename[0] == '-')
           tmp_filename.replace(0, 2, "-");
 
-    if (nak::cache && bwc_io->isBaseWavsContainerFile(path_singer+"/"+tmp_filename+".bwc")) {
-      voice_map[pron].bwc = ((BaseWavsContainer)bwc_io->get(path_singer+"/"+tmp_filename+".bwc"));
+    if (nak::cache && bwc_io->isBaseWavsContainerFile(voice_map[pron].path+"/"+tmp_filename+".bwc")) {
+      voice_map[pron].bwc = ((BaseWavsContainer)bwc_io->get(voice_map[pron].path+"/"+tmp_filename+".bwc"));
     } else {
       // get wav data
-      WavParser wav_parser(path_singer+"/"+voice_map[pron].filename+".wav");
+      WavParser wav_parser(voice_map[pron].path+"/"+voice_map[pron].filename+".wav");
       wav_parser.addTargetTrack(0);
       if (!wav_parser.parse()) {
         tmp_voice = getNullVoice();
@@ -107,7 +122,7 @@ Voice VoiceDB::getVoice(string pron)
           bwc.format.chunkSize += BaseWavsFormat::wAdditionalSize + sizeof(short);
           bwc.format.wFormatTag = BaseWavsFormat::BaseWavsFormatTag;
           bwc.format.dwSamplesPerSec = wav_parser.getFormat().dwSamplesPerSec;
-          bwc_io->set(path_singer+"/"+tmp_filename+".bwc", bwc);
+          bwc_io->set(voice_map[pron].path+"/"+tmp_filename+".bwc", bwc);
         }
 
         voice_map[pron].bwc = bwc;

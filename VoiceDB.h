@@ -5,6 +5,8 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include "parser/WavParser.h"
@@ -14,6 +16,7 @@
 #include "PSOLA/BaseWavsFileIO.h"
 
 typedef struct {
+  std::string path;
   std::string filename;
   short offs; // offset(left blank)
   short cons; // consonant part(unaltered range)
@@ -32,7 +35,7 @@ class VoiceDB {
   virtual ~VoiceDB();
 
   bool initVoiceMap();
-  bool initVoiceMap(std::string filename);
+  bool initVoiceMap(std::string path_oto_ini);
   Voice getVoice(std::string pron);
   bool isPron(std::string pron);
 
