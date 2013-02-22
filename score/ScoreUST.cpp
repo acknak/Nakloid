@@ -21,12 +21,25 @@ void ScoreUST::load(string input_ust)
   list<string> buf_list;
   list< pair< short, vector<short> > > pitches_ust;
   short tmp, tempo=120;
-  unsigned long pos=0;
+  unsigned long pos = 0;
+  bool is_parse = false;
   notes.clear();
   while (ifs && getline(ifs, buf_str)) {
-    if (buf_str == "[#SETTING]")
-      continue;
     if (buf_str[0]=='[') {
+      if (buf_str.size() != 7) {
+        is_parse = false;
+        continue;
+      } else {
+        try {
+          string tmp(buf_str, 2, 4);
+          boost::lexical_cast<short>(tmp);
+          is_parse = true;
+        } catch (...) {
+          is_parse = false;
+          continue;
+        }
+      }
+
       Note *tmp_note = new Note(this, ++id_parse);
       if (notes.size()>0) {
         tmp_note->setStart(notes.back().getEnd());
@@ -38,8 +51,12 @@ void ScoreUST::load(string input_ust)
       notes.push_back(*tmp_note);
       vector<short> tmp_vector;
       pitches_ust.push_back(make_pair(0, tmp_vector));
+      is_parse = true;
+      continue;
+    } else if (!is_parse) {
       continue;
     }
+
     vector<string> buf_vector;
     boost::algorithm::split(buf_vector, buf_str, boost::is_any_of("="));
     if (buf_vector[0] == "Tempo") {
