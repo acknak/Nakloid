@@ -113,6 +113,44 @@ void Score::savePitches(std::string path_output_pitches)
   ofs.write((char*)&(pitches[0]), pitches.size()*sizeof(float));
 }
 
+bool Score::loadPrefixMap(std::string path_prefix_map)
+{
+  if (key2notenum.empty())
+    key2notenum = boost::assign::list_of("C")("C#")("D")("D#")("E")("F")("F#")("G")("G#")("A")("A#")("B");
+
+  ifstream ifs;
+  ifs.open(path_prefix_map.c_str());
+  string buf_str;
+  if (ifs) {
+    while (getline(ifs, buf_str)) {
+      vector<string> str_vector;
+      boost::algorithm::split(str_vector, buf_str, boost::is_any_of("\t"));
+      try {
+        short key_num = boost::lexical_cast<short>(str_vector[0].back());
+        str_vector[0].erase(--str_vector[0].end());
+        vector<string>::iterator pos;
+        if ((pos=find(key2notenum.begin(),key2notenum.end(),str_vector[0])) == key2notenum.end())
+          throw "";
+        short notenum = (++key_num)*12 + (pos-key2notenum.begin());
+        key2prefix[notenum] = make_pair(str_vector.at(1), str_vector.at(2));
+      } catch (...) {
+        cerr << "[Score::loadPrefixMap] unexpected key: \"" << buf_str << "\"" <<endl;
+      }
+    }
+    return true;
+  } else {
+    cerr << "[Score::loadPrefixMap] can't find prefix.map: \"" << path_prefix_map << "\"" << endl;
+  }
+  return false;
+}
+
+pair<string, string> Score::getPrefix(short key)
+{
+  if (!key2prefix.empty() && key2prefix.find(key)!=key2prefix.end())
+    return key2prefix[key];
+  return make_pair("", "");
+}
+
 /*
  * Note mediator
  */

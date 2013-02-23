@@ -24,8 +24,9 @@ namespace nak {
   string path_log = "";
   bool vowel_combining = false;
   double vowel_combining_volume = 1.0;
-  string path_output_nak="";
-  string path_output_pit="";
+  string path_output_nak = "";
+  string path_output_pit = "";
+  string path_prefix_map = "";
 
   // PitchMarker
   unsigned short pitch_margin = 10;
@@ -114,6 +115,7 @@ bool nak::parse(string path_ini)
   vowel_combining_volume = ptree.get<double>("Nakloid.vowel_combining_volume", vowel_combining_volume);
   path_output_nak = ptree.get<string>("Nakloid.path_output_nak", path_output_nak);
   path_output_pit = ptree.get<string>("Nakloid.path_output_pit", path_output_pit);
+  path_prefix_map = ptree.get<string>("Nakloid.path_prefix_map", path_prefix_map);
 
   // PitchMarker
   pitch_margin = ptree.get<unsigned short>("PitchMarker.pitch_margin", pitch_margin);

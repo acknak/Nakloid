@@ -39,6 +39,7 @@ namespace nak {
   extern double vowel_combining_volume;
   extern std::string path_output_nak;
   extern std::string path_output_pit;
+  extern std::string path_prefix_map;
 
   // PitchMarker
   extern unsigned short pitch_margin;

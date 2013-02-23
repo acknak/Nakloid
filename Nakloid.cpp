@@ -65,6 +65,10 @@ bool Nakloid::loadScore(nak::ScoreMode mode)
   else
     score->reloadPitches();
 
+  // load prefix map
+  if (nak::path_prefix_map != "")
+    score->loadPrefixMap(nak::path_prefix_map);
+
   return true;
 }
 
@@ -107,6 +111,14 @@ bool Nakloid::vocalization()
             it_notes->setPron("- "+it_notes->getPron());
         }
       }
+
+      // prefix
+      pair<string, string> tmp_prefix = score->getPrefix(it_notes->getBasePitch());
+      string tmp_pron = tmp_prefix.first + it_notes->getPron() + tmp_prefix.second;
+      if (voice_db->isPron(tmp_pron))
+        it_notes->setPron(tmp_pron);
+      else
+        cerr << "[Nakloid::vocalization] can't find pron: \"" << tmp_pron << "\"" << endl;
 
       // set overlap range & preceding utterance
       if (it_notes == score->notes.begin()) {
