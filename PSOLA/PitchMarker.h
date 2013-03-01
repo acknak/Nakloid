@@ -41,8 +41,8 @@ class PitchMarker {
   PitchMarker(const PitchMarker& other);
   PitchMarker& operator=(const PitchMarker& other);
 
-  std::vector<double> xcorr(std::vector<short>::iterator it_start, std::vector<short>::iterator it_base, short exp_dist);
-  std::vector<double> getHann(long len);
+  template<typename it>
+  std::vector<double> xcorr(it it_start, it it_base, short exp_dist);
   short pitch;
   short win_size;
   long cons_pos;
