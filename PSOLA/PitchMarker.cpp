@@ -112,7 +112,7 @@ bool PitchMarker::mark(vector<short> input)
   // pitch marking (foward)
   while (input.end()-mark_next > win_size*1.5) {
     vector<double> xcorr_win = xcorr(it_start, mark_next, win_size);
-    unsigned short pitch_margin = max((unsigned short)(xcorr_win.size()/2), nak::pitch_margin);
+    unsigned short pitch_margin = min((unsigned short)(xcorr_win.size()/2), nak::pitch_margin);
     long dist = max_element(xcorr_win.begin()+(xcorr_win.size()/2)-pitch_margin,
       xcorr_win.begin()+(xcorr_win.size()/2)+pitch_margin)-xcorr_win.begin();
     mark_list.push_back((mark_next+=dist)-input.begin());
@@ -123,7 +123,7 @@ bool PitchMarker::mark(vector<short> input)
   // pitch marking (back)
   while (input.rend()-mark_prev > win_size*1.5) {
     vector<double> xcorr_win = xcorr(rit_start, mark_prev, win_size);
-    unsigned short pitch_margin = max((unsigned short)(xcorr_win.size()/2), nak::pitch_margin);
+    unsigned short pitch_margin = min((unsigned short)(xcorr_win.size()/2), nak::pitch_margin);
     long dist = max_element(xcorr_win.begin()+(xcorr_win.size()/2)-pitch_margin,
       xcorr_win.begin()+(xcorr_win.size()/2)+pitch_margin)-xcorr_win.begin();
     mark_list.push_front(input.rend()-(mark_prev+=dist));
