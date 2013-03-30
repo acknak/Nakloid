@@ -67,6 +67,7 @@ bool Note::operator==(const Note& other) const
   is_eq &= (self.velocities == other.self.velocities);
   is_eq &= (this->getPrec() == other.getPrec());
   is_eq &= (this->getOvrl() == other.getOvrl());
+  is_eq &= (self.is_vcv == other.self.is_vcv);
   return is_eq;
 }
 
@@ -134,6 +135,7 @@ string Note::getPron()
 void Note::setPron(string pron)
 {
   this->self.pron = pron;
+  this->self.is_vcv = (pron.find(" ")!=string::npos && (pron[0]!='*'&&pron[0]!='-'));
 }
 
 unsigned char Note::getBasePitch()
@@ -246,6 +248,16 @@ void Note::setOvrl(short ovrl)
     self.ovrl = 0;
   }
   self.ovrl = new short (ovrl);
+}
+
+bool Note::isVCV()
+{
+  return self.is_vcv;
+}
+
+void Note::isVCV(bool is_vcv)
+{
+  self.is_vcv = is_vcv;
 }
 
 void Note::initializeNoteFrame()

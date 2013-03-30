@@ -21,6 +21,7 @@ typedef struct {
   std::list< std::pair<long,short> > velocities;
   short *prec;
   short *ovrl;
+  bool is_vcv;
 } NoteFrame;
 
 // Value Object
@@ -63,6 +64,8 @@ class Note {
   bool isOvrl();
   short getOvrl() const;
   void setOvrl(short ovrl);
+  bool isVCV();
+  void isVCV(bool is_vcv);
 
  protected:
   Score *score;
