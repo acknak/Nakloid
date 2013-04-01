@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <boost/assign.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -51,6 +52,7 @@ class VoiceDB {
 
   std::string path_singer;
   std::map<std::string, Voice> voice_map;
+  //std::map<std::string, char> pron2vow;
 };
 
 #endif

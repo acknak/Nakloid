@@ -5,6 +5,24 @@ using namespace std;
 VoiceDB::VoiceDB()
 {
   path_singer = "";
+  /*
+  pron2vow = boost::assign::map_list_of
+    ("‚ ", 'a')("‚¢", 'i')("‚¤", 'u')("‚¦", 'e')("‚¨", 'o')
+    ("‚©", 'a')("‚«", 'i')("‚­", 'u')("‚¯", 'e')("‚±", 'o')
+    ("‚ª", 'a')("‚¬", 'i')("‚®", 'u')("‚°", 'e')("‚²", 'o')
+    ("‚³", 'a')("‚µ", 'i')("‚·", 'u')("‚¹", 'e')("‚»", 'o')
+    ("‚´", 'a')("‚¶", 'i')("‚¸", 'u')("‚º", 'e')("‚¼", 'o')
+    ("‚½", 'a')("‚¿", 'i')("‚Â", 'u')("‚Ä", 'e')("‚Æ", 'o')
+    ("‚¾", 'a')("‚À", 'i')("‚Ã", 'u')("‚Å", 'e')("‚Ç", 'o')
+    ("‚È", 'a')("‚É", 'i')("‚Ê", 'u')("‚Ë", 'e')("‚Ì", 'o')
+    ("‚Í", 'a')("‚Ð", 'i')("‚Ó", 'u')("‚Ö", 'e')("‚Ù", 'o')
+    ("‚Î", 'a')("‚Ñ", 'i')("‚Ô", 'u')("‚×", 'e')("‚Ú", 'o')
+    ("‚Ï", 'a')("‚Ò", 'i')("‚Õ", 'u')("‚Ø", 'e')("‚Û", 'o')
+    ("‚Ü", 'a')("‚Ý", 'i')("‚Þ", 'u')("‚ß", 'e')("‚à", 'o')
+    ("‚â", 'a')("‚ä", 'u')("‚æ", 'o')("‚á", 'a')("‚ã", 'u')("‚å", 'o')
+    ("‚ç", 'a')("‚è", 'i')("‚é", 'u')("‚ê", 'e')("‚ë", 'o')
+    ("‚í", 'a')("‚ð", 'o')("‚ñ", 'n')("‚î", 'i')("‚ï", 'e');
+    */
 }
 
 VoiceDB::VoiceDB(string path_singer)
@@ -60,7 +78,7 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
       ifs_frq.read((char*)&(voice_map[pron].frq), sizeof(double));
     }
     // alias
-    if (v2[0]!="" && pron != v2[0])
+    if (v2[0]!="" && v2[0]!=pron)
       voice_map[v2[0]] = voice_map[pron];
   }
   return true;
@@ -97,7 +115,7 @@ Voice VoiceDB::getVoice(string pron)
 
         // make input pitch mark
         PitchMarker *marker = new PitchMarker(voice_map[pron].frq, fs);
-        marker->setConsPos(voice_map[pron].offs+voice_map[pron].cons, fs);
+        marker->setRange(voice_map[pron].offs, voice_map[pron].cons, voice_map[pron].blnk, fs);
         marker->mark(wav_data);
         vector<long> input_pitch_marks = marker->getMarkVector();
         delete marker;
@@ -106,8 +124,7 @@ Voice VoiceDB::getVoice(string pron)
         BaseWavsMaker *maker = new BaseWavsMaker();
         maker->setPitchMarks(input_pitch_marks);
         maker->setVoice(wav_data);
-        maker->setRange(voice_map[pron].offs, voice_map[pron].blnk, fs);
-        maker->setRepStart(voice_map[pron].cons, fs);
+        maker->setRepStart(voice_map[pron].offs+voice_map[pron].cons, fs);
         maker->makeBaseWavs();
 
         bwc.base_wavs = maker->getBaseWavs();

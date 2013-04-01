@@ -28,14 +28,17 @@ class PitchMarker {
   void debug(std::string output);
 
   // accessor
-  short getPitch();
-  void setPitch(short pitch, unsigned long fs);
   short getWinSize();
   void setWinSize(short win_size);
-  long getConsPos();
-  void setConsPos(unsigned short cons, unsigned long fs);
+  void setWinSize(double pitch, unsigned long fs);
+  long getPosOffs();
+  long getPosCons();
+  long getPosBlnk();
+  void setRange(unsigned short offs, unsigned short cons, unsigned short blnk, unsigned long fs);
   std::list<long> getMarkList();
   std::vector<long> getMarkVector();
+  std::vector<short> getTargetWav();
+  void setTargetWav(std::vector<short> target_wav);
 
  private:
   PitchMarker(const PitchMarker& other);
@@ -43,10 +46,14 @@ class PitchMarker {
 
   template<typename it>
   std::vector<double> xcorr(it it_start, it it_base, short exp_dist);
-  short pitch;
+  template<typename it>
+  std::vector<double> xcorr(it it_start, std::vector<short> target_wav, short exp_dist);
   short win_size;
-  long cons_pos;
+  long pos_offs;
+  long pos_cons;
+  long pos_blnk;
   std::list<long> mark_list;
+  std::vector<short> target_wav;
 };
 
 #endif
