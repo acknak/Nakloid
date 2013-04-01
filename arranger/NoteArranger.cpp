@@ -16,7 +16,9 @@ void NoteArranger::arrange(Score *score)
     if (it_notes!=--score->notes.end() && boost::next(it_notes)->getStart()==it_notes->getEnd() && boost::next(it_notes)->getOvrl()>0)
       ms_back_edge = boost::next(it_notes)->getOvrl();
 
+    it_notes->addVelocityPoint(0, 0);
     it_notes->addVelocityPoint(ms_front_edge, it_notes->getBaseVelocity());
     it_notes->addVelocityPoint(-ms_back_edge, it_notes->getBaseVelocity());
+    it_notes->addVelocityPoint(-1, 0);
   }
 }
