@@ -45,6 +45,7 @@ namespace nak {
   extern unsigned short pitch_margin;
 
   // BaseWavsMaker
+  extern double fade_stretch;
   extern unsigned char base_wavs_lobe;
   extern bool is_normalize;
 
@@ -90,6 +91,8 @@ namespace nak {
   extern double getRMS(std::vector<short> wav);
   extern double getMean(std::vector<short> wav);
   extern double getVar(std::vector<short> wav, double mean);
+  extern double getDB(long wav_value);
+  extern short reverseDB(double db);
 
   extern std::vector<double> getHann(long len);
   extern std::vector<double> getTri(long len);

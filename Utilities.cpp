@@ -36,6 +36,7 @@ namespace nak {
   bool is_normalize = false;
 
   // BaseWavsOverlapper
+  double fade_stretch = 1.0;
   bool compressor = false;
   double max_volume = 0.8;
   double threshold_x = 0.6;
@@ -125,6 +126,7 @@ bool nak::parse(string path_ini)
   is_normalize = ptree.get<bool>("BaseWavsMaker.normalize", is_normalize);
 
   // BaseWavsOverlapper
+  fade_stretch = ptree.get<double>("BaseWavsOverlapper.fade_stretch", fade_stretch);
   compressor = ptree.get<bool>("BaseWavsOverlapper.compressor", compressor);
   threshold_x = ptree.get<double>("BaseWavsOverlapper.threshold_x", threshold_x);
   threshold_y = ptree.get<double>("BaseWavsOverlapper.threshold_y", threshold_y);
@@ -170,30 +172,6 @@ unsigned long nak::tick2ms(unsigned long tick, unsigned short timebase, unsigned
   return (unsigned long)(((double)tick) / timebase * (tempo/1000.0));
 }
 
-double nak::getRMS(vector<short> wav)
-{
-  double rms = 0.0;
-  for (int i=0; i<wav.size(); i++)
-    rms += pow((double)wav[i], 2) / wav.size();
-  return sqrt(rms);
-}
-
-double nak::getMean(vector<short> wav)
-{
-  double mean = 0.0;
-  for (int i=0; i<wav.size(); i++)
-    mean += wav[i] / (double)wav.size();
-  return mean;
-}
-
-double nak::getVar(vector<short> wav, double mean)
-{
-  double var = 0.0;
-  for (int i=0; i<wav.size(); i++)
-    var += pow(wav[i]-mean, 2) / wav.size();
-  return sqrt(var);
-}
-
 vector<short> nak::normalize(vector<short> wav, double target_rms)
 {
   double scale = target_rms / getRMS(wav);
@@ -226,6 +204,45 @@ vector<short> nak::normalize(vector<short> wav, short target_max, short target_m
     wav[i] += (target_max+target_min)/2.0;
 
   return wav;
+}
+
+double nak::getRMS(vector<short> wav)
+{
+  double rms = 0.0;
+  for (int i=0; i<wav.size(); i++)
+    rms += pow((double)wav[i], 2) / wav.size();
+  return sqrt(rms);
+}
+
+double nak::getMean(vector<short> wav)
+{
+  double mean = 0.0;
+  for (int i=0; i<wav.size(); i++)
+    mean += wav[i] / (double)wav.size();
+  return mean;
+}
+
+double nak::getVar(vector<short> wav, double mean)
+{
+  double var = 0.0;
+  for (int i=0; i<wav.size(); i++)
+    var += pow(wav[i]-mean, 2) / wav.size();
+  return sqrt(var);
+}
+
+double nak::getDB(long wav_value)
+{
+  if (wav_value == 0)
+    return 1;
+  double tmp = log10(abs(wav_value)/32768.0) * 20;
+  return (tmp>0)?1:tmp;
+}
+
+short nak::reverseDB(double db)
+{
+  if (db > 0)
+    return 32767;
+  return (db>0)?32726:pow(10,db/20)*32767;
 }
 
 vector<double> nak::getTri(long len)
