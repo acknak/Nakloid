@@ -1,11 +1,14 @@
 #ifndef Utilities_h
 #define Utilities_h
 
+#include <map>
+#include <list>
 #include <cmath>
 #include <string>
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <boost/assign.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
@@ -45,18 +48,18 @@ namespace nak {
   extern unsigned short pitch_margin;
 
   // BaseWavsMaker
-  extern double fade_stretch;
+  extern short target_rms;
   extern unsigned char base_wavs_lobe;
   extern bool is_normalize;
 
   // BaseWavsOverlapper
+  extern double fade_stretch;
   extern bool compressor;
   extern double threshold_x;
   extern double threshold_y;
   extern double max_volume;
 
   // NoteArranger
-  extern bool vowel_combining;
   extern unsigned short ms_front_edge;
   extern unsigned short ms_back_edge;
   extern bool sharpen_front;
@@ -76,6 +79,10 @@ namespace nak {
   extern bool preparation;
   extern bool interpolation;
   extern bool finefluctuation;
+
+  // internal parameters
+  extern std::list<std::string> vcv_prefix_list;
+  extern std::map<std::string, char> pron2vow;
 
   // Nakloid.ini parser
   extern bool parse(std::string path_ini);

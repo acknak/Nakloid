@@ -2,23 +2,13 @@
 
 using namespace std;
 
-BaseWavsMaker::BaseWavsMaker():lobe(nak::base_wavs_lobe),pos_rep_start(0),sub_rep_start(0){}
+BaseWavsMaker::BaseWavsMaker():lobe(nak::base_wavs_lobe),sub_rep_start(0),sub_ovrl(0){}
 
 BaseWavsMaker::~BaseWavsMaker(){}
 
 vector<BaseWav> BaseWavsMaker::getBaseWavs()
 {
   return base_wavs;
-}
-
-vector<short> BaseWavsMaker::getVoice()
-{
-  return voice;
-}
-
-void BaseWavsMaker::setVoice(vector<short> voice)
-{
-  this->voice = voice;
 }
 
 vector<long> BaseWavsMaker::getPitchMarkVector()
@@ -28,85 +18,108 @@ vector<long> BaseWavsMaker::getPitchMarkVector()
 
 list<long> BaseWavsMaker::getPitchMarkList()
 {
-  list<long> pitch_marks;
-
-  for (int i=0; this->pitch_marks.size(); i++)
-    pitch_marks.push_back(this->pitch_marks[i]);
-
+  list<long> pitch_marks(this->pitch_marks.begin(), this->pitch_marks.end());
   return pitch_marks;
 }
 
 void BaseWavsMaker::setPitchMarks(vector<long> pitch_marks)
 {
   this->pitch_marks = pitch_marks;
+  sub_rep_start = sub_ovrl = 0;
 }
 
-void BaseWavsMaker::setPitchMarks(list<long> pitch_marks)
+void BaseWavsMaker::setPitchMarks(vector<long> pitch_marks, long ms_rep_start, unsigned long fs)
 {
-  this->pitch_marks.reserve(pitch_marks.size());
-  for (list<long>::iterator it=pitch_marks.begin(); it!=pitch_marks.end(); ++it)
-    this->pitch_marks.push_back(*it);
+  setPitchMarks(pitch_marks, ms_rep_start, 0, fs);
 }
 
-unsigned char BaseWavsMaker::getLobe()
+void BaseWavsMaker::setPitchMarks(vector<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs)
 {
-  return lobe;
-}
+  this->pitch_marks = pitch_marks;
 
-long BaseWavsMaker::getRepStartPoint()
-{
-  long sub_rep_len = base_wavs.size() - 1 - sub_rep_start;
-  long base_pos = base_wavs.size() - 1 - (sub_rep_len/2);
-  return base_pos;
-}
-
-void BaseWavsMaker::setRepStart(long ms_rep_start, unsigned long fs)
-{
-  this->pos_rep_start = ms_rep_start * fs / 1000;
-}
-
-bool BaseWavsMaker::makeBaseWavs()
-{
-  if (voice.size()==0 || pitch_marks.empty() || lobe==0)
-    return false;
-  base_wavs.clear();
-
-  cout << "----- start making base wavs -----" << endl;
-
-  // find self fade start point
-  long sub_tmp = 0;
+  long pos_rep_start = ms_rep_start * fs / 1000;
   for (int i=0; i<pitch_marks.size(); i++) {
-    if (pos_rep_start < pitch_marks[i]) {
+    if (pos_rep_start <= pitch_marks[i]) {
       sub_rep_start = i;
       break;
     }
   }
 
+  long pos_ovrl = ms_ovrl * fs / 1000;
+  for (int i=0; i<pitch_marks.size(); i++) {
+    if (pos_ovrl <= pitch_marks[i]) {
+      sub_ovrl = i;
+      break;
+    }
+  }
+}
+
+void BaseWavsMaker::setPitchMarks(list<long> pitch_marks)
+{
+  vector<long> tmp_pitch_marks(pitch_marks.begin(), pitch_marks.end());
+  setPitchMarks(tmp_pitch_marks);
+}
+
+void BaseWavsMaker::setPitchMarks(list<long> pitch_marks, long ms_rep_start, unsigned long fs)
+{
+  vector<long> tmp_pitch_marks(pitch_marks.begin(), pitch_marks.end());
+  setPitchMarks(tmp_pitch_marks, ms_rep_start, fs);
+}
+
+void BaseWavsMaker::setPitchMarks(list<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs)
+{
+  vector<long> tmp_pitch_marks(pitch_marks.begin(), pitch_marks.end());
+  setPitchMarks(tmp_pitch_marks, ms_rep_start, ms_ovrl, fs);
+}
+
+long BaseWavsMaker::getRepStartSub()
+{
+  return (base_wavs.size()-1+sub_rep_start) / 2;
+}
+
+bool BaseWavsMaker::makeBaseWavs(vector<short> voice)
+{
+  this->voice = voice;
+  if (voice.size()==0 || pitch_marks.empty() || lobe==0) {
+    cerr << "[BaseWavsMaker] voice or pitch mark or lobe is null" << endl;
+    return false;
+  }
+  if (sub_ovrl > sub_rep_start) {
+    cerr << "[BaseWavsMaker] invalid ovrl and rep_start" << endl;
+    return false;
+  }
+  base_wavs.clear();
+
+  cout << "----- start making base wavs -----" << endl;
+
   // make base wavs
-  vector<short> target = makeBaseWav(sub_rep_start).data.getDataVector();
-  double target_rms = nak::getRMS(target);
+  double rep_scale = nak::target_rms/nak::getRMS(makeBaseWav(sub_rep_start).data.getDataVector());
+  double ovrl_scale = (sub_ovrl>0)?nak::target_rms/nak::getRMS(makeBaseWav(0).data.getDataVector()):1.0;
 
-  cout << "pitch_marks size: " << pitch_marks.size() << ", sub_rep_start:" << sub_rep_start << ", scale:" << 2400.0/target_rms << endl;
+  cout << "pitch_marks size: " << pitch_marks.size() << endl
+    << "sub_rep_start:" << sub_rep_start << " sub_ovrl:" << sub_ovrl << endl;
 
+  vector<double> filter(pitch_marks.size(), 1.0);
   base_wavs.reserve(pitch_marks.size());
   for (int i=0; i<pitch_marks.size(); i++) {
-    BaseWav tmp_base_wav = makeBaseWav(i);
-    if (i > sub_rep_start)
-      tmp_base_wav.data.setData(nak::normalize(tmp_base_wav.data.getDataVector(), target_rms));
-    base_wavs.push_back(tmp_base_wav);
+    double scale = 1.0;
+    if (sub_ovrl==0 || i>=sub_rep_start) {
+      scale = rep_scale;
+    } else if (i <= sub_ovrl) {
+      scale = ovrl_scale;
+    } else {
+      double tmp = (i-sub_ovrl) / (double)(sub_rep_start-sub_ovrl);
+      scale = (ovrl_scale*(1.0-tmp)) + (rep_scale*tmp);
+    }
+    base_wavs.push_back(makeBaseWav(i, scale));
   }
 
   // make self fade
   long sub_rep_len = (base_wavs.size()-1-sub_rep_start)/2;
-  long base_pos = getRepStartPoint();
-
-  cout << "base_wavs size:" << base_wavs.size() << ", base_pos:" << base_pos << endl;
-
+  long sub_base = getRepStartSub();
   for (int i=0; i<sub_rep_len; i++) {
-//for (int i=0; i<0; i++) {
     BaseWav fore_wav = base_wavs[sub_rep_start+i];
-    BaseWav aft_wav = base_wavs[base_pos+i];
-
+    BaseWav aft_wav = base_wavs[sub_base+i];
     vector<short> fore_wav_data = fore_wav.data.getDataVector();
     vector<short> aft_wav_data = aft_wav.data.getDataVector();
 
@@ -116,7 +129,6 @@ bool BaseWavsMaker::makeBaseWavs()
     } else {
       fore_wav_data.insert(fore_wav_data.begin(), left_diff, 0);
     }
-
     long right_diff = aft_wav.fact.dwPitchRight - fore_wav.fact.dwPitchRight;
     if (right_diff < 0) {
       fore_wav_data.erase(fore_wav_data.end()+right_diff, fore_wav_data.end());
@@ -128,14 +140,19 @@ bool BaseWavsMaker::makeBaseWavs()
     for (int j=0; j<aft_wav_data.size(); j++) {
       aft_wav_data[j] = (fore_wav_data[j]*scale) + (aft_wav_data[j]*(1.0-scale));
     }
-
-    //base_wavs[base_pos+i].data.setData(nak::normalize(aft_wav_data, 2400));
-    base_wavs[base_pos+i].data.setData(aft_wav_data);
+    //base_wavs[sub_base+i].data.setData(nak::normalize(aft_wav_data, 2400));
+    base_wavs[sub_base+i].data.setData(aft_wav_data);
   }
 
   cout << "----- finish making base wavs -----" << endl << endl;
 
   return true;
+}
+
+bool BaseWavsMaker::makeBaseWavs(list<short> voice)
+{
+  vector<short> tmp_voice(voice.begin(), voice.end());
+  return makeBaseWavs(tmp_voice);
 }
 
 BaseWav BaseWavsMaker::makeBaseWav(int point)

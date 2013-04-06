@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 #include <boost/assign.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
@@ -17,6 +18,7 @@
 #include "PSOLA/BaseWavsFileIO.h"
 
 typedef struct {
+  bool is_vcv;
   std::string path;
   std::string filename;
   short offs; // offset(left blank)
@@ -52,7 +54,6 @@ class VoiceDB {
 
   std::string path_singer;
   std::map<std::string, Voice> voice_map;
-  //std::map<std::string, char> pron2vow;
 };
 
 #endif

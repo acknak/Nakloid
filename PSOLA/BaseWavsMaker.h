@@ -19,19 +19,20 @@ class BaseWavsMaker {
   BaseWavsMaker();
   virtual ~BaseWavsMaker();
 
-  bool makeBaseWavs();
+  bool makeBaseWavs(std::vector<short> voice);
+  bool makeBaseWavs(std::list<short> voice);
 
   // accessor
   std::vector<BaseWav> getBaseWavs();
-  std::vector<short> getVoice();
-  void setVoice(std::vector<short> voice);
   std::vector<long> getPitchMarkVector();
   std::list<long> getPitchMarkList();
   void setPitchMarks(std::vector<long> pitch_marks);
+  void setPitchMarks(std::vector<long> pitch_marks, long ms_rep_start, unsigned long fs);
+  void setPitchMarks(std::vector<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs);
   void setPitchMarks(std::list<long> pitch_marks);
-  unsigned char getLobe();
-  long getRepStartPoint();
-  void setRepStart(long ms_rep_start, unsigned long fs);
+  void setPitchMarks(std::list<long> pitch_marks, long ms_rep_start, unsigned long fs);
+  void setPitchMarks(std::list<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs);
+  long BaseWavsMaker::getRepStartSub();
 
  private:
   BaseWavsMaker(const BaseWavsMaker& other);
@@ -43,9 +44,9 @@ class BaseWavsMaker {
   std::vector<BaseWav> base_wavs;
   std::vector<short> voice;
   std::vector<long> pitch_marks;
-  long pos_rep_start;
   unsigned char lobe;
   long sub_rep_start;
+  long sub_ovrl;
 };
 
 #endif

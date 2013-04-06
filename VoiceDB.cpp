@@ -2,32 +2,10 @@
 
 using namespace std;
 
-VoiceDB::VoiceDB()
-{
-  path_singer = "";
-  /*
-  pron2vow = boost::assign::map_list_of
-    ("‚ ", 'a')("‚¢", 'i')("‚¤", 'u')("‚¦", 'e')("‚¨", 'o')
-    ("‚©", 'a')("‚«", 'i')("‚­", 'u')("‚¯", 'e')("‚±", 'o')
-    ("‚ª", 'a')("‚¬", 'i')("‚®", 'u')("‚°", 'e')("‚²", 'o')
-    ("‚³", 'a')("‚µ", 'i')("‚·", 'u')("‚¹", 'e')("‚»", 'o')
-    ("‚´", 'a')("‚¶", 'i')("‚¸", 'u')("‚º", 'e')("‚¼", 'o')
-    ("‚½", 'a')("‚¿", 'i')("‚Â", 'u')("‚Ä", 'e')("‚Æ", 'o')
-    ("‚¾", 'a')("‚À", 'i')("‚Ã", 'u')("‚Å", 'e')("‚Ç", 'o')
-    ("‚È", 'a')("‚É", 'i')("‚Ê", 'u')("‚Ë", 'e')("‚Ì", 'o')
-    ("‚Í", 'a')("‚Ð", 'i')("‚Ó", 'u')("‚Ö", 'e')("‚Ù", 'o')
-    ("‚Î", 'a')("‚Ñ", 'i')("‚Ô", 'u')("‚×", 'e')("‚Ú", 'o')
-    ("‚Ï", 'a')("‚Ò", 'i')("‚Õ", 'u')("‚Ø", 'e')("‚Û", 'o')
-    ("‚Ü", 'a')("‚Ý", 'i')("‚Þ", 'u')("‚ß", 'e')("‚à", 'o')
-    ("‚â", 'a')("‚ä", 'u')("‚æ", 'o')("‚á", 'a')("‚ã", 'u')("‚å", 'o')
-    ("‚ç", 'a')("‚è", 'i')("‚é", 'u')("‚ê", 'e')("‚ë", 'o')
-    ("‚í", 'a')("‚ð", 'o')("‚ñ", 'n')("‚î", 'i')("‚ï", 'e');
-    */
-}
+VoiceDB::VoiceDB():path_singer("") {}
 
 VoiceDB::VoiceDB(string path_singer)
 {
-  VoiceDB();
   setSingerPath(path_singer);
 }
 
@@ -77,6 +55,12 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
       ifs_frq.seekg(sizeof(char)*12, ios_base::beg);
       ifs_frq.read((char*)&(voice_map[pron].frq), sizeof(double));
     }
+    // is vcv
+    voice_map[pron].is_vcv = false;
+    if (pron.size() > 2) {
+      string pron_prefix = pron.substr(0, 2);
+      voice_map[pron].is_vcv = find(nak::vcv_prefix_list.begin(), nak::vcv_prefix_list.end(), pron_prefix)!=nak::vcv_prefix_list.end();
+    }
     // alias
     if (v2[0]!="" && v2[0]!=pron)
       voice_map[v2[0]] = voice_map[pron];
@@ -94,12 +78,15 @@ Voice VoiceDB::getVoice(string pron)
     BaseWavsContainer bwc;
     BaseWavsFileIO *bwc_io = new BaseWavsFileIO();
     string tmp_filename = pron;
-    if (voice_map[pron].filename != pron)
-      if (tmp_filename[1] == ' ')
-        if (tmp_filename[0] == '*')
+    if (voice_map[pron].filename != pron) {
+      if (tmp_filename[1] == ' ') {
+        if (tmp_filename[0] == '*') {
           tmp_filename.replace(0, 2, "_");
-        else if (tmp_filename[0] == '-')
+        } else if (tmp_filename[0] == '-') {
           tmp_filename.replace(0, 2, "-");
+        }
+      }
+    }
 
     if (nak::cache && bwc_io->isBaseWavsContainerFile(voice_map[pron].path+"/"+tmp_filename+".bwc")) {
       voice_map[pron].bwc = ((BaseWavsContainer)bwc_io->get(voice_map[pron].path+"/"+tmp_filename+".bwc"));
@@ -122,14 +109,16 @@ Voice VoiceDB::getVoice(string pron)
 
         // make base waves
         BaseWavsMaker *maker = new BaseWavsMaker();
-        maker->setPitchMarks(input_pitch_marks);
-        maker->setVoice(wav_data);
-        maker->setRepStart(voice_map[pron].offs+voice_map[pron].cons, fs);
-        maker->makeBaseWavs();
+        if (voice_map[pron].is_vcv) {
+          maker->setPitchMarks(input_pitch_marks, voice_map[pron].offs+voice_map[pron].cons, voice_map[pron].offs+voice_map[pron].ovrl, fs);
+        } else {
+          maker->setPitchMarks(input_pitch_marks, voice_map[pron].offs+voice_map[pron].cons, fs);
+        }
+        maker->makeBaseWavs(wav_data);
 
         bwc.base_wavs = maker->getBaseWavs();
-        bwc.format.wLobeSize = maker->getLobe();
-        bwc.format.dwRepeatStart = maker->getRepStartPoint();
+        bwc.format.wLobeSize = nak::base_wavs_lobe;
+        bwc.format.dwRepeatStart = maker->getRepStartSub();
         bwc.format.wF0 = voice_map[pron].frq;
         delete maker;
 
