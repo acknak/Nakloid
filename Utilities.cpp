@@ -203,7 +203,7 @@ vector<short> nak::normalize(vector<short> wav, double target_rms)
 {
   double scale = target_rms / getRMS(wav);
   for (int i=0; i<wav.size(); i++)
-    wav[i] = wav[i] * scale;
+    wav[i] *= scale;
   return wav;
 }
 

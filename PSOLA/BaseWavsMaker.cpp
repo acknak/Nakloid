@@ -93,8 +93,6 @@ bool BaseWavsMaker::makeBaseWavs(vector<short> voice, bool is_vcv)
   // make base wavs
   double rep_scale = nak::target_rms/nak::getRMS(makeBaseWav(sub_rep_start).data.getDataVector());
   double ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeBaseWav(0).data.getDataVector()):rep_scale;
-
-  vector<double> filter(pitch_marks.size(), 1.0);
   base_wavs.reserve(pitch_marks.size());
   for (int i=0; i<pitch_marks.size(); i++) {
     double scale = 1.0;
@@ -135,7 +133,7 @@ bool BaseWavsMaker::makeBaseWavs(vector<short> voice, bool is_vcv)
     for (int j=0; j<aft_wav_data.size(); j++) {
       aft_wav_data[j] = (fore_wav_data[j]*scale) + (aft_wav_data[j]*(1.0-scale));
     }
-    base_wavs[sub_base+i].data.setData(aft_wav_data);
+    base_wavs[sub_base+i].data.setData(nak::normalize(aft_wav_data, nak::target_rms));
   }
 
   return true;
