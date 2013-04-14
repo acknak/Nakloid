@@ -178,6 +178,22 @@ long Score::getNotePrevDist(Note *note)
   return note->getStart() - boost::prior(it_tmp_note)->getEnd();
 }
 
+bool Score::isNoteNextVCV(Note *note)
+{
+  list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
+  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end())
+    return false;
+  return boost::next(it_tmp_note)->isVCV();
+}
+
+long Score::getNoteNextOvrl(Note *note)
+{
+  list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
+  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end())
+    return 0;
+  return boost::next(it_tmp_note)->getOvrl();
+}
+
 /*
  * accessor
  */

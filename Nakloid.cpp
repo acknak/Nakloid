@@ -56,6 +56,7 @@ bool Nakloid::loadScore(nak::ScoreMode mode)
     cerr << "[Nakloid::loadScore] score hasn't loaded" << endl;
     return false;
   }
+  cout << endl;
 
   // load pitches
   if (nak::pitches_mode == nak::pitches_mode_pit)
@@ -90,7 +91,7 @@ bool Nakloid::vocalization()
     return false;
   }
 
-  cout << "----- start vocalization -----" << endl << endl;
+  cout << "----- start vocalization -----" << endl;
   setMargin(nak::margin);
 
   // set note params from voiceDB
@@ -111,7 +112,7 @@ bool Nakloid::vocalization()
         }
       }
 
-      // prefix
+      // prefix map (add suffix)
       pair<string, string> tmp_prefix = score->getPrefix(it_notes->getBasePitch());
       string tmp_pron = tmp_prefix.first + it_notes->getPron() + tmp_prefix.second;
       if (voice_db->isPron(tmp_pron))
@@ -119,51 +120,56 @@ bool Nakloid::vocalization()
       else
         cerr << "[Nakloid::vocalization] can't find pron: \"" << tmp_pron << "\"" << endl;
 
+      Voice tmp_voice = voice_db->getVoice(it_notes->getPron());
+
+      // check vcv mode
+      it_notes->isVCV(tmp_voice.is_vcv);
+
       // set overlap range & preceding utterance
       if (it_notes == score->notes.begin()) {
-        short ovrl = it_notes->isOvrl()?it_notes->getOvrl():voice_db->getVoice(it_notes->getPron()).ovrl;
-        short prec = it_notes->isPrec()?it_notes->getPrec():voice_db->getVoice(it_notes->getPron()).prec;
+        short ovrl = it_notes->isOvrl()?it_notes->getOvrl():tmp_voice.ovrl;
+        short prec = it_notes->isPrec()?it_notes->getPrec():tmp_voice.prec;
         short tmp_margin = prec - ((ovrl<0)?ovrl:0);
         if (max<unsigned long>(margin, tmp_margin) > it_notes->getStart())
           margin = max<unsigned long>(margin, tmp_margin);
       }
       if (!it_notes->isOvrl())
-        it_notes->setOvrl(voice_db->getVoice(it_notes->getPron()).ovrl);
+        it_notes->setOvrl(tmp_voice.ovrl);
       if (!it_notes->isPrec())
-        it_notes->setPrec(voice_db->getVoice(it_notes->getPron()).prec);
+        it_notes->setPrec(tmp_voice.prec);
 
       // show progress
       if (++counter/score->notes.size()>percent+0.1 && (percent=floor(counter/score->notes.size()*10)/10.0)<1.0)
         cout << percent*100 << "%..." << endl;
     }
-    cout << endl << "load finished" << endl << endl << endl;
+    cout << endl;
   }
 
   // arrange note params
   if (nak::score_mode != nak::score_mode_nak) {
-    cout << endl << "arrange note params..." << endl << endl;
+    cout << "arrange note params..." << endl;
     NoteArranger::arrange(score);
   }
   if (nak::overshoot||nak::preparation||nak::vibrato||nak::interpolation) {
-    cout << endl << "arrange pitch params..." << endl << endl;
+    cout << "arrange pitch params..." << endl;
     PitchArranger::arrange(score);
   }
-  if (nak::score_mode==nak::score_mode_nak && !nak::path_pitches.empty())
-    cout << endl << "arrange finished" << endl << endl << endl;
+  if (nak::score_mode==nak::score_mode_nak && !nak::path_pitches.empty()) {
+    cout << "arrange finished" << endl;
+  }
+  cout << endl;
 
   // Singing Voice Synthesis
   BaseWavsOverlapper *overlapper = new BaseWavsOverlapper(format, score->getPitches());
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
-    cout << "pron: " << it_notes->getPron() << ", "
-         << "pron start: " << it_notes->getPronStart() << ", "
-         << "pron end: " << it_notes->getPronEnd() << endl;
-    overlapper->overlapping(it_notes->getPronStart(), it_notes->getPronEnd(),
-      voice_db->getVoice(it_notes->getPron()).bwc, it_notes->getVelocities());
+    cout << "synthesize \"" << it_notes->getPron() << "\" from " << it_notes->getPronStart() << "ms to " << it_notes->getPronEnd() << "ms" << endl;
+    overlapper->overlapping(*it_notes, voice_db->getVoice(it_notes->getPron()));
   }
   overlapper->outputWav(score->getSongPath(), margin);
   delete overlapper;
 
-  cout << "----- vocalization finished -----" << endl << endl;
+  cout << "----- vocalization finished -----" << endl;
+  cout << endl;
 
   return true;
 }
@@ -206,7 +212,7 @@ int main()
 
   if (!nak::parse("Nakloid.ini")) {
     cin.sync();
-    cout << endl << endl << endl << "can not open Nakloid.ini" << endl;
+    cout << "can't open Nakloid.ini" << endl;
     cin.get();
     return 1;
   }
@@ -227,7 +233,7 @@ int main()
 
   if (nak::path_log.empty()) {
     cin.sync();
-    cout << endl << endl << endl << "Press Enter/Return to continue..." << endl;
+    cout << "Press Enter/Return to continue..." << endl;
     cin.get();
   }
 

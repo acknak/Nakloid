@@ -10,6 +10,7 @@
 #include <iostream>
 #include <algorithm>
 #include <boost/utility.hpp>
+#include "Voice.h"
 #include "VoiceDB.h"
 #include "Utilities.h"
 #include "arranger/NoteArranger.h"

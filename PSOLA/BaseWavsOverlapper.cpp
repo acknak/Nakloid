@@ -32,10 +32,13 @@ BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<float> pitches)
   output_wav.assign(pitchmarks.back(), 0);
 }
 
+
 BaseWavsOverlapper::~BaseWavsOverlapper(){}
 
-bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_end, BaseWavsContainer bwc, vector<short> velocities)
+bool BaseWavsOverlapper::overlapping(Note note, Voice voice)
 {
+  long ms_start=note.getPronStart(), ms_end=note.getPronEnd();
+  BaseWavsContainer bwc = voice.bwc;
   if (pitchmarks.empty()) {
     cerr << "[BaseWavsOverlapper::overlapping] pitchmarks not found" << endl;
     return false;
@@ -49,22 +52,23 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
     return false;
   }
 
-  cout << "----- start overlapping -----" << endl;
-
+  vector<short> velocities = note.getVelocities();
   unsigned long fade_start = (bwc.base_wavs.begin()+bwc.format.dwRepeatStart)->fact.dwPosition;
   unsigned long fade_last = bwc.base_wavs.back().fact.dwPosition;
   vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(nak::ms2pos(ms_start,format));
   vector<unsigned long>::iterator it_end_pitchmarks = pos2it(nak::ms2pos(ms_end,format));
   vector<unsigned long>::iterator it_pitchmarks = it_begin_pitchmarks;
 
-  cout << "base_wav size:" << bwc.base_wavs.size() << endl
-       << "fade_start:" << fade_start << ", fade_last:" << fade_last << endl;
+  if (note.isVCV()) {
+    for (int i=0; i<note.getOvrl(); i++) {
+      velocities[i] *= i/(double)note.getOvrl();
+    }
+  }
 
   while (it_pitchmarks != it_end_pitchmarks) {
     // choose overlap base_wav
     vector<BaseWav>::iterator it_base_wav = bwc.base_wavs.begin();
     unsigned long dist = *it_pitchmarks - *it_begin_pitchmarks;
-    //if (dist > fade_last) {
     if (dist > fade_start) {
       dist = (fade_last==fade_start)?fade_start:((dist-fade_start)/((short)nak::fade_stretch)%(fade_last-fade_start)+fade_start);
     }
@@ -92,8 +96,6 @@ bool BaseWavsOverlapper::overlapping(unsigned long ms_start, unsigned long ms_en
 
     ++it_pitchmarks;
   }
-
-  cout << "----- finish overlapping -----" << endl << endl;
 
   return true;
 }

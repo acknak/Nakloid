@@ -72,7 +72,7 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
       }
     }
     // set vowel_map
-    tmp_voice.is_vcv = !(tmp_voice.prefix!=""||tmp_voice.prefix!="-");
+    tmp_voice.is_vcv = (tmp_voice.prefix!=""&&tmp_voice.prefix!="-");
     if (!tmp_voice.is_vcv) {
       map<string, string>::const_iterator it = nak::getVow2PronIt(tmp_voice.pron);
       if (it!=nak::vow2pron.end()) {
@@ -103,7 +103,7 @@ Voice VoiceDB::getVoice(string pron)
     BaseWavsFileIO *bwc_io = new BaseWavsFileIO();
     string tmp_filename = ((tmp_voice.prefix=="*")?"_":tmp_voice.prefix)+tmp_voice.pron;
 
-    cout << "loading \"" << pron << "\" voice from ";
+    cout << "loading voice \"" << pron << "\" from ";
     if (nak::cache && bwc_io->isBaseWavsContainerFile(tmp_voice.path+tmp_filename+".bwc")) {
       cout << "cache" << endl;
       tmp_voice.bwc = ((BaseWavsContainer)bwc_io->get(tmp_voice.path+tmp_filename+".bwc"));

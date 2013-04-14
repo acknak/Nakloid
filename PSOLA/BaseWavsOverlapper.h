@@ -11,7 +11,9 @@
 #include <algorithm>
 
 #include "BaseWav.h"
+#include "../Voice.h"
 #include "../Utilities.h"
+#include "../score/Note.h"
 #include "../parser/WavFormat.h"
 #include "../parser/WavData.h"
 #include "../parser/WavParser.h"
@@ -23,7 +25,7 @@ class BaseWavsOverlapper {
   BaseWavsOverlapper(WavFormat format, std::vector<float> pitches);
   virtual ~BaseWavsOverlapper();
 
-  bool overlapping(unsigned long ms_start, unsigned long ms_end, BaseWavsContainer bwc, std::vector<short> velocities);
+  bool overlapping(Note note, Voice voice);
   void outputWav(std::string output);
   void outputWav(std::string output, unsigned long ms_margin);
 

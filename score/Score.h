@@ -40,6 +40,8 @@ class Score {
   short getNoteLack(Note *note);
   long getNoteNextDist(Note *note);
   long getNotePrevDist(Note *note);
+  bool isNoteNextVCV(Note *note);
+  long getNoteNextOvrl(Note *note);
 
   // member
   std::list<Note> notes;

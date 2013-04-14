@@ -183,6 +183,7 @@ vector<short> Note::getVelocities()
   long velocities_size = getPronEnd()-getPronStart();
   vector<short> velocities(velocities_size, 0);
 
+  // sanitize
   map<long,short> tmp_vels;
   for (list< pair<long,short> >::iterator it=self.velocities.begin(); it!=self.velocities.end(); ++it) {
     long tmp_ms = (it->first)<0?velocities_size+it->first:it->first;
@@ -190,6 +191,7 @@ vector<short> Note::getVelocities()
       tmp_vels[tmp_ms] = it->second;
   }
 
+  // vels to velocities
   if (tmp_vels.size() == 0)
     velocities.assign(velocities_size, self.base_velocity);
   else {
@@ -202,6 +204,23 @@ vector<short> Note::getVelocities()
         velocities[i+boost::prior(it)->first] = 
           (1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second)
           *self.base_velocity/100.0;
+  }
+
+  // vcv mode
+  if (self.is_vcv) {
+    vector<short>::iterator it_velocities = velocities.begin();
+    for (int i=0; it_velocities!=velocities.end()&&i<getOvrl(); i++) {
+      *it_velocities *= i/(double)getOvrl();
+      ++it_velocities;
+    }
+  }
+  if (score->isNoteNextVCV(this)) {
+    long next_note_ovrl = score->getNoteNextOvrl(this);
+    vector<short>::reverse_iterator rit_velocities = velocities.rbegin();
+    for (int i=0; rit_velocities!=velocities.rend()&&i<next_note_ovrl; i++) {
+      *rit_velocities *= i/(double)next_note_ovrl;
+      ++rit_velocities;
+    }
   }
 
   return velocities;
