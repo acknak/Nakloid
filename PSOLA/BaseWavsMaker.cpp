@@ -110,8 +110,8 @@ bool BaseWavsMaker::makeBaseWavs(vector<short> voice, bool is_vcv)
   }
 
   // make self fade
-  long sub_rep_len = (base_wavs.size()-1-sub_rep_start)/2;
   long sub_base = getRepStartSub();
+  long sub_rep_len = base_wavs.size() - sub_base;
   for (int i=0; i<sub_rep_len; i++) {
     BaseWav fore_wav = base_wavs[sub_rep_start+i];
     BaseWav aft_wav = base_wavs[sub_base+i];
