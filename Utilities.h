@@ -81,8 +81,8 @@ namespace nak {
   extern bool finefluctuation;
 
   // internal parameters
-  extern std::list<std::string> vcv_prefix_list;
-  extern std::map<std::string, char> pron2vow;
+  extern std::map<std::string, std::string> vow2pron;
+  extern std::map<std::string, std::string> pron2vow;
 
   // Nakloid.ini parser
   extern bool parse(std::string path_ini);
@@ -106,6 +106,7 @@ namespace nak {
   extern std::vector<double> getLanczos(long len, unsigned short lobe);
   extern double sinc(double x);
 
+  extern std::map<std::string, std::string>::const_iterator getVow2PronIt(std::string pron);
   extern bool isVowel(std::string pron);
 }
 

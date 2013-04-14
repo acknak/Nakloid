@@ -2,6 +2,7 @@
 #define VoiceDB_h
 
 #include <map>
+#include <cctype>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -18,9 +19,11 @@
 #include "PSOLA/BaseWavsFileIO.h"
 
 typedef struct {
-  bool is_vcv;
   std::string path;
   std::string filename;
+  std::string pron;
+  std::string prefix;
+  std::string suffix;
   short offs; // offset(left blank)
   short cons; // consonant part(unaltered range)
   short blnk; // blank(right blank)
@@ -54,6 +57,7 @@ class VoiceDB {
 
   std::string path_singer;
   std::map<std::string, Voice> voice_map;
+  std::map<std::string, std::vector<short>> vowel_map;
 };
 
 #endif

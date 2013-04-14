@@ -18,42 +18,31 @@
 class PitchMarker {
  public:
   PitchMarker();
-  explicit PitchMarker(short win_size);
-  PitchMarker(short pitch, unsigned long fs);
   virtual ~PitchMarker();
 
-  bool mark(WavData input);
-  bool mark(std::list<short> input);
-  bool mark(std::vector<short> input);
-  void debug(std::string output);
+  bool mark(std::vector<short> vowel_wav);
+  bool mark(double hz, long fs);
+  static std::vector<short> makeVowelWav(std::vector<short> input_wav, double hz, unsigned long fs);
 
   // accessor
-  short getWinSize();
-  void setWinSize(short win_size);
-  void setWinSize(double pitch, unsigned long fs);
-  long getPosOffs();
-  long getPosCons();
-  long getPosBlnk();
-  void setRange(unsigned short offs, unsigned short cons, unsigned short blnk, unsigned long fs);
+  void setInputWav(std::vector<short>input_wav);
+  void setInputWav(std::vector<short>input_wav, short ms_offs, short ms_cons, short ms_blnk, unsigned long fs);
   std::list<long> getMarkList();
   std::vector<long> getMarkVector();
-  std::vector<short> getTargetWav();
-  void setTargetWav(std::vector<short> target_wav);
 
  private:
   PitchMarker(const PitchMarker& other);
   PitchMarker& operator=(const PitchMarker& other);
 
-  template<typename it>
-  std::vector<double> xcorr(it it_start, it it_base, short exp_dist);
-  template<typename it>
-  std::vector<double> xcorr(it it_start, std::vector<short> target_wav, short exp_dist);
-  short win_size;
+  std::vector<double> xcorr(std::vector<short>::iterator it_target, bool reverse);
+
+  std::vector<short> input_wav;
   long pos_offs;
-  long pos_cons;
-  long pos_blnk;
+  std::vector<short> vowel_wav;
+  std::vector<short>::iterator it_input_wav_offs;
+  std::vector<short>::iterator it_input_wav_cons;
+  std::vector<short>::iterator it_input_wav_blnk;
   std::list<long> mark_list;
-  std::vector<short> target_wav;
 };
 
 #endif

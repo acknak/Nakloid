@@ -19,8 +19,8 @@ class BaseWavsMaker {
   BaseWavsMaker();
   virtual ~BaseWavsMaker();
 
-  bool makeBaseWavs(std::vector<short> voice);
-  bool makeBaseWavs(std::list<short> voice);
+  bool makeBaseWavs(std::vector<short> voice, bool is_vcv);
+  bool makeBaseWavs(std::list<short> voice, bool is_vcv);
 
   // accessor
   std::vector<BaseWav> getBaseWavs();

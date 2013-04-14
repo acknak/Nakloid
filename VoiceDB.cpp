@@ -18,8 +18,10 @@ bool VoiceDB::initVoiceMap()
 
   if (fs::is_directory(path)) {
     BOOST_FOREACH(const fs::path& p, std::make_pair(fs::recursive_directory_iterator(path), fs::recursive_directory_iterator())) {
-      if (p.leaf().string() == "oto.ini")
+      if (p.leaf().string() == "oto.ini") {
+        cout << "loading " << p.string() << endl;
         initVoiceMap(p.string());
+      }
     }
     if (voice_map.size() > 0)
       return true;
@@ -35,35 +37,56 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
   boost::filesystem::path path_ini(path_oto_ini);
   string buf, wav_ext=".wav";
   while(ifs && getline(ifs, buf)) {
+    Voice tmp_voice;
     vector<string> v1, v2;
     boost::algorithm::split(v1, buf, boost::is_any_of("="));
     boost::algorithm::split(v2, v1[1], boost::is_any_of(","));
     string filename = v1[0].substr(0, v1[0].find_last_of(wav_ext)-wav_ext.size()+1);
-    string pron = (filename==v2[0]||v2[0]==""||voice_map.count(filename)==0)?filename:v2[0];
     short tmp;
-    voice_map[pron].path = path_ini.parent_path().string();
-    voice_map[pron].filename = filename;
-    voice_map[pron].offs = (((tmp=boost::lexical_cast<double>(v2[1]))>0))?tmp:0;
-    voice_map[pron].cons = (((tmp=boost::lexical_cast<double>(v2[2]))>0))?tmp:0;
-    voice_map[pron].blnk = boost::lexical_cast<double>(v2[3]);
-    voice_map[pron].prec = boost::lexical_cast<double>(v2[4]);
-    voice_map[pron].ovrl = boost::lexical_cast<double>(v2[5]);
+    tmp_voice.path = path_ini.parent_path().string()+"/";
+    tmp_voice.filename = filename;
+    tmp_voice.offs = (((tmp=boost::lexical_cast<double>(v2[1]))>0))?tmp:0;
+    tmp_voice.cons = (((tmp=boost::lexical_cast<double>(v2[2]))>0))?tmp:0;
+    tmp_voice.blnk = boost::lexical_cast<double>(v2[3]);
+    tmp_voice.prec = boost::lexical_cast<double>(v2[4]);
+    tmp_voice.ovrl = boost::lexical_cast<double>(v2[5]);
     if (v1[0].find(wav_ext) == string::npos)
-      voice_map[pron].frq = 260.0;
+      tmp_voice.frq = 260.0;
     else {
-      ifstream ifs_frq((path_ini.parent_path().string()+"/"+filename+"_wav.frq").c_str(), ios::binary);
+      ifstream ifs_frq((tmp_voice.path+filename+"_wav.frq").c_str(), ios::binary);
       ifs_frq.seekg(sizeof(char)*12, ios_base::beg);
-      ifs_frq.read((char*)&(voice_map[pron].frq), sizeof(double));
+      ifs_frq.read((char*)&(tmp_voice.frq), sizeof(double));
     }
-    // is vcv
-    voice_map[pron].is_vcv = false;
-    if (pron.size() > 2) {
-      string pron_prefix = pron.substr(0, 2);
-      voice_map[pron].is_vcv = find(nak::vcv_prefix_list.begin(), nak::vcv_prefix_list.end(), pron_prefix)!=nak::vcv_prefix_list.end();
+    // get prefix & suffix
+    tmp_voice.pron = v2[0];
+    tmp_voice.prefix = tmp_voice.suffix = "";
+    if (tmp_voice.pron.size()>2 && tmp_voice.pron[1]==' ') {
+      tmp_voice.prefix = tmp_voice.pron[0];
+      tmp_voice.pron.erase(0, 2);
     }
-    // alias
-    if (v2[0]!="" && v2[0]!=pron)
-      voice_map[v2[0]] = voice_map[pron];
+    if (tmp_voice.pron.size() > 2) {
+      string tmp_suffix = tmp_voice.pron.substr(tmp_voice.pron.size()-2, 2);
+      if (isalpha(tmp_suffix[0]) && isdigit(tmp_suffix[1])) {
+        tmp_voice.suffix = tmp_suffix;
+        tmp_voice.pron.erase(tmp_voice.pron.size()-2, 2);
+      }
+    }
+    // set vowel_map
+    if (tmp_voice.prefix=="" || tmp_voice.prefix=="-") {
+      map<string, string>::const_iterator it = nak::getVow2PronIt(tmp_voice.pron);
+      if (it!=nak::vow2pron.end()) {
+        WavParser wav_parser(tmp_voice.path+tmp_voice.filename+".wav");
+        wav_parser.addTargetTrack(0);
+        if (wav_parser.parse()) {
+          vector<short> tmp_wav = (*(wav_parser.getDataChunks().begin())).getDataVector();
+          vector<short>::iterator it_tmp_wav_cons = tmp_wav.begin()+((tmp_voice.offs+tmp_voice.cons)/1000.0*wav_parser.getFormat().dwSamplesPerSec);
+          short win_size = wav_parser.getFormat().dwSamplesPerSec / tmp_voice.frq;
+          vector<short>::iterator it_tmp_wav_max = max_element(it_tmp_wav_cons, it_tmp_wav_cons+win_size);
+          vowel_map[nak::pron2vow[it->second]+tmp_voice.suffix].assign(it_tmp_wav_max-(win_size/2), it_tmp_wav_max-(win_size/2)+win_size);
+        }
+      }
+    }
+    voice_map[v2[0]] = tmp_voice;
   }
   return true;
 }
@@ -77,22 +100,16 @@ Voice VoiceDB::getVoice(string pron)
     Voice tmp_voice = voice_map[pron];
     BaseWavsContainer bwc;
     BaseWavsFileIO *bwc_io = new BaseWavsFileIO();
-    string tmp_filename = pron;
-    if (voice_map[pron].filename != pron) {
-      if (tmp_filename[1] == ' ') {
-        if (tmp_filename[0] == '*') {
-          tmp_filename.replace(0, 2, "_");
-        } else if (tmp_filename[0] == '-') {
-          tmp_filename.replace(0, 2, "-");
-        }
-      }
-    }
+    string tmp_filename = ((tmp_voice.prefix=="*")?"_":tmp_voice.prefix)+tmp_voice.pron;
 
-    if (nak::cache && bwc_io->isBaseWavsContainerFile(voice_map[pron].path+"/"+tmp_filename+".bwc")) {
-      voice_map[pron].bwc = ((BaseWavsContainer)bwc_io->get(voice_map[pron].path+"/"+tmp_filename+".bwc"));
+    cout << "loading \"" << pron << "\" voice from ";
+    if (nak::cache && bwc_io->isBaseWavsContainerFile(tmp_voice.path+tmp_filename+".bwc")) {
+      cout << "cache" << endl;
+      tmp_voice.bwc = ((BaseWavsContainer)bwc_io->get(tmp_voice.path+tmp_filename+".bwc"));
     } else {
+      cout << "wav data" << endl;
       // get wav data
-      WavParser wav_parser(voice_map[pron].path+"/"+voice_map[pron].filename+".wav");
+      WavParser wav_parser(tmp_voice.path+tmp_voice.filename+".wav");
       wav_parser.addTargetTrack(0);
       if (!wav_parser.parse()) {
         tmp_voice = getNullVoice();
@@ -101,20 +118,29 @@ Voice VoiceDB::getVoice(string pron)
         unsigned long fs = wav_parser.getFormat().dwSamplesPerSec;
 
         // make input pitch mark
-        PitchMarker *marker = new PitchMarker(voice_map[pron].frq, fs);
-        marker->setRange(voice_map[pron].offs, voice_map[pron].cons, voice_map[pron].blnk, fs);
-        marker->mark(wav_data);
+        PitchMarker *marker = new PitchMarker();
+        marker->setInputWav(wav_data, tmp_voice.offs, tmp_voice.cons, tmp_voice.blnk, fs);
+        if (nak::pron2vow.find(tmp_voice.pron) != nak::pron2vow.end()) {
+          short win_size = fs / tmp_voice.frq;
+          vector<short> vowel_wav = vowel_map[nak::pron2vow[tmp_voice.pron]+tmp_voice.suffix];
+          if (vowel_wav.size() > win_size) {
+            vowel_wav.erase(vowel_wav.begin(), vowel_wav.begin()+((vowel_wav.size()-win_size)/2));
+            vowel_wav.erase(vowel_wav.end()-(vowel_wav.size()-win_size));
+          } else if (vowel_wav.size() < win_size) {
+            vowel_wav.insert(vowel_wav.begin(), (win_size-vowel_wav.size())/2, 0);
+            vowel_wav.insert(vowel_wav.end(), win_size-vowel_wav.size(), 0);
+          }
+          marker->mark(vowel_wav);
+        } else {
+          marker->mark(tmp_voice.frq, fs);
+        }
         vector<long> input_pitch_marks = marker->getMarkVector();
         delete marker;
 
         // make base waves
         BaseWavsMaker *maker = new BaseWavsMaker();
-        if (voice_map[pron].is_vcv) {
-          maker->setPitchMarks(input_pitch_marks, voice_map[pron].offs+voice_map[pron].cons, voice_map[pron].offs+voice_map[pron].ovrl, fs);
-        } else {
-          maker->setPitchMarks(input_pitch_marks, voice_map[pron].offs+voice_map[pron].cons, fs);
-        }
-        maker->makeBaseWavs(wav_data);
+        maker->setPitchMarks(input_pitch_marks, tmp_voice.offs+tmp_voice.cons, tmp_voice.offs+tmp_voice.ovrl, fs);
+        maker->makeBaseWavs(wav_data, !(tmp_voice.prefix!=""||tmp_voice.prefix!="-"));
 
         bwc.base_wavs = maker->getBaseWavs();
         bwc.format.wLobeSize = nak::base_wavs_lobe;
@@ -128,7 +154,7 @@ Voice VoiceDB::getVoice(string pron)
           bwc.format.chunkSize += BaseWavsFormat::wAdditionalSize + sizeof(short);
           bwc.format.wFormatTag = BaseWavsFormat::BaseWavsFormatTag;
           bwc.format.dwSamplesPerSec = wav_parser.getFormat().dwSamplesPerSec;
-          bwc_io->set(voice_map[pron].path+"/"+tmp_filename+".bwc", bwc);
+          bwc_io->set(voice_map[pron].path+tmp_filename+".bwc", bwc);
         }
 
         voice_map[pron].bwc = bwc;

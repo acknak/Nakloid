@@ -95,7 +95,6 @@ bool Nakloid::vocalization()
 
   // set note params from voiceDB
   if (nak::score_mode != nak::score_mode_nak) {
-    cout << endl << "loading voiceDB..." << endl << endl;
     double counter=0, percent=0;
     for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
       // vowel combining
