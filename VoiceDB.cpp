@@ -72,7 +72,8 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
       }
     }
     // set vowel_map
-    if (tmp_voice.prefix=="" || tmp_voice.prefix=="-") {
+    tmp_voice.is_vcv = !(tmp_voice.prefix!=""||tmp_voice.prefix!="-");
+    if (!tmp_voice.is_vcv) {
       map<string, string>::const_iterator it = nak::getVow2PronIt(tmp_voice.pron);
       if (it!=nak::vow2pron.end()) {
         WavParser wav_parser(tmp_voice.path+tmp_voice.filename+".wav");
@@ -140,7 +141,7 @@ Voice VoiceDB::getVoice(string pron)
         // make base waves
         BaseWavsMaker *maker = new BaseWavsMaker();
         maker->setPitchMarks(input_pitch_marks, tmp_voice.offs+tmp_voice.cons, tmp_voice.offs+tmp_voice.ovrl, fs);
-        maker->makeBaseWavs(wav_data, !(tmp_voice.prefix!=""||tmp_voice.prefix!="-"));
+        maker->makeBaseWavs(wav_data, tmp_voice.is_vcv);
 
         bwc.base_wavs = maker->getBaseWavs();
         bwc.format.wLobeSize = nak::base_wavs_lobe;

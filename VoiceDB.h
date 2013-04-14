@@ -12,26 +12,12 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include "Voice.h"
 #include "parser/WavParser.h"
 #include "PSOLA/PitchMarker.h"
 #include "PSOLA/BaseWav.h"
 #include "PSOLA/BaseWavsMaker.h"
 #include "PSOLA/BaseWavsFileIO.h"
-
-typedef struct {
-  std::string path;
-  std::string filename;
-  std::string pron;
-  std::string prefix;
-  std::string suffix;
-  short offs; // offset(left blank)
-  short cons; // consonant part(unaltered range)
-  short blnk; // blank(right blank)
-  short prec; // preceding utterance
-  short ovrl; // overlap range
-  double frq;
-  BaseWavsContainer bwc;
-} Voice;
 
 // Reference Object
 class VoiceDB {
