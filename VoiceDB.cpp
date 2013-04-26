@@ -82,8 +82,8 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
           vector<short> tmp_wav = (*(wav_parser.getDataChunks().begin())).getDataVector();
           vector<short>::iterator it_tmp_wav_cons = tmp_wav.begin()+((tmp_voice.offs+tmp_voice.cons)/1000.0*wav_parser.getFormat().dwSamplesPerSec);
           short win_size = wav_parser.getFormat().dwSamplesPerSec / tmp_voice.frq;
-          vector<short>::iterator it_tmp_wav_max = max_element(it_tmp_wav_cons, it_tmp_wav_cons+win_size);
-          vowel_map[nak::pron2vow[it->second]+tmp_voice.suffix].assign(it_tmp_wav_max-(win_size/2), it_tmp_wav_max-(win_size/2)+win_size);
+          vector<short>::iterator it_tmp_wav_max = max_element(it_tmp_wav_cons, it_tmp_wav_cons+(win_size*2));
+          vowel_map[nak::pron2vow[it->second]+tmp_voice.suffix].assign(it_tmp_wav_max-win_size, it_tmp_wav_max+win_size);
         }
       }
     }
@@ -122,7 +122,7 @@ Voice VoiceDB::getVoice(string pron)
         PitchMarker *marker = new PitchMarker();
         marker->setInputWav(wav_data, tmp_voice.offs, tmp_voice.cons, tmp_voice.blnk, fs);
         if (nak::pron2vow.find(tmp_voice.pron) != nak::pron2vow.end()) {
-          short win_size = fs / tmp_voice.frq;
+          short win_size = fs / tmp_voice.frq * 2;
           vector<short> vowel_wav = vowel_map[nak::pron2vow[tmp_voice.pron]+tmp_voice.suffix];
           if (vowel_wav.size() > win_size) {
             vowel_wav.erase(vowel_wav.begin(), vowel_wav.begin()+((vowel_wav.size()-win_size)/2));
@@ -135,7 +135,7 @@ Voice VoiceDB::getVoice(string pron)
         } else {
           marker->mark(tmp_voice.frq, fs);
         }
-        vector<long> input_pitch_marks = marker->getMarkVector();
+        vector<long> input_pitch_marks = marker->getPitchMarks();
         delete marker;
 
         // make base waves

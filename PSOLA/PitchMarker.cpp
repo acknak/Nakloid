@@ -8,6 +8,11 @@ PitchMarker::PitchMarker(){}
 
 PitchMarker::~PitchMarker(){}
 
+bool PitchMarker::mark(vector<short> fore_vowel_wav, vector<short> aft_vowel_wav)
+{
+  return false;
+}
+
 bool PitchMarker::mark(vector<short> vowel_wav)
 {
   if (input_wav.size()==0) {
@@ -18,33 +23,33 @@ bool PitchMarker::mark(vector<short> vowel_wav)
     cerr << "[PitchMarker::mark] vowel_wav is invalid" << endl;
     return false;
   }
-  this->vowel_wav = vowel_wav;
   short win_size = vowel_wav.size();
-  mark_list.clear();
+  pitchmarks.clear();
+  pitchmarks.reserve((it_input_wav_blnk-it_input_wav_offs)/vowel_wav.size());
 
-  // pitch marking (foward)
-  vector<short>::iterator mark_next = max_element(it_input_wav_cons, it_input_wav_cons+win_size);
-  while (mark_next<it_input_wav_blnk && input_wav.end()-mark_next>win_size*1.5) {
-    vector<double> xcorr_win = xcorr(mark_next, false);
-    unsigned short pitch_margin = min((unsigned short)(xcorr_win.size()/2), nak::pitch_margin);
-    long dist = max_element(xcorr_win.begin()+(xcorr_win.size()/2)-pitch_margin,
-      xcorr_win.begin()+(xcorr_win.size()/2)+pitch_margin)-xcorr_win.begin();
-    mark_list.push_back((mark_next+=dist)-input_wav.begin());
-  }
-  if (mark_list.size()==0) {
-    cerr << "[PitchMarker::mark] pitch marking (forward) failed" << endl;
-    return false;
+  vector<short>::reverse_iterator rit_input_wav_offs(it_input_wav_blnk);
+  vector<short>::reverse_iterator rit_input_wav_blnk(it_input_wav_offs);
+  vector<short>::reverse_iterator rit_mark_start = max_element(rit_input_wav_offs+(win_size/2), rit_input_wav_offs+(win_size/2*3));
+
+  // make pitch marking start point
+  {
+    vector<double> xcorr_win(win_size*2, 0.0);
+    xcorr(vowel_wav.rbegin(), vowel_wav.rend(), rit_mark_start, xcorr_win.begin());
+    long dist = max_element(xcorr_win.begin(), xcorr_win.end())-xcorr_win.begin();
+    rit_mark_start += dist - (win_size/2);
   }
 
-  // pitch marking (back)
-  vector<short>::iterator mark_prev(input_wav.begin()+mark_list.front());
-  while (mark_prev>it_input_wav_offs && mark_prev-input_wav.begin()>win_size*1.5) {
-    vector<double> xcorr_win = xcorr(mark_prev, true);
-    unsigned short pitch_margin = min((unsigned short)(xcorr_win.size()/2), nak::pitch_margin);
-    long dist = max_element(xcorr_win.begin()+(xcorr_win.size()/2)-pitch_margin,
-      xcorr_win.begin()+(xcorr_win.size()/2)+pitch_margin)-xcorr_win.begin();
-    mark_list.push_front((mark_prev-=dist)-input_wav.begin());
+  // pitch marking
+  {
+    vector<vector<short>::reverse_iterator> tmp_pitchmarks;
+    tmp_pitchmarks = mark(vowel_wav.rbegin(), vowel_wav.rend(), rit_mark_start, rit_input_wav_blnk, input_wav.rend(), true);
+    for(int i=0; i<tmp_pitchmarks.size(); i++) {
+      pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
+    }
   }
+
+  sort(pitchmarks.begin(), pitchmarks.end());
+  pitchmarks.erase(unique(pitchmarks.begin(), pitchmarks.end()), pitchmarks.end());
 
   return true;
 }
@@ -55,6 +60,44 @@ bool PitchMarker::mark(double hz, long fs)
   vector<short>::iterator it_input_wav_max = max_element(it_input_wav_cons, it_input_wav_cons+win_size);
   vector<short> vowel_wav(it_input_wav_max-(win_size/2), it_input_wav_max-(win_size/2)+win_size);
   return mark(vowel_wav);
+}
+
+template <class Iterator>
+vector<Iterator> PitchMarker::mark(Iterator it_vowel_begin, Iterator it_vowel_end,
+                                   Iterator it_target_begin, Iterator it_target_end, Iterator it_wav_end, bool autocorrelation)
+{
+  short win_size = it_vowel_end-it_vowel_begin;
+  vector<double> xcorr_win(win_size*2, 0.0);
+  vector<Iterator> pitchmarks(1, it_target_begin);
+  pitchmarks.reserve((it_target_end-it_target_begin)/win_size);
+
+  long dist = win_size/2;
+  while (it_target_begin<it_target_end && it_wav_end-it_target_begin>dist*3/2) {
+    if (autocorrelation && pitchmarks.size()>1) {
+      xcorr(pitchmarks.back()-(win_size/2), pitchmarks.back()+(win_size/2), it_target_begin+(win_size/2), xcorr_win.begin());
+    } else {
+      xcorr(it_vowel_begin, it_vowel_end, it_target_begin+(win_size/2), xcorr_win.begin());
+    }
+    //unsigned short pitch_margin = min((unsigned short)(xcorr_win.size()/4), nak::pitch_margin);
+    //long dist = max_element(xcorr_win.begin()+win_size-pitch_margin, xcorr_win.begin()+win_size+pitch_margin) - xcorr_win.begin();
+    short margin_left, margin_right;
+    if (dist>win_size/2) {
+      margin_left = win_size-nak::pitch_margin;
+      margin_right = (dist*2)+nak::pitch_margin;
+    } else {
+      margin_left = (dist*2)-nak::pitch_margin;
+      margin_right = win_size+nak::pitch_margin;
+    }
+    if (margin_left <= (win_size/2)) {
+      margin_left = (win_size/2)+1;
+    } else if (margin_right >= xcorr_win.size()) {
+      margin_right = xcorr_win.size()-1;
+    }
+    dist = max_element(xcorr_win.begin()+margin_left, xcorr_win.begin()+margin_right) - xcorr_win.begin() - (win_size/2);
+    pitchmarks.push_back(it_target_begin+=dist);
+  }
+
+  return pitchmarks;
 }
 
 void PitchMarker::setInputWav(vector<short>input_wav)
@@ -76,21 +119,16 @@ void PitchMarker::setInputWav(vector<short>input_wav, short ms_offs, short ms_co
   this->it_input_wav_blnk = this->input_wav.begin() + pos_blnk;
 }
 
-list<long> PitchMarker::getMarkList()
+vector<long> PitchMarker::getPitchMarks()
 {
-  return this->mark_list;
+  return pitchmarks;
 }
 
-vector<long> PitchMarker::getMarkVector()
+template <class Iterator>
+void PitchMarker::xcorr(Iterator it_vowel_begin, Iterator it_vowel_end,
+                   Iterator it_target_begin, vector<double>::iterator it_output)
 {
-  vector<long> mark_vector(mark_list.begin(), mark_list.end());
-  return mark_vector;
-}
-
-// cross correlation
-vector<double> PitchMarker::xcorr(vector<short>::iterator it_target, bool reverse)
-{
-  short win_size = vowel_wav.size();
+  short win_size = it_vowel_end - it_vowel_begin;
   int fftlen = win_size * 2;
   vector<double> filter = nak::getHann(win_size);
 
@@ -101,18 +139,14 @@ vector<double> PitchMarker::xcorr(vector<short>::iterator it_target, bool revers
   fftw_complex *out2 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
   fftw_complex *out3 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
 
-  for (int i=0; i<fftlen; i++)
+  for (int i=0; i<fftlen; i++) {
     in1[i][0] = in1[i][1] = in2[i][0] = in2[i][1] = 0;
-  if (reverse) {
-    for (int i=0; i<win_size; i++) {
-      in1[i][0] = *(vowel_wav.rbegin()+i) * filter[i];
-      in2[i+win_size][0] = *(it_target+(win_size/2)-i) * filter[i];
-    }
-  } else {
-    for (int i=0; i<win_size; i++) {
-      in1[i][0] = *(vowel_wav.begin()+i) * filter[i];
-      in2[i+win_size][0] = *(it_target-(win_size/2)+i) * filter[i];
-    }
+  }
+  for (int i=0; i<win_size; i++) {
+    in1[i][0] = *(it_vowel_begin+i) * filter[i];
+    //in1[i][0] = *(it_vowel_begin+i);
+    in2[i+win_size][0] = *(it_target_begin-(win_size/2)+i) * filter[i];
+    //in2[i+win_size][0] = *(it_target_begin-(win_size/2)+i);
   }
 
   fftw_plan p1 = fftw_plan_dft_1d(fftlen, in1, out1, FFTW_FORWARD, FFTW_ESTIMATE);
@@ -132,9 +166,9 @@ vector<double> PitchMarker::xcorr(vector<short>::iterator it_target, bool revers
   fftw_execute(p3);
   fftw_destroy_plan(p3);
 
-  vector<double> output(fftlen, 0);
-  for (int i=0; i<fftlen; i++)
-    output[i] = out3[i][0];
+  for (int i=0; i<fftlen; i++) {
+    *(it_output+i) = out3[i][0];
+  }
 
   fftw_free(in1);
   fftw_free(in2);
@@ -142,6 +176,4 @@ vector<double> PitchMarker::xcorr(vector<short>::iterator it_target, bool revers
   fftw_free(out1);
   fftw_free(out2);
   fftw_free(out3);
-
-  return output;
 }

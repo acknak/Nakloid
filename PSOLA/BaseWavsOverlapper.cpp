@@ -103,7 +103,7 @@ bool BaseWavsOverlapper::overlapping(Note note, Voice voice)
 void BaseWavsOverlapper::outputWav(string output)
 {
   if (nak::compressor) {
-    cout << endl << "compressing..." << endl << endl;
+    cout << "compressing..." << endl << endl;
     if (nak::max_volume > 1.0)
       nak::max_volume = 1.0;
     else if (nak::max_volume < 0)
@@ -123,7 +123,6 @@ void BaseWavsOverlapper::outputWav(string output)
       else
         output_wav[i] *= pow(10, ((tmp_db-border_db_x)*slope_aft+border_db_y-tmp_db)/20);
     }
-    cout << endl << "finish compressing" << endl << endl;
   }
   vector<short> tmp_output_wav(output_wav.begin(), output_wav.end());
   long size = output_wav.size()*sizeof(short);

@@ -165,6 +165,7 @@ bool Nakloid::vocalization()
     cout << "synthesize \"" << it_notes->getPron() << "\" from " << it_notes->getPronStart() << "ms to " << it_notes->getPronEnd() << "ms" << endl;
     overlapper->overlapping(*it_notes, voice_db->getVoice(it_notes->getPron()));
   }
+  cout << endl;
   overlapper->outputWav(score->getSongPath(), margin);
   delete overlapper;
 
