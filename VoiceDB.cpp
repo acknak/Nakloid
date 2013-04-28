@@ -17,10 +17,10 @@ bool VoiceDB::initVoiceMap()
   const fs::path path(path_singer);
 
   if (fs::is_directory(path)) {
-    BOOST_FOREACH(const fs::path& p, std::make_pair(fs::recursive_directory_iterator(path), fs::recursive_directory_iterator())) {
-      if (p.leaf().string() == "oto.ini") {
-        cout << "loading " << p.string() << endl;
-        initVoiceMap(p.string());
+    for (fs::directory_iterator it(path), eod; it != eod; ++it) {
+      if (it->path().leaf().string() == "oto.ini") {
+        cout << "loading " << it->path().string() << endl;
+        initVoiceMap(it->path().string());
       }
     }
     if (voice_map.size() > 0)
@@ -29,7 +29,7 @@ bool VoiceDB::initVoiceMap()
 
   cerr << "[VoiceDB::initVoiceMap] path_singer is invalid" << endl;
   return false;
-}
+ }
 
 bool VoiceDB::initVoiceMap(string path_oto_ini)
 {

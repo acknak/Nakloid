@@ -9,7 +9,6 @@ void NoteArranger::arrange(Score *score)
     if (it_notes->getVelocityPointNum() > 0)
       continue;
 
-    unsigned short range = (velocities.size()-1) / 2;
     unsigned short ms_front_edge=nak::ms_front_edge, ms_back_edge=nak::ms_back_edge;
 
     it_notes->addVelocityPoint(0, 0);

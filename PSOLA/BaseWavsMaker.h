@@ -32,14 +32,14 @@ class BaseWavsMaker {
   void setPitchMarks(std::list<long> pitch_marks);
   void setPitchMarks(std::list<long> pitch_marks, long ms_rep_start, unsigned long fs);
   void setPitchMarks(std::list<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs);
-  long BaseWavsMaker::getRepStartSub();
+  long getRepStartSub();
 
  private:
   BaseWavsMaker(const BaseWavsMaker& other);
   BaseWavsMaker& operator=(const BaseWavsMaker& other);
 
-  BaseWav makeBaseWav(int point);
-  BaseWav makeBaseWav(int point, double scale);
+  BaseWav makeBaseWav(long point);
+  BaseWav makeBaseWav(long point, double scale);
 
   std::vector<BaseWav> base_wavs;
   std::vector<short> voice;

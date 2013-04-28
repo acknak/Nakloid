@@ -145,12 +145,12 @@ bool BaseWavsMaker::makeBaseWavs(list<short> voice, bool is_vcv)
   return makeBaseWavs(tmp_voice, is_vcv);
 }
 
-BaseWav BaseWavsMaker::makeBaseWav(int point)
+BaseWav BaseWavsMaker::makeBaseWav(long point)
 {
   return makeBaseWav(point, 1.0);
 }
 
-BaseWav BaseWavsMaker::makeBaseWav(int point, double scale)
+BaseWav BaseWavsMaker::makeBaseWav(long point, double scale)
 {
   // cut window out
   BaseWav base_wav;

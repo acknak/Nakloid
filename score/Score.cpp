@@ -6,6 +6,7 @@ Score::Score(string input, string path_song, string path_singer)
 {
   this->path_song = path_song;
   this->path_singer = path_singer;
+  boost::assign::push_back(key2notenum)("C")("C#")("D")("D#")("E")("F")("F#")("G")("G#")("A")("A#")("B");
 }
 
 Score::~Score(){}
@@ -25,7 +26,7 @@ void Score::reloadPitches()
   pitches.clear();
   pitches.resize(notes.back().getEnd(), 0.0);
   for (list<Note>::iterator it=notes.begin(); it!=notes.end(); ++it)
-    for (int i=it->getStart(); i<it->getEnd(); i++)
+    for (unsigned long i=it->getStart(); i<it->getEnd(); i++)
       pitches[i] = it->getBasePitchHz();
 }
 
@@ -115,9 +116,6 @@ void Score::savePitches(std::string path_output_pitches)
 
 bool Score::loadPrefixMap(std::string path_prefix_map)
 {
-  if (key2notenum.empty())
-    key2notenum = boost::assign::list_of("C")("C#")("D")("D#")("E")("F")("F#")("G")("G#")("A")("A#")("B");
-
   ifstream ifs;
   ifs.open(path_prefix_map.c_str());
   string buf_str;
