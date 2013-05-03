@@ -31,7 +31,7 @@ class PitchMarker {
 
   // accessor
   void setInputWav(std::vector<short>input_wav);
-  void setInputWav(std::vector<short>input_wav, short ms_offs, short ms_cons, short ms_blnk, unsigned long fs);
+  void setInputWav(std::vector<short>input_wav, short ms_offs, short ms_ovrl, short ms_prec, short ms_blnk, unsigned long fs);
   std::vector<long> getPitchMarks();
 
  private:
@@ -47,7 +47,8 @@ class PitchMarker {
   std::vector<short> input_wav;
   long pos_offs;
   std::vector<short>::iterator it_input_wav_offs;
-  std::vector<short>::iterator it_input_wav_cons;
+  std::vector<short>::iterator it_input_wav_ovrl;
+  std::vector<short>::iterator it_input_wav_prec;
   std::vector<short>::iterator it_input_wav_blnk;
   std::vector<long> pitchmarks;
 };

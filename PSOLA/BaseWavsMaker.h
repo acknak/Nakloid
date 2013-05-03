@@ -20,7 +20,7 @@ class BaseWavsMaker {
   virtual ~BaseWavsMaker();
 
   bool makeBaseWavs(std::vector<short> voice, bool is_vcv);
-  bool makeBaseWavs(std::list<short> voice, bool is_vcv);
+  bool makeBaseWavs(std::vector<short> voice, short pitch, bool is_vcv);
 
   // accessor
   std::vector<BaseWav> getBaseWavs();
@@ -29,17 +29,14 @@ class BaseWavsMaker {
   void setPitchMarks(std::vector<long> pitch_marks);
   void setPitchMarks(std::vector<long> pitch_marks, long ms_rep_start, unsigned long fs);
   void setPitchMarks(std::vector<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs);
-  void setPitchMarks(std::list<long> pitch_marks);
-  void setPitchMarks(std::list<long> pitch_marks, long ms_rep_start, unsigned long fs);
-  void setPitchMarks(std::list<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs);
   long BaseWavsMaker::getRepStartSub();
 
  private:
   BaseWavsMaker(const BaseWavsMaker& other);
   BaseWavsMaker& operator=(const BaseWavsMaker& other);
 
-  BaseWav makeBaseWav(int point);
-  BaseWav makeBaseWav(int point, double scale);
+  BaseWav makeBaseWav(short point, short pitch);
+  BaseWav makeBaseWav(short point, short pitch, double scale);
 
   std::vector<BaseWav> base_wavs;
   std::vector<short> voice;

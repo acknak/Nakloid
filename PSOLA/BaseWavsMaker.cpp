@@ -54,30 +54,17 @@ void BaseWavsMaker::setPitchMarks(vector<long> pitch_marks, long ms_rep_start, l
   }
 }
 
-void BaseWavsMaker::setPitchMarks(list<long> pitch_marks)
-{
-  vector<long> tmp_pitch_marks(pitch_marks.begin(), pitch_marks.end());
-  setPitchMarks(tmp_pitch_marks);
-}
-
-void BaseWavsMaker::setPitchMarks(list<long> pitch_marks, long ms_rep_start, unsigned long fs)
-{
-  vector<long> tmp_pitch_marks(pitch_marks.begin(), pitch_marks.end());
-  setPitchMarks(tmp_pitch_marks, ms_rep_start, fs);
-}
-
-void BaseWavsMaker::setPitchMarks(list<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs)
-{
-  vector<long> tmp_pitch_marks(pitch_marks.begin(), pitch_marks.end());
-  setPitchMarks(tmp_pitch_marks, ms_rep_start, ms_ovrl, fs);
-}
-
 long BaseWavsMaker::getRepStartSub()
 {
   return (base_wavs.size()-1+sub_rep_start) / 2;
 }
 
 bool BaseWavsMaker::makeBaseWavs(vector<short> voice, bool is_vcv)
+{
+  return makeBaseWavs(voice, -1, is_vcv);
+}
+
+bool BaseWavsMaker::makeBaseWavs(vector<short> voice, short pitch, bool is_vcv)
 {
   this->voice = voice;
   if (voice.size()==0 || pitch_marks.empty() || lobe==0) {
@@ -91,8 +78,8 @@ bool BaseWavsMaker::makeBaseWavs(vector<short> voice, bool is_vcv)
   base_wavs.clear();
 
   // make base wavs
-  double rep_scale = nak::target_rms/nak::getRMS(makeBaseWav(sub_rep_start).data.getDataVector());
-  double ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeBaseWav(0).data.getDataVector()):rep_scale;
+  double rep_scale = nak::target_rms/nak::getRMS(makeBaseWav(sub_rep_start, pitch).data.getDataVector());
+  double ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeBaseWav(0, pitch).data.getDataVector()):rep_scale;
   base_wavs.reserve(pitch_marks.size());
   for (int i=0; i<pitch_marks.size(); i++) {
     double scale = 1.0;
@@ -104,7 +91,7 @@ bool BaseWavsMaker::makeBaseWavs(vector<short> voice, bool is_vcv)
       double tmp = (i-sub_ovrl) / (double)(sub_rep_start-sub_ovrl);
       scale = (ovrl_scale*(1.0-tmp)) + (rep_scale*tmp);
     }
-    base_wavs.push_back(makeBaseWav(i, scale));
+    base_wavs.push_back(makeBaseWav(i, pitch, scale));
   }
 
   // make self fade
@@ -139,22 +126,18 @@ bool BaseWavsMaker::makeBaseWavs(vector<short> voice, bool is_vcv)
   return true;
 }
 
-bool BaseWavsMaker::makeBaseWavs(list<short> voice, bool is_vcv)
+BaseWav BaseWavsMaker::makeBaseWav(short point, short pitch)
 {
-  vector<short> tmp_voice(voice.begin(), voice.end());
-  return makeBaseWavs(tmp_voice, is_vcv);
+  return makeBaseWav(point, pitch, 1.0);
 }
 
-BaseWav BaseWavsMaker::makeBaseWav(int point)
-{
-  return makeBaseWav(point, 1.0);
-}
-
-BaseWav BaseWavsMaker::makeBaseWav(int point, double scale)
+BaseWav BaseWavsMaker::makeBaseWav(short point, short pitch, double scale)
 {
   // cut window out
   BaseWav base_wav;
-  long pitch = (point>=pitch_marks.size()-1)?pitch_marks.back()-(*----pitch_marks.end()):pitch_marks[point+1]-pitch_marks[point];
+  if (pitch <= 0) {
+    pitch = (point>=pitch_marks.size()-1)?pitch_marks.back()-(*----pitch_marks.end()):pitch_marks[point+1]-pitch_marks[point];
+  }
   long win_start = pitch_marks[point] - (pitch*lobe);
   long win_end = pitch_marks[point] + (pitch*lobe);
   vector<double> filter = nak::getLanczos(pitch*lobe*2+1 ,lobe);

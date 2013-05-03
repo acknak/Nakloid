@@ -39,6 +39,8 @@ class VoiceDB {
   VoiceDB(const VoiceDB& other);
   VoiceDB& operator=(const VoiceDB& other);
 
+  template <class Vector>
+  Vector* trimVector(Vector* target_vector, long target_length);
   Voice getNullVoice();
 
   std::string path_singer;

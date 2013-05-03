@@ -37,6 +37,7 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
   boost::filesystem::path path_ini(path_oto_ini);
   string buf, wav_ext=".wav";
   while(ifs && getline(ifs, buf)) {
+    // read oto.ini
     Voice tmp_voice;
     vector<string> v1, v2;
     boost::algorithm::split(v1, buf, boost::is_any_of("="));
@@ -50,6 +51,26 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
     tmp_voice.blnk = boost::lexical_cast<double>(v2[3]);
     tmp_voice.prec = boost::lexical_cast<double>(v2[4]);
     tmp_voice.ovrl = boost::lexical_cast<double>(v2[5]);
+    // sanitize
+    if (tmp_voice.ovrl < 0) {
+      tmp_voice.ovrl *= -1;
+      tmp_voice.offs -= tmp_voice.ovrl;
+      tmp_voice.cons += tmp_voice.ovrl;
+      tmp_voice.prec += tmp_voice.ovrl;
+      if (tmp_voice.blnk < 0) {
+        tmp_voice.blnk -= tmp_voice.ovrl;
+      }
+    }
+    if (tmp_voice.ovrl > tmp_voice.prec) {
+      tmp_voice.ovrl = tmp_voice.prec;
+    }
+    if (tmp_voice.prec > tmp_voice.cons) {
+      tmp_voice.prec = tmp_voice.cons;
+    }
+    if (tmp_voice.blnk<0 && tmp_voice.cons > -tmp_voice.blnk) {
+      tmp_voice.blnk = -tmp_voice.cons;
+    }
+    // get frq
     if (v1[0].find(wav_ext) == string::npos)
       tmp_voice.frq = 260.0;
     else {
@@ -120,20 +141,20 @@ Voice VoiceDB::getVoice(string pron)
 
         // make input pitch mark
         PitchMarker *marker = new PitchMarker();
-        marker->setInputWav(wav_data, tmp_voice.offs, tmp_voice.cons, tmp_voice.blnk, fs);
-        if (nak::pron2vow.find(tmp_voice.pron) != nak::pron2vow.end()) {
-          short win_size = fs / tmp_voice.frq * 2;
-          vector<short> vowel_wav = vowel_map[nak::pron2vow[tmp_voice.pron]+tmp_voice.suffix];
-          if (vowel_wav.size() > win_size) {
-            vowel_wav.erase(vowel_wav.begin(), vowel_wav.begin()+((vowel_wav.size()-win_size)/2));
-            vowel_wav.erase(vowel_wav.end()-(vowel_wav.size()-win_size));
-          } else if (vowel_wav.size() < win_size) {
-            vowel_wav.insert(vowel_wav.begin(), (win_size-vowel_wav.size())/2, 0);
-            vowel_wav.insert(vowel_wav.end(), win_size-vowel_wav.size(), 0);
-          }
-          marker->mark(vowel_wav);
-        } else {
+        marker->setInputWav(wav_data, tmp_voice.offs, tmp_voice.ovrl, tmp_voice.prec, tmp_voice.blnk, fs);
+        if (nak::pron2vow.find(tmp_voice.pron) == nak::pron2vow.end()) {
           marker->mark(tmp_voice.frq, fs);
+        } else {
+          short win_size = fs / tmp_voice.frq * 2;
+          vector<short> aft_vowel_wav = vowel_map[nak::pron2vow[tmp_voice.pron]+tmp_voice.suffix];
+          trimVector(&aft_vowel_wav, win_size);
+          if (tmp_voice.is_vcv && vowel_map.find(tmp_voice.prefix+tmp_voice.suffix)!=vowel_map.end()) {
+            vector<short> fore_vowel_wav = vowel_map[tmp_voice.prefix+tmp_voice.suffix];
+            trimVector(&fore_vowel_wav, win_size);
+            marker->mark(fore_vowel_wav, aft_vowel_wav);
+          } else {
+            marker->mark(aft_vowel_wav);
+          }
         }
         vector<long> input_pitch_marks = marker->getPitchMarks();
         delete marker;
@@ -141,7 +162,7 @@ Voice VoiceDB::getVoice(string pron)
         // make base waves
         BaseWavsMaker *maker = new BaseWavsMaker();
         maker->setPitchMarks(input_pitch_marks, tmp_voice.offs+tmp_voice.cons, tmp_voice.offs+tmp_voice.ovrl, fs);
-        maker->makeBaseWavs(wav_data, tmp_voice.is_vcv);
+        maker->makeBaseWavs(wav_data, fs/tmp_voice.frq, tmp_voice.is_vcv);
 
         bwc.base_wavs = maker->getBaseWavs();
         bwc.format.wLobeSize = nak::base_wavs_lobe;
@@ -179,6 +200,22 @@ void VoiceDB::setSingerPath(string path_singer)
 string VoiceDB::getSingerPath()
 {
   return this->path_singer;
+}
+
+template <class Vector>
+Vector* VoiceDB::trimVector(Vector* target_vector, long target_length)
+{
+  if (target_vector->size() > target_length) {
+    short space = target_vector->size() - target_length;
+    target_vector->erase(target_vector->begin(), target_vector->begin()+space/2);
+    target_vector->erase(target_vector->end()-(space-(space/2)));
+  } else if (target_vector->size() < target_length) {
+    short space = target_length - target_vector->size();
+    target_vector->insert(target_vector->begin(), space/2, 0);
+    target_vector->insert(target_vector->end(), space-(space/2), 0);
+  }
+
+  return target_vector;
 }
 
 Voice VoiceDB::getNullVoice()
