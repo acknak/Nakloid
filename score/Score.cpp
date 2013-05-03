@@ -42,9 +42,9 @@ void Score::saveScore(string path_nak)
     {
       wchar_t *wcs = new wchar_t[it_notes->getPron().length() + 1];
 	    mbstowcs(wcs, it_notes->getPron().c_str(), it_notes->getPron().length() + 1);
-	    wstring test = wcs;
+	    wstring tmp = wcs;
 	    delete [] wcs;
-      pt_note.put(L"pron", test);
+      pt_note.put(L"pron", tmp);
     }
     pt_note.put(L"start", it_notes->getStart());
     pt_note.put(L"end", it_notes->getEnd());
