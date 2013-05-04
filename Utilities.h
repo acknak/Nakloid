@@ -62,8 +62,6 @@ namespace nak {
   // NoteArranger
   extern unsigned short ms_front_edge;
   extern unsigned short ms_back_edge;
-  extern bool sharpen_front;
-  extern bool sharpen_back;
 
   // PitchArranger
   extern unsigned short ms_overshoot;
@@ -107,7 +105,6 @@ namespace nak {
   extern double sinc(double x);
 
   extern std::map<std::string, std::string>::const_iterator getVow2PronIt(std::string pron);
-  extern bool isVowel(std::string pron);
 }
 
 #endif

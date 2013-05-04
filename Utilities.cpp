@@ -51,8 +51,6 @@ namespace nak {
   // NoteArranger
   unsigned short ms_front_edge;
   unsigned short ms_back_edge;
-  bool sharpen_front;
-  bool sharpen_back;
 
   // PitchArranger
   unsigned short ms_overshoot;
@@ -161,10 +159,8 @@ bool nak::parse(string path_ini)
   max_volume = ptree.get<double>("BaseWavsOverlapper.max_volume", 0.9);
 
   // NoteArranger
-  ms_front_edge = ptree.get<unsigned short>("NoteArranger.ms_front_edge", 30);
-  ms_back_edge = ptree.get<unsigned short>("NoteArranger.ms_back_edge", 30);
-  sharpen_front = ptree.get<bool>("NoteArranger.sharpen_front", false);
-  sharpen_back = ptree.get<bool>("NoteArranger.sharpen_back", false);
+  ms_front_edge = ptree.get<unsigned short>("NoteArranger.ms_front_edge", 5);
+  ms_back_edge = ptree.get<unsigned short>("NoteArranger.ms_back_edge", 35);
 
   // PitchArranger
   ms_overshoot = ptree.get<unsigned short>("PitchArranger.ms_overshoot", 50);
@@ -324,9 +320,4 @@ map<string, string>::const_iterator nak::getVow2PronIt(string pron)
     }
   } while (++it != nak::vow2pron.end());
   return it;
-}
-
-bool nak::isVowel(string pron)
-{
-  return (pron=="* ‚ "||pron=="* ‚¢"||pron=="* ‚¤"||pron=="* ‚¦"||pron=="* ‚¨"||pron=="* ‚ñ");
 }

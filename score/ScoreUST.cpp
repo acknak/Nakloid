@@ -53,14 +53,15 @@ void ScoreUST::load(string input_ust)
       pitches_ust.push_back(make_pair(0, tmp_vector));
       is_parse = true;
       continue;
-    } else if (!is_parse) {
-      continue;
     }
 
     vector<string> buf_vector;
     boost::algorithm::split(buf_vector, buf_str, boost::is_any_of("="));
-    if (buf_vector[0] == "Tempo") {
-      tempo = (buf_vector[1]!="" && ((tmp=boost::lexical_cast<double>(buf_vector[1]))>0))?tmp:0;
+    if (!is_parse) {
+      if (buf_vector[0] == "Tempo") {
+        tempo = (buf_vector[1]!="" && ((tmp=boost::lexical_cast<double>(buf_vector[1]))>0))?tmp:0;
+      }
+      continue;
     } else if (buf_vector[0]=="VoiceDir" && path_singer.empty()) {
       boost::algorithm::replace_all(buf_vector[1], "%", "/");
       if (buf_vector[1][0] != '/')
@@ -129,12 +130,6 @@ void ScoreUST::load(string input_ust)
   while (notes.back().getPron()=="R" || notes.back().getPron()=="") {
     notes.pop_back();
     pitches_ust.pop_back();
-  }
-  for (list<Note>::iterator it=notes.begin(); it!=notes.end(); ++it) {
-    if (it->getVelocityPointNum() == 0) {
-      it->addVelocityPoint(10, 100);
-      it->addVelocityPoint(-35, 100);
-    }
   }
 
   // get pitches

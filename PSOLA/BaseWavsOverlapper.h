@@ -40,6 +40,7 @@ class BaseWavsOverlapper {
 
   std::vector<unsigned long>::iterator pos2it(unsigned long pos);
 
+  long ms_margin;
   WavFormat format;
   std::vector<unsigned long> pitchmarks;
   std::vector<long> output_wav;

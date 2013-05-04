@@ -2,13 +2,13 @@
 
 using namespace std;
 
-BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, list<float> pitches)
+BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, list<float> pitches):ms_margin(0)
 {
   vector<float> pitches_vector(pitches.begin(), pitches.end());
   BaseWavsOverlapper(format, pitches_vector);
 }
 
-BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<float> pitches)
+BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<float> pitches):ms_margin(0)
 {
   this->format = format;
   unsigned long tmp_ms = 0;
@@ -37,7 +37,11 @@ BaseWavsOverlapper::~BaseWavsOverlapper(){}
 
 bool BaseWavsOverlapper::overlapping(Note note, Voice voice)
 {
-  long ms_start=note.getPronStart(), ms_end=note.getPronEnd();
+  if (note.getPronStart() < -ms_margin) {
+    ms_margin += -note.getPronStart();
+    output_wav.insert(output_wav.begin(), nak::ms2pos(ms_margin, format), 0);
+  }
+  long ms_start=note.getPronStart()+ms_margin, ms_end=note.getPronEnd()+ms_margin;
   BaseWavsContainer bwc = voice.bwc;
   if (pitchmarks.empty()) {
     cerr << "[BaseWavsOverlapper::overlapping] pitchmarks not found" << endl;
@@ -58,12 +62,6 @@ bool BaseWavsOverlapper::overlapping(Note note, Voice voice)
   vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(nak::ms2pos(ms_start,format));
   vector<unsigned long>::iterator it_end_pitchmarks = pos2it(nak::ms2pos(ms_end,format));
   vector<unsigned long>::iterator it_pitchmarks = it_begin_pitchmarks;
-
-  if (note.isVCV()) {
-    for (int i=0; i<note.getOvrl(); i++) {
-      velocities[i] *= i/(double)note.getOvrl();
-    }
-  }
 
   while (it_pitchmarks != it_end_pitchmarks) {
     // choose overlap base_wav
@@ -136,7 +134,9 @@ void BaseWavsOverlapper::outputWav(string output)
 
 void BaseWavsOverlapper::outputWav(string output, unsigned long ms_margin)
 {
-  output_wav.insert(output_wav.begin(), nak::ms2pos(ms_margin, format), 0);
+  if (ms_margin > this->ms_margin) {
+    output_wav.insert(output_wav.begin(), nak::ms2pos(ms_margin-this->ms_margin, format), 0);
+  }
   outputWav(output);
 }
 

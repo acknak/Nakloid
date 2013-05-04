@@ -173,8 +173,8 @@ vector<Iterator> PitchMarker::mark(Iterator it_vowel_begin, Iterator it_vowel_en
       margin_left = (dist*2)-nak::pitch_margin;
       margin_right = win_size+nak::pitch_margin;
     }
-    if (margin_left <= (win_size/2)) {
-      margin_left = (win_size/2)+1;
+    if (margin_left <= (win_size/4*3)) {
+      margin_left = (win_size/4*3)+1;
     } else if (margin_right >= xcorr_win.size()) {
       margin_right = xcorr_win.size()-1;
     }

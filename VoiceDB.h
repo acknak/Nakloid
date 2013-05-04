@@ -30,6 +30,7 @@ class VoiceDB {
   bool initVoiceMap(std::string path_oto_ini);
   Voice getVoice(std::string pron);
   bool isPron(std::string pron);
+  bool isVowel(std::string pron);
 
   // accessor
   void setSingerPath(std::string path_singer);

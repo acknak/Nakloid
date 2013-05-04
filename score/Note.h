@@ -18,7 +18,7 @@ typedef struct {
   std::string pron;
   unsigned char base_pitch;
   short base_velocity;
-  std::list< std::pair<long,short> > velocities;
+  std::list< std::pair<long,short> > velocity_points;
   short *prec;
   short *ovrl;
   bool is_vcv;
@@ -38,12 +38,12 @@ class Note {
 
   // accessor
   unsigned long getId();
-  unsigned long getStart();
-  unsigned long getPronStart();
+  long getStart();
+  long getPronStart();
   void setStart(unsigned long ms_start);
   void setStart(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
-  unsigned long getEnd();
-  unsigned long getPronEnd();
+  long getEnd();
+  long getPronEnd();
   void setEnd(unsigned long ms_end);
   void setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
   std::string getPron();

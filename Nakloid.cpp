@@ -98,13 +98,21 @@ bool Nakloid::vocalization()
   if (nak::score_mode != nak::score_mode_nak) {
     double counter=0, percent=0;
     for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
+      Voice tmp_voice = voice_db->getVoice(it_notes->getPron());
+
+      // "wo" to "o"
+      if (tmp_voice.filename=="" && it_notes->getPron().find("‚ð")!=string::npos) {
+        it_notes->setPron(boost::algorithm::replace_all_copy(it_notes->getPron(), "‚ð", "‚¨"));
+      }
+
       // vowel combining
       if (nak::vowel_combining) {
         if (it_notes!=score->notes.begin() && boost::prior(it_notes)->getEnd()==it_notes->getStart()) {
           if (voice_db->isPron("* "+it_notes->getPron())) {
             it_notes->setPron("* "+it_notes->getPron());
-            if (nak::isVowel(it_notes->getPron()))
+            if (voice_db->isVowel(it_notes->getPron())) {
               it_notes->setBaseVelocity(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
+            }
           }
         } else {
           if (voice_db->isPron("- "+it_notes->getPron()))
@@ -112,27 +120,25 @@ bool Nakloid::vocalization()
         }
       }
 
-      // prefix map (add suffix)
-      pair<string, string> tmp_prefix = score->getPrefix(it_notes->getBasePitch());
-      string tmp_pron = tmp_prefix.first + it_notes->getPron() + tmp_prefix.second;
-      if (voice_db->isPron(tmp_pron))
-        it_notes->setPron(tmp_pron);
-      else
-        cerr << "[Nakloid::vocalization] can't find pron: \"" << tmp_pron << "\"" << endl;
-
-      Voice tmp_voice = voice_db->getVoice(it_notes->getPron());
-
-      // check vcv mode
-      it_notes->isVCV(tmp_voice.is_vcv);
-
-      // set overlap range & preceding utterance
-      if (it_notes == score->notes.begin()) {
-        short ovrl = it_notes->isOvrl()?it_notes->getOvrl():tmp_voice.ovrl;
-        short prec = it_notes->isPrec()?it_notes->getPrec():tmp_voice.prec;
-        short tmp_margin = prec - ((ovrl<0)?ovrl:0);
-        if (max<unsigned long>(margin, tmp_margin) > it_notes->getStart())
-          margin = max<unsigned long>(margin, tmp_margin);
+      // prefix map (add prefix & suffix)
+      {
+        pair<string, string> tmp_prefix = score->getPrefix(it_notes->getBasePitch());
+        string tmp_pron = tmp_prefix.first + it_notes->getPron() + tmp_prefix.second;
+        if (nak::vowel_combining && it_notes!=score->notes.begin()
+          && boost::prior(it_notes)->getEnd()==it_notes->getStart() && voice_db->isPron("* "+it_notes->getPron())) {
+          it_notes->setPron("* "+it_notes->getPron());
+          if (voice_db->isVowel(it_notes->getPron())) {
+            it_notes->setBaseVelocity(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
+          }
+        }
+        if (voice_db->isPron(tmp_pron)) {
+          it_notes->setPron(tmp_pron);
+        } else {
+          cerr << "[Nakloid::vocalization] can't find pron: \"" << tmp_pron << "\"" << endl;
+        }
       }
+
+      it_notes->isVCV(tmp_voice.is_vcv|it_notes->isVCV());
       if (!it_notes->isOvrl())
         it_notes->setOvrl(tmp_voice.ovrl);
       if (!it_notes->isPrec())
@@ -146,18 +152,11 @@ bool Nakloid::vocalization()
   }
 
   // arrange note params
-  if (nak::score_mode != nak::score_mode_nak) {
-    cout << "arrange note params..." << endl;
-    NoteArranger::arrange(score);
-  }
-  if (nak::overshoot||nak::preparation||nak::vibrato||nak::interpolation) {
+  if (nak::path_pitches.empty()&&(nak::overshoot||nak::preparation||nak::vibrato||nak::interpolation)) {
     cout << "arrange pitch params..." << endl;
     PitchArranger::arrange(score);
+    cout << endl;
   }
-  if (nak::score_mode==nak::score_mode_nak && !nak::path_pitches.empty()) {
-    cout << "arrange finished" << endl;
-  }
-  cout << endl;
 
   // Singing Voice Synthesis
   BaseWavsOverlapper *overlapper = new BaseWavsOverlapper(format, score->getPitches());
@@ -218,8 +217,10 @@ int main()
     return 1;
   }
 
-  if (!nak::path_log.empty())
+  if (!nak::path_log.empty()) {
     freopen(nak::path_log.c_str(), "w", stdout);
+    freopen(nak::path_log.c_str(), "w", stderr);
+  }
 
   Nakloid *nakloid = new Nakloid(nak::score_mode);
   nakloid->vocalization();

@@ -64,7 +64,7 @@ bool Note::operator==(const Note& other) const
   is_eq &= (self.pron == other.self.pron);
   is_eq &= (self.base_pitch == other.self.base_pitch);
   is_eq &= (self.base_velocity == other.self.base_velocity);
-  is_eq &= (self.velocities == other.self.velocities);
+  is_eq &= (self.velocity_points == other.self.velocity_points);
   is_eq &= (this->getPrec() == other.getPrec());
   is_eq &= (this->getOvrl() == other.getOvrl());
   is_eq &= (self.is_vcv == other.self.is_vcv);
@@ -81,15 +81,14 @@ unsigned long Note::getId()
   return id;
 }
 
-unsigned long Note::getStart()
+long Note::getStart()
 {
   return self.start;
 }
 
-unsigned long Note::getPronStart()
+long Note::getPronStart()
 {
-  long tmp = self.start - getPrec();
-  return tmp>0?tmp:0;
+  return self.start - getPrec();
 }
 
 void Note::setStart(unsigned long ms_start)
@@ -102,19 +101,19 @@ void Note::setStart(unsigned long deltatime, unsigned short timebase, unsigned l
   setStart(nak::tick2ms(deltatime, timebase, tempo));
 }
 
-unsigned long Note::getEnd()
+long Note::getEnd()
 {
   return self.end;
 }
 
-unsigned long Note::getPronEnd()
+long Note::getPronEnd()
 {
   long tmp = self.end - (score->getNoteNextDist(this)>0?0:getLack());
   if (getPronStart() > tmp) {
     cerr << "[Note::getPronEnd] pron_start > pron_end" << endl;
     return getPronStart();
   }
-  return tmp>0?tmp:0;
+  return tmp;
 }
 
 void Note::setEnd(unsigned long ms_end)
@@ -165,61 +164,63 @@ void Note::setBaseVelocity(short base_velocity)
 
 void Note::addVelocityPoint(long ms, short vel)
 {
-  self.velocities.push_back(make_pair(ms, vel));
+  self.velocity_points.push_back(make_pair(ms, vel));
 }
 
 list< pair<long,short> > Note::getVelocityPoints()
 {
-  return self.velocities;
+  if (self.velocity_points.size() > 0) {
+    return self.velocity_points;
+  }
+
+  // return default points
+  list < pair<long,short> > tmp_velocities;
+  tmp_velocities.push_back(make_pair(0, 0));
+  if (self.is_vcv && self.ovrl!=0) {
+    tmp_velocities.push_back(make_pair(*self.ovrl, self.base_velocity));
+  } else {
+    tmp_velocities.push_back(make_pair(nak::ms_front_edge, self.base_velocity));
+  }
+  if (score->isNoteNextVCV(this)) {
+    tmp_velocities.push_back(make_pair(-score->getNoteNextOvrl(this), self.base_velocity));
+  } else {
+    tmp_velocities.push_back(make_pair(-nak::ms_back_edge, self.base_velocity));
+  }
+  tmp_velocities.push_back(make_pair(-1, 0));
+  return tmp_velocities;
 }
 
 short Note::getVelocityPointNum()
 {
-  return self.velocities.size();
+  return self.velocity_points.size();
 }
 
 vector<short> Note::getVelocities()
 {
   long velocities_size = getPronEnd()-getPronStart();
   vector<short> velocities(velocities_size, 0);
+  list< pair<long,short> > tmp_velocity_points = getVelocityPoints();
 
   // sanitize
   map<long,short> tmp_vels;
-  for (list< pair<long,short> >::iterator it=self.velocities.begin(); it!=self.velocities.end(); ++it) {
+  for (list< pair<long,short> >::iterator it=tmp_velocity_points.begin(); it!=tmp_velocity_points.end(); ++it) {
     long tmp_ms = (it->first)<0?velocities_size+it->first:it->first;
-    if (tmp_ms < velocities_size && tmp_ms > 0)
+    if (tmp_ms < velocities_size && tmp_ms >= 0)
       tmp_vels[tmp_ms] = it->second;
   }
 
   // vels to velocities
-  if (tmp_vels.size() == 0)
-    velocities.assign(velocities_size, self.base_velocity);
-  else {
-    if (tmp_vels.find(0) == tmp_vels.end())
-      tmp_vels[0] = 0;
-    if (tmp_vels.find(velocities_size-1) == tmp_vels.end())
-      tmp_vels[velocities_size-1] = 0;
-    for (map<long,short>::iterator it=++tmp_vels.begin(); it!=tmp_vels.end(); ++it)
-      for (int i=0; i<it->first-boost::prior(it)->first; i++)
-        velocities[i+boost::prior(it)->first] = 
-          (1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second)
-          *self.base_velocity/100.0;
+  if (tmp_vels.count(0) == 0) {
+    tmp_vels[0] = 0;
   }
-
-  // vcv mode
-  if (self.is_vcv) {
-    vector<short>::iterator it_velocities = velocities.begin();
-    for (int i=0; it_velocities!=velocities.end()&&i<getOvrl(); i++) {
-      *it_velocities *= i/(double)getOvrl();
-      ++it_velocities;
-    }
+  if (tmp_vels.count(velocities_size-1) == 0) {
+    tmp_vels[velocities_size-1] = 0;
   }
-  if (score->isNoteNextVCV(this)) {
-    long next_note_ovrl = score->getNoteNextOvrl(this);
-    vector<short>::reverse_iterator rit_velocities = velocities.rbegin();
-    for (int i=0; rit_velocities!=velocities.rend()&&i<next_note_ovrl; i++) {
-      *rit_velocities *= i/(double)next_note_ovrl;
-      ++rit_velocities;
+  for (map<long,short>::iterator it=++tmp_vels.begin(); it!=tmp_vels.end(); ++it) {
+    for (int i=0; i<it->first-boost::prior(it)->first; i++) {
+      velocities[i+boost::prior(it)->first] =
+        (1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second)
+        *self.base_velocity/100.0;
     }
   }
 
@@ -288,4 +289,5 @@ void Note::initializeNoteFrame()
   self.base_velocity = 100;
   self.prec = 0;
   self.ovrl = 0;
+  self.is_vcv = false;
 }

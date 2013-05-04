@@ -142,19 +142,19 @@ Voice VoiceDB::getVoice(string pron)
         // make input pitch mark
         PitchMarker *marker = new PitchMarker();
         marker->setInputWav(wav_data, tmp_voice.offs, tmp_voice.ovrl, tmp_voice.prec, tmp_voice.blnk, fs);
-        if (nak::pron2vow.find(tmp_voice.pron) == nak::pron2vow.end()) {
-          marker->mark(tmp_voice.frq, fs);
-        } else {
+        if (nak::pron2vow.count(tmp_voice.pron) > 0) {
           short win_size = fs / tmp_voice.frq * 2;
           vector<short> aft_vowel_wav = vowel_map[nak::pron2vow[tmp_voice.pron]+tmp_voice.suffix];
           trimVector(&aft_vowel_wav, win_size);
-          if (tmp_voice.is_vcv && vowel_map.find(tmp_voice.prefix+tmp_voice.suffix)!=vowel_map.end()) {
+          if (tmp_voice.is_vcv && vowel_map.count(tmp_voice.prefix+tmp_voice.suffix)>0) {
             vector<short> fore_vowel_wav = vowel_map[tmp_voice.prefix+tmp_voice.suffix];
             trimVector(&fore_vowel_wav, win_size);
             marker->mark(fore_vowel_wav, aft_vowel_wav);
           } else {
             marker->mark(aft_vowel_wav);
           }
+        } else {
+          marker->mark(tmp_voice.frq, fs);
         }
         vector<long> input_pitch_marks = marker->getPitchMarks();
         delete marker;
@@ -190,6 +190,11 @@ Voice VoiceDB::getVoice(string pron)
 bool VoiceDB::isPron(string pron)
 {
   return !((voice_map.empty()&&!initVoiceMap()) || voice_map.count(pron)==0);
+}
+
+bool VoiceDB::isVowel(string pron)
+{
+  return vowel_map.count(pron)>0;
 }
 
 void VoiceDB::setSingerPath(string path_singer)
