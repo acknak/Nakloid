@@ -210,12 +210,6 @@ vector<short> Note::getVelocities()
   }
 
   // vels to velocities
-  if (tmp_vels.count(0) == 0) {
-    tmp_vels[0] = 0;
-  }
-  if (tmp_vels.count(velocities_size-1) == 0) {
-    tmp_vels[velocities_size-1] = 0;
-  }
   for (map<long,short>::iterator it=++tmp_vels.begin(); it!=tmp_vels.end(); ++it) {
     for (int i=0; i<it->first-boost::prior(it)->first; i++) {
       velocities[i+boost::prior(it)->first] =

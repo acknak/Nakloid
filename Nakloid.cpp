@@ -103,6 +103,7 @@ bool Nakloid::vocalization()
       // "wo" to "o"
       if (tmp_voice.filename=="" && it_notes->getPron().find("‚ð")!=string::npos) {
         it_notes->setPron(boost::algorithm::replace_all_copy(it_notes->getPron(), "‚ð", "‚¨"));
+        tmp_voice = voice_db->getVoice(it_notes->getPron());
       }
 
       // vowel combining
