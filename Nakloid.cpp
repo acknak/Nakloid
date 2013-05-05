@@ -85,6 +85,10 @@ bool Nakloid::vocalization()
     return false;
   }
 
+  if (voice_db != 0) {
+    delete voice_db;
+    voice_db = 0;
+  }
   voice_db = new VoiceDB(score->getSingerPath());
   if (voice_db==0 || !voice_db->initVoiceMap()) {
     cerr << "[Nakloid::vocalization] can't find voiceDB" << endl;
