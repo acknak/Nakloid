@@ -99,9 +99,37 @@ bool Nakloid::vocalization()
   if (nak::score_mode != nak::score_mode_nak) {
     double counter=0, percent=0;
     for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
-      Voice tmp_voice = voice_db->getVoice(it_notes->getAlias());
+      // prefix map (add prefix & suffix)
+      {
+        string tmp_alias = it_notes->getAlias();
+        if (nak::path_prefix_map != "") {
+          pair<string, string> tmp_modifier = score->getModifier(it_notes->getBasePitch());
+          it_notes->setPrefix(tmp_modifier.first + it_notes->getPrefix());
+          it_notes->setSuffix(it_notes->getSuffix() + tmp_modifier.second);
+          tmp_alias = tmp_modifier.first + tmp_alias + tmp_modifier.second;
+        }
+        if (nak::vowel_combining && it_notes!=score->notes.begin()
+          && boost::prior(it_notes)->getEnd()==it_notes->getStart() && voice_db->isAlias("* "+it_notes->getPron())) {
+          // vowel combining
+          it_notes->setPron("* "+it_notes->getPron());
+          if (voice_db->isVowel(it_notes->getPron())) {
+            it_notes->setBaseVelocity(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
+          }
+        }
+        if (!voice_db->isAlias(tmp_alias)) {
+          if (it_notes->getPron().find("‚ð")!=string::npos
+            && voice_db->isAlias(boost::algorithm::replace_all_copy(it_notes->getPron(), "‚ð", "‚¨"))) {
+            // "wo" to "o"
+            it_notes->setPron(boost::algorithm::replace_all_copy(it_notes->getPron(), "‚ð", "‚¨"));
+          } else {
+            cerr << "[Nakloid::vocalization] can't find pron: \"" << tmp_alias << "\"" << endl;
+          }
+        }
+      }
 
+      Voice tmp_voice = voice_db->getVoice(it_notes->getAlias());
       it_notes->isVCV(tmp_voice.is_vcv||it_notes->isVCV());
+
       if (!it_notes->isOvrl())
         it_notes->setOvrl(tmp_voice.ovrl);
       if (!it_notes->isPrec())
@@ -130,34 +158,6 @@ bool Nakloid::vocalization()
         it_notes->setOvrl(proxy_voice.ovrl);
         it_notes->setPrec(proxy_voice.prec);
         it_notes->isCVProxy(true);
-      }
-    }
-
-    // prefix map (add prefix & suffix)
-    {
-      string tmp_alias = it_notes->getAlias();
-      if (nak::path_prefix_map != "") {
-        pair<string, string> tmp_modifier = score->getModifier(it_notes->getBasePitch());
-        it_notes->setPrefix(tmp_modifier.first + it_notes->getPrefix());
-        it_notes->setSuffix(it_notes->getSuffix() + tmp_modifier.second);
-        tmp_alias = tmp_modifier.first + tmp_alias + tmp_modifier.second;
-      }
-      if (nak::vowel_combining && it_notes!=score->notes.begin()
-        && boost::prior(it_notes)->getEnd()==it_notes->getStart() && voice_db->isAlias("* "+it_notes->getPron())) {
-        // vowel combining
-        it_notes->setPron("* "+it_notes->getPron());
-        if (voice_db->isVowel(it_notes->getPron())) {
-          it_notes->setBaseVelocity(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
-        }
-      }
-      if (!voice_db->isAlias(tmp_alias)) {
-        if (it_notes->getPron().find("‚ð")!=string::npos
-          && voice_db->isAlias(boost::algorithm::replace_all_copy(it_notes->getPron(), "‚ð", "‚¨"))) {
-          // "wo" to "o"
-          it_notes->setPron(boost::algorithm::replace_all_copy(it_notes->getPron(), "‚ð", "‚¨"));
-        } else {
-          cerr << "[Nakloid::vocalization] can't find pron: \"" << tmp_alias << "\"" << endl;
-        }
       }
     }
   }

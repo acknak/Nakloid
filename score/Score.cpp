@@ -146,7 +146,7 @@ bool Score::loadModifierMap(std::string path_modifier_map)
 
 pair<string, string> Score::getModifier(short key)
 {
-  if (!key2modifier.empty() && key2modifier.count(key>0))
+  if (!key2modifier.empty() && key2modifier.count(key)>0)
     return key2modifier[key];
   return make_pair("", "");
 }
