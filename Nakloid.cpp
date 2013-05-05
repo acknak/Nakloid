@@ -120,8 +120,12 @@ bool Nakloid::vocalization()
     if (nak::cv_proxy && it_notes->isVCV() && it_notes!=score->notes.begin()) {
       list<Note>::iterator it_prior_notes = boost::prior(it_notes);
       if (it_prior_notes->getPronStart()+it_prior_notes->getPrec() > it_prior_notes->getPronEnd()) {
+        if (voice_db->isAlias(it_notes->getPron())) {
+          it_notes->setPrefix("");
+        } else if (voice_db->isAlias("- "+it_notes->getPron())) {
+          it_notes->setPrefix("- ");
+        }
         it_notes->isVCV(false);
-        it_notes->setPrefix("");
         Voice proxy_voice = voice_db->getVoice(it_notes->getAlias());
         it_notes->setOvrl(proxy_voice.ovrl);
         it_notes->setPrec(proxy_voice.prec);
