@@ -95,72 +95,8 @@ bool Nakloid::vocalization()
   cout << "----- start vocalization -----" << endl;
   setMargin(nak::margin);
 
-  // set note params from voiceDB
-  if (nak::score_mode != nak::score_mode_nak) {
-    for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
-      // prefix map (add prefix & suffix)
-      {
-        string tmp_alias = it_notes->getAlias();
-        if (nak::path_prefix_map != "") {
-          pair<string, string> tmp_modifier = score->getModifier(it_notes->getBasePitch());
-          it_notes->setPrefix(tmp_modifier.first + it_notes->getPrefix());
-          it_notes->setSuffix(it_notes->getSuffix() + tmp_modifier.second);
-          tmp_alias = tmp_modifier.first + tmp_alias + tmp_modifier.second;
-        }
-        if (nak::vowel_combining && it_notes!=score->notes.begin()
-          && boost::prior(it_notes)->getEnd()==it_notes->getStart() && voice_db->isAlias("* "+it_notes->getPron())) {
-          // vowel combining
-          it_notes->setPron("* "+it_notes->getPron());
-          if (voice_db->isVowel(it_notes->getPron())) {
-            it_notes->setBaseVelocity(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
-          }
-        }
-        if (!voice_db->isAlias(tmp_alias)) {
-          if (it_notes->getPron().find("を")!=string::npos
-            && voice_db->isAlias(boost::algorithm::replace_all_copy(it_notes->getPron(), "を", "お"))) {
-            // "wo" to "o"
-            it_notes->setPron(boost::algorithm::replace_all_copy(it_notes->getPron(), "を", "お"));
-          } else {
-            cerr << "[Nakloid::vocalization] can't find pron: \"" << tmp_alias << "\"" << endl;
-          }
-        }
-      }
-
-      const Voice *tmp_voice = voice_db->getVoice(it_notes->getAlias());
-      it_notes->isVCV(tmp_voice->is_vcv||it_notes->isVCV());
-
-      if (!it_notes->isOvrl())
-        it_notes->setOvrl(tmp_voice->ovrl);
-      if (!it_notes->isPrec())
-        it_notes->setPrec(tmp_voice->prec);
-    }
-  }
-
-  // arrange note params
-  for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
-    // cv proxy
-    if (nak::cv_proxy && it_notes->isVCV() && it_notes!=score->notes.begin()) {
-      list<Note>::iterator it_prior_notes = boost::prior(it_notes);
-      if (it_prior_notes->getPronStart()+it_prior_notes->getPrec() > it_prior_notes->getPronEnd()) {
-        if (voice_db->isAlias(it_notes->getPron())) {
-          it_notes->setPrefix("");
-        } else if (voice_db->isAlias("- "+it_notes->getPron())) {
-          it_notes->setPrefix("- ");
-        }
-        it_notes->isVCV(false);
-        const Voice* proxy_voice = voice_db->getVoice(it_notes->getAlias());
-        it_notes->setOvrl(proxy_voice->ovrl);
-        it_notes->setPrec(proxy_voice->prec);
-        it_notes->isCVProxy(true);
-      }
-    }
-  }
-
-  // arrange pitch params
-  if (nak::overshoot || nak::preparation || nak::vibrato || nak::interpolation) {
-    cout << "arrange pitch params..." << endl;
-    PitchArranger::arrange(score);
-  }
+  // set notes & arrange pitches
+  Arranger::arrange(voice_db, score);
 
   // Singing Voice Synthesis
   UnitWaveformOverlapper *overlapper = new UnitWaveformOverlapper(format, score->getPitches());

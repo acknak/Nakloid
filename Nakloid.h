@@ -10,8 +10,8 @@
 #include <iostream>
 #include <algorithm>
 #include <boost/utility.hpp>
+#include "Arranger.h"
 #include "Utilities.h"
-#include "PitchArranger.h"
 #include "voiceDB/Voice.h"
 #include "voiceDB/VoiceDB.h"
 #include "parser/WavFormat.h"
