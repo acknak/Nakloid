@@ -35,14 +35,14 @@ BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<float> pitches):
 
 BaseWavsOverlapper::~BaseWavsOverlapper(){}
 
-bool BaseWavsOverlapper::overlapping(Note note, Voice voice)
+bool BaseWavsOverlapper::overlapping(Note note, const Voice* voice)
 {
   if (note.getPronStart() < -ms_margin) {
     ms_margin += -note.getPronStart();
     output_wav.insert(output_wav.begin(), nak::ms2pos(ms_margin, format), 0);
   }
   long ms_start=note.getPronStart()+ms_margin, ms_end=note.getPronEnd()+ms_margin;
-  BaseWavsContainer bwc = voice.bwc;
+  const BaseWavsContainer *bwc = voice->getBWC();
   if (pitchmarks.empty()) {
     cerr << "[BaseWavsOverlapper::overlapping] pitchmarks not found" << endl;
     return false;
@@ -51,21 +51,21 @@ bool BaseWavsOverlapper::overlapping(Note note, Voice voice)
     cerr << "[BaseWavsOverlapper::overlapping] ms_start >= ms_end" << endl;
     return false;
   }
-  if (bwc.base_wavs.empty()) {
+  if (bwc->base_wavs.empty()) {
     cerr << "[BaseWavsOverlapper::overlapping] base_wavs not found" << endl;
     return false;
   }
 
   vector<short> velocities = note.getVelocities();
-  unsigned long fade_start = (bwc.base_wavs.begin()+bwc.format.dwRepeatStart)->fact.dwPosition;
-  unsigned long fade_last = bwc.base_wavs.back().fact.dwPosition;
+  unsigned long fade_start = (bwc->base_wavs.begin()+bwc->format.dwRepeatStart)->fact.dwPosition;
+  unsigned long fade_last = bwc->base_wavs.back().fact.dwPosition;
   vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(nak::ms2pos(ms_start,format));
   vector<unsigned long>::iterator it_end_pitchmarks = pos2it(nak::ms2pos(ms_end,format));
   vector<unsigned long>::iterator it_pitchmarks = it_begin_pitchmarks;
 
   while (it_pitchmarks != it_end_pitchmarks) {
     // choose overlap base_wav
-    vector<BaseWav>::iterator it_base_wav = bwc.base_wavs.begin();
+    vector<BaseWav>::const_iterator it_base_wav = bwc->base_wavs.begin();
     unsigned long dist = *it_pitchmarks - *it_begin_pitchmarks;
     if (dist > fade_start) {
       dist = (fade_last==fade_start)?fade_start:((dist-fade_start)/((short)nak::fade_stretch)%(fade_last-fade_start)+fade_start);

@@ -1,4 +1,4 @@
-#include "Nakloid.h"
+Ôªø#include "Nakloid.h"
 
 using namespace std;
 
@@ -91,13 +91,14 @@ bool Nakloid::vocalization()
     return false;
   }
   voice_db->initVoiceMap();
+  cout << endl;
+
 
   cout << "----- start vocalization -----" << endl;
   setMargin(nak::margin);
 
   // set note params from voiceDB
   if (nak::score_mode != nak::score_mode_nak) {
-    double counter=0, percent=0;
     for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
       // prefix map (add prefix & suffix)
       {
@@ -117,29 +118,24 @@ bool Nakloid::vocalization()
           }
         }
         if (!voice_db->isAlias(tmp_alias)) {
-          if (it_notes->getPron().find("Ç")!=string::npos
-            && voice_db->isAlias(boost::algorithm::replace_all_copy(it_notes->getPron(), "Ç", "Ç®"))) {
+          if (it_notes->getPron().find("„Çí")!=string::npos
+            && voice_db->isAlias(boost::algorithm::replace_all_copy(it_notes->getPron(), "„Çí", "„Åä"))) {
             // "wo" to "o"
-            it_notes->setPron(boost::algorithm::replace_all_copy(it_notes->getPron(), "Ç", "Ç®"));
+            it_notes->setPron(boost::algorithm::replace_all_copy(it_notes->getPron(), "„Çí", "„Åä"));
           } else {
             cerr << "[Nakloid::vocalization] can't find pron: \"" << tmp_alias << "\"" << endl;
           }
         }
       }
 
-      Voice tmp_voice = voice_db->getVoice(it_notes->getAlias());
-      it_notes->isVCV(tmp_voice.is_vcv||it_notes->isVCV());
+      const Voice *tmp_voice = voice_db->getVoice(it_notes->getAlias());
+      it_notes->isVCV(tmp_voice->is_vcv||it_notes->isVCV());
 
       if (!it_notes->isOvrl())
-        it_notes->setOvrl(tmp_voice.ovrl);
+        it_notes->setOvrl(tmp_voice->ovrl);
       if (!it_notes->isPrec())
-        it_notes->setPrec(tmp_voice.prec);
-
-      // show progress
-      if (++counter/score->notes.size()>percent+0.1 && (percent=floor(counter/score->notes.size()*10)/10.0)<1.0)
-        cout << percent*100 << "%..." << endl;
+        it_notes->setPrec(tmp_voice->prec);
     }
-    cout << endl;
   }
 
   // arrange note params
@@ -154,9 +150,9 @@ bool Nakloid::vocalization()
           it_notes->setPrefix("- ");
         }
         it_notes->isVCV(false);
-        Voice proxy_voice = voice_db->getVoice(it_notes->getAlias());
-        it_notes->setOvrl(proxy_voice.ovrl);
-        it_notes->setPrec(proxy_voice.prec);
+        const Voice* proxy_voice = voice_db->getVoice(it_notes->getAlias());
+        it_notes->setOvrl(proxy_voice->ovrl);
+        it_notes->setPrec(proxy_voice->prec);
         it_notes->isCVProxy(true);
       }
     }
@@ -166,14 +162,19 @@ bool Nakloid::vocalization()
   if (nak::overshoot || nak::preparation || nak::vibrato || nak::interpolation) {
     cout << "arrange pitch params..." << endl;
     PitchArranger::arrange(score);
-    cout << endl;
   }
 
   // Singing Voice Synthesis
   BaseWavsOverlapper *overlapper = new BaseWavsOverlapper(format, score->getPitches());
+  double counter=0, percent=0;
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
     cout << "synthesize \"" << it_notes->getAlias() << "\" from " << it_notes->getPronStart() << "ms to " << it_notes->getPronEnd() << "ms" << endl;
+
     overlapper->overlapping(*it_notes, voice_db->getVoice(it_notes->getAlias()));
+
+    // show progress
+    if (++counter/score->notes.size()>percent+0.1 && (percent=floor(counter/score->notes.size()*10)/10.0)<1.0)
+      cout << endl << percent*100 << "%..." << endl << endl;
   }
   cout << endl;
   overlapper->outputWav(score->getSongPath(), margin);

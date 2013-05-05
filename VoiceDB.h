@@ -18,6 +18,7 @@
 #include "PSOLA/BaseWav.h"
 #include "PSOLA/BaseWavsMaker.h"
 #include "PSOLA/BaseWavsFileIO.h"
+class Voice;
 
 // Reference Object
 class VoiceDB {
@@ -28,9 +29,10 @@ class VoiceDB {
 
   bool initVoiceMap();
   bool initVoiceMap(std::string path_oto_ini);
-  Voice getVoice(std::string alias);
+  const Voice* getVoice(std::string alias);
   bool isAlias(std::string alias);
   bool isVowel(std::string pron);
+  std::vector<short> getVowel(std::string alias);
 
   // accessor
   void setSingerPath(std::string path_singer);
@@ -39,10 +41,6 @@ class VoiceDB {
  private:
   VoiceDB(const VoiceDB& other);
   VoiceDB& operator=(const VoiceDB& other);
-
-  template <class Vector>
-  Vector* trimVector(Vector* target_vector, long target_length);
-  Voice getNullVoice();
 
   std::string path_singer;
   std::map<std::string, Voice> voice_map;

@@ -25,7 +25,7 @@ class BaseWavsOverlapper {
   BaseWavsOverlapper(WavFormat format, std::vector<float> pitches);
   virtual ~BaseWavsOverlapper();
 
-  bool overlapping(Note note, Voice voice);
+  bool overlapping(Note note, const Voice* voice);
   void outputWav(std::string output);
   void outputWav(std::string output, unsigned long ms_margin);
 

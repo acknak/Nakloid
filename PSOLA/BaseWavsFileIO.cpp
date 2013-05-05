@@ -105,31 +105,31 @@ BaseWavsContainer BaseWavsFileIO::get(string filename)
   return bwc;
 }
 
-bool BaseWavsFileIO::set(string filename, BaseWavsContainer bwc)
+bool BaseWavsFileIO::set(string filename, BaseWavsContainer *bwc)
 {
   short wAdditionalSize = BaseWavsFormat::wAdditionalSize;
   long size_all = 28 + wAdditionalSize + sizeof(short);
   ofstream ofs(filename.c_str(), ios_base::trunc|ios_base::binary);
-  WavParser::setWavHeader(&ofs, bwc.format, size_all);
+  WavParser::setWavHeader(&ofs, bwc->format, size_all);
 
   ofs.write((char*)&(wAdditionalSize), sizeof(short));
-  ofs.write((char*)&(bwc.format.wLobeSize), sizeof(short));
-  ofs.write((char*)&(bwc.format.dwRepeatStart), sizeof(long));
-  ofs.write((char*)&(bwc.format.wF0), sizeof(double));
+  ofs.write((char*)&(bwc->format.wLobeSize), sizeof(short));
+  ofs.write((char*)&(bwc->format.dwRepeatStart), sizeof(long));
+  ofs.write((char*)&(bwc->format.wF0), sizeof(double));
 
   // fact chunk & data chunk
-  vector<BaseWav> base_wavs = bwc.base_wavs;
-  for(vector<BaseWav>::iterator it=bwc.base_wavs.begin(); it!=bwc.base_wavs.end(); ++it) {
+  vector<BaseWav> base_wavs = bwc->base_wavs;
+  for(vector<BaseWav>::iterator it=bwc->base_wavs.begin(); it!=bwc->base_wavs.end(); ++it) {
     long factChunkSize = BaseWavFact::chunkSize;
-    long dataChunkSize = (*it).data.getSize();
+    long dataChunkSize = it->data.getSize();
     ofs.write((char*)WavFormat::fact, sizeof(char)*4);
     ofs.write((char*)&(factChunkSize), sizeof(long));
-    ofs.write((char*)&((*it).fact.dwPitchLeft), sizeof(long));
-    ofs.write((char*)&((*it).fact.dwPitchRight), sizeof(long));
-    ofs.write((char*)&((*it).fact.dwPosition), sizeof(long));
+    ofs.write((char*)&(it->fact.dwPitchLeft), sizeof(long));
+    ofs.write((char*)&(it->fact.dwPitchRight), sizeof(long));
+    ofs.write((char*)&(it->fact.dwPosition), sizeof(long));
     ofs.write((char*)WavFormat::data, sizeof(char)*4);
     ofs.write((char*)&(dataChunkSize), sizeof(long));
-    ofs.write((char*)(*it).data.getData(), (*it).data.getSize());
+    ofs.write((char*)it->data.getData(), it->data.getSize());
     size_all += factChunkSize + sizeof(char)*4 + sizeof(long)
       + dataChunkSize + sizeof(char)*4 + sizeof(long);
   }

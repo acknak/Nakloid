@@ -19,8 +19,8 @@ class WavData {
   bool operator==(const WavData& other) const;
   bool operator!=(const WavData& other) const;
   const short* getData() const;
-  std::list<short> getDataList();
-  std::vector<short> getDataVector();
+  std::list<short> getDataList() const;
+  std::vector<short> getDataVector() const;
   void setData(const short* data, long size);
   void setData(std::list<short> data);
   void setData(std::vector<short> data);

@@ -67,14 +67,14 @@ const short* WavData::getData() const
   return data;
 }
 
-list<short> WavData::getDataList()
+list<short> WavData::getDataList() const
 {
   list<short> data_list(data, data+(size/sizeof(short)));
 
   return data_list;
 }
 
-vector<short> WavData::getDataVector()
+vector<short> WavData::getDataVector() const
 {
   vector<short> data_vector(data, data+(size/sizeof(short)));
 
