@@ -28,8 +28,8 @@ class VoiceDB {
 
   bool initVoiceMap();
   bool initVoiceMap(std::string path_oto_ini);
-  Voice getVoice(std::string pron);
-  bool isPron(std::string pron);
+  Voice getVoice(std::string alias);
+  bool isAlias(std::string alias);
   bool isVowel(std::string pron);
 
   // accessor

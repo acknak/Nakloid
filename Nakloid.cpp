@@ -68,7 +68,7 @@ bool Nakloid::loadScore(nak::ScoreMode mode)
 
   // load prefix map
   if (nak::path_prefix_map != "")
-    score->loadPrefixMap(nak::path_prefix_map);
+    score->loadModifierMap(nak::path_prefix_map);
 
   return true;
 }
@@ -90,6 +90,7 @@ bool Nakloid::vocalization()
     cerr << "[Nakloid::vocalization] can't find voiceDB" << endl;
     return false;
   }
+  voice_db->initVoiceMap();
 
   cout << "----- start vocalization -----" << endl;
   setMargin(nak::margin);
@@ -98,48 +99,9 @@ bool Nakloid::vocalization()
   if (nak::score_mode != nak::score_mode_nak) {
     double counter=0, percent=0;
     for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
-      Voice tmp_voice = voice_db->getVoice(it_notes->getPron());
+      Voice tmp_voice = voice_db->getVoice(it_notes->getAlias());
 
-      // "wo" to "o"
-      if (tmp_voice.filename=="" && it_notes->getPron().find("‚ð")!=string::npos) {
-        it_notes->setPron(boost::algorithm::replace_all_copy(it_notes->getPron(), "‚ð", "‚¨"));
-        tmp_voice = voice_db->getVoice(it_notes->getPron());
-      }
-
-      // vowel combining
-      if (nak::vowel_combining) {
-        if (it_notes!=score->notes.begin() && boost::prior(it_notes)->getEnd()==it_notes->getStart()) {
-          if (voice_db->isPron("* "+it_notes->getPron())) {
-            it_notes->setPron("* "+it_notes->getPron());
-            if (voice_db->isVowel(it_notes->getPron())) {
-              it_notes->setBaseVelocity(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
-            }
-          }
-        } else {
-          if (voice_db->isPron("- "+it_notes->getPron()))
-            it_notes->setPron("- "+it_notes->getPron());
-        }
-      }
-
-      // prefix map (add prefix & suffix)
-      {
-        pair<string, string> tmp_prefix = score->getPrefix(it_notes->getBasePitch());
-        string tmp_pron = tmp_prefix.first + it_notes->getPron() + tmp_prefix.second;
-        if (nak::vowel_combining && it_notes!=score->notes.begin()
-          && boost::prior(it_notes)->getEnd()==it_notes->getStart() && voice_db->isPron("* "+it_notes->getPron())) {
-          it_notes->setPron("* "+it_notes->getPron());
-          if (voice_db->isVowel(it_notes->getPron())) {
-            it_notes->setBaseVelocity(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
-          }
-        }
-        if (voice_db->isPron(tmp_pron)) {
-          it_notes->setPron(tmp_pron);
-        } else {
-          cerr << "[Nakloid::vocalization] can't find pron: \"" << tmp_pron << "\"" << endl;
-        }
-      }
-
-      it_notes->isVCV(tmp_voice.is_vcv|it_notes->isVCV());
+      it_notes->isVCV(tmp_voice.is_vcv||it_notes->isVCV());
       if (!it_notes->isOvrl())
         it_notes->setOvrl(tmp_voice.ovrl);
       if (!it_notes->isPrec())
@@ -153,7 +115,51 @@ bool Nakloid::vocalization()
   }
 
   // arrange note params
-  if (nak::path_pitches.empty()&&(nak::overshoot||nak::preparation||nak::vibrato||nak::interpolation)) {
+  for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
+    // cv proxy
+    if (nak::cv_proxy && it_notes->isVCV() && it_notes!=score->notes.begin()) {
+      list<Note>::iterator it_prior_notes = boost::prior(it_notes);
+      if (it_prior_notes->getPronStart()+it_prior_notes->getPrec() > it_prior_notes->getPronEnd()) {
+        it_notes->isVCV(false);
+        it_notes->setPrefix("");
+        Voice proxy_voice = voice_db->getVoice(it_notes->getAlias());
+        it_notes->setOvrl(proxy_voice.ovrl);
+        it_notes->setPrec(proxy_voice.prec);
+        it_notes->isCVProxy(true);
+      }
+    }
+
+    // prefix map (add prefix & suffix)
+    {
+      string tmp_alias = it_notes->getAlias();
+      if (nak::path_prefix_map != "") {
+        pair<string, string> tmp_modifier = score->getModifier(it_notes->getBasePitch());
+        it_notes->setPrefix(tmp_modifier.first + it_notes->getPrefix());
+        it_notes->setSuffix(it_notes->getSuffix() + tmp_modifier.second);
+        tmp_alias = tmp_modifier.first + tmp_alias + tmp_modifier.second;
+      }
+      if (nak::vowel_combining && it_notes!=score->notes.begin()
+        && boost::prior(it_notes)->getEnd()==it_notes->getStart() && voice_db->isAlias("* "+it_notes->getPron())) {
+        // vowel combining
+        it_notes->setPron("* "+it_notes->getPron());
+        if (voice_db->isVowel(it_notes->getPron())) {
+          it_notes->setBaseVelocity(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
+        }
+      }
+      if (!voice_db->isAlias(tmp_alias)) {
+        if (it_notes->getPron().find("‚ð")!=string::npos
+          && voice_db->isAlias(boost::algorithm::replace_all_copy(it_notes->getPron(), "‚ð", "‚¨"))) {
+          // "wo" to "o"
+          it_notes->setPron(boost::algorithm::replace_all_copy(it_notes->getPron(), "‚ð", "‚¨"));
+        } else {
+          cerr << "[Nakloid::vocalization] can't find pron: \"" << tmp_alias << "\"" << endl;
+        }
+      }
+    }
+  }
+
+  // arrange pitch params
+  if (nak::overshoot || nak::preparation || nak::vibrato || nak::interpolation) {
     cout << "arrange pitch params..." << endl;
     PitchArranger::arrange(score);
     cout << endl;
@@ -162,8 +168,8 @@ bool Nakloid::vocalization()
   // Singing Voice Synthesis
   BaseWavsOverlapper *overlapper = new BaseWavsOverlapper(format, score->getPitches());
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
-    cout << "synthesize \"" << it_notes->getPron() << "\" from " << it_notes->getPronStart() << "ms to " << it_notes->getPronEnd() << "ms" << endl;
-    overlapper->overlapping(*it_notes, voice_db->getVoice(it_notes->getPron()));
+    cout << "synthesize \"" << it_notes->getAlias() << "\" from " << it_notes->getPronStart() << "ms to " << it_notes->getPronEnd() << "ms" << endl;
+    overlapper->overlapping(*it_notes, voice_db->getVoice(it_notes->getAlias()));
   }
   cout << endl;
   overlapper->outputWav(score->getSongPath(), margin);

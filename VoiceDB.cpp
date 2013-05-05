@@ -51,6 +51,7 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
     tmp_voice.blnk = boost::lexical_cast<double>(v2[3]);
     tmp_voice.prec = boost::lexical_cast<double>(v2[4]);
     tmp_voice.ovrl = boost::lexical_cast<double>(v2[5]);
+    tmp_voice.is_vcv = false;
     // sanitize
     if (tmp_voice.ovrl < 0) {
       tmp_voice.ovrl *= -1;
@@ -78,22 +79,30 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
       ifs_frq.seekg(sizeof(char)*12, ios_base::beg);
       ifs_frq.read((char*)&(tmp_voice.frq), sizeof(double));
     }
-    // get prefix & suffix
-    tmp_voice.pron = v2[0];
-    tmp_voice.prefix = tmp_voice.suffix = "";
-    if (tmp_voice.pron.size()>2 && tmp_voice.pron[1]==' ') {
-      tmp_voice.prefix = tmp_voice.pron[0];
-      tmp_voice.pron.erase(0, 2);
-    }
-    if (tmp_voice.pron.size() > 2) {
-      string tmp_suffix = tmp_voice.pron.substr(tmp_voice.pron.size()-2, 2);
-      if (isalpha(tmp_suffix[0]) && isdigit(tmp_suffix[1])) {
-        tmp_voice.suffix = tmp_suffix;
-        tmp_voice.pron.erase(tmp_voice.pron.size()-2, 2);
+    // get Voice pron
+    {
+      string tmp_alias = v2[0];
+      tmp_voice.pron = tmp_voice.prefix = tmp_voice.suffix = "";
+      // get prefix
+      string::size_type pos_prefix = tmp_alias.find(" ");
+      if (tmp_alias.size()>1 && pos_prefix != string::npos) {
+        tmp_voice.prefix = tmp_alias.substr(0, pos_prefix+1);
+        tmp_alias.erase(0, pos_prefix+1);
+        if (tmp_voice.prefix != "- ") {
+          tmp_voice.is_vcv = true;
+        }
       }
+      // get suffix
+      if (tmp_alias.size() > 2) {
+        string tmp_suffix = tmp_alias.substr(tmp_alias.size()-2);
+        if (isalpha(tmp_suffix[0]) && isdigit(tmp_suffix[1])) {
+          tmp_voice.suffix = tmp_suffix;
+          tmp_alias.erase(tmp_alias.size()-2, 2);
+        }
+      }
+      tmp_voice.pron = tmp_alias;
     }
     // set vowel_map
-    tmp_voice.is_vcv = (tmp_voice.prefix!=""&&tmp_voice.prefix!="-");
     if (!tmp_voice.is_vcv) {
       map<string, string>::const_iterator it = nak::getVow2PronIt(tmp_voice.pron);
       if (it!=nak::vow2pron.end()) {
@@ -113,18 +122,18 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
   return true;
 }
 
-Voice VoiceDB::getVoice(string pron)
+Voice VoiceDB::getVoice(string alias)
 {
-  if (!isPron(pron))
+  if (!isAlias(alias))
     return getNullVoice();
 
-  if (voice_map[pron].bwc.base_wavs.empty()) {
-    Voice tmp_voice = voice_map[pron];
+  if (voice_map[alias].bwc.base_wavs.empty()) {
+    Voice tmp_voice = voice_map[alias];
     BaseWavsContainer bwc;
     BaseWavsFileIO *bwc_io = new BaseWavsFileIO();
-    string tmp_filename = ((tmp_voice.prefix=="*")?"_":tmp_voice.prefix)+tmp_voice.pron;
+    string tmp_filename = ((tmp_voice.prefix=="* ")?"_ ":tmp_voice.prefix)+tmp_voice.pron;
 
-    cout << "loading voice \"" << pron << "\" from ";
+    cout << "loading voice \"" << alias << "\" from ";
     if (nak::cache && bwc_io->isBaseWavsContainerFile(tmp_voice.path+tmp_filename+".bwc")) {
       cout << "cache" << endl;
       tmp_voice.bwc = ((BaseWavsContainer)bwc_io->get(tmp_voice.path+tmp_filename+".bwc"));
@@ -167,7 +176,7 @@ Voice VoiceDB::getVoice(string pron)
         bwc.base_wavs = maker->getBaseWavs();
         bwc.format.wLobeSize = nak::base_wavs_lobe;
         bwc.format.dwRepeatStart = maker->getRepStartSub();
-        bwc.format.wF0 = voice_map[pron].frq;
+        bwc.format.wF0 = voice_map[alias].frq;
         delete maker;
 
         // output bwc
@@ -176,25 +185,25 @@ Voice VoiceDB::getVoice(string pron)
           bwc.format.chunkSize += BaseWavsFormat::wAdditionalSize + sizeof(short);
           bwc.format.wFormatTag = BaseWavsFormat::BaseWavsFormatTag;
           bwc.format.dwSamplesPerSec = wav_parser.getFormat().dwSamplesPerSec;
-          bwc_io->set(voice_map[pron].path+tmp_filename+".bwc", bwc);
+          bwc_io->set(voice_map[alias].path+tmp_filename+".bwc", bwc);
         }
 
-        voice_map[pron].bwc = bwc;
+        voice_map[alias].bwc = bwc;
       }
     }
   }
 
-  return voice_map[pron];
+  return voice_map[alias];
 }
 
-bool VoiceDB::isPron(string pron)
+bool VoiceDB::isAlias(string alias)
 {
-  return !((voice_map.empty()&&!initVoiceMap()) || voice_map.count(pron)==0);
+  return !((voice_map.empty()&&!initVoiceMap()) || voice_map.count(alias)==0);
 }
 
-bool VoiceDB::isVowel(string pron)
+bool VoiceDB::isVowel(string alias)
 {
-  return vowel_map.count(pron)>0;
+  return vowel_map.count(alias)>0;
 }
 
 void VoiceDB::setSingerPath(string path_singer)
