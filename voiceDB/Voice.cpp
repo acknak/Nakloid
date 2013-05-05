@@ -144,10 +144,9 @@ const BaseWavsContainer* Voice::getBWC() const
 
   cout << "  loading voice \"" << alias << "\" from ";
 
-  BaseWavsFileIO *bwc_io = new BaseWavsFileIO();
-  if (nak::cache && bwc_io->isBaseWavsContainerFile(path_bwc.string())) {
+  if (nak::cache && bwc::isBaseWavsContainerFile(path_bwc.string())) {
     cout << "cache" << endl;
-    *bwc = bwc_io->get(path_bwc.string());
+    *bwc = bwc::get(path_bwc.string());
     return bwc;
   }
 
@@ -206,7 +205,7 @@ const BaseWavsContainer* Voice::getBWC() const
     bwc->format.chunkSize += BaseWavsFormat::wAdditionalSize + sizeof(short);
     bwc->format.wFormatTag = BaseWavsFormat::BaseWavsFormatTag;
     bwc->format.dwSamplesPerSec = wav_fs;
-    bwc_io->set(path_bwc.string(), bwc);
+    bwc::set(path_bwc.string(), bwc);
   }
 
   return this->bwc;

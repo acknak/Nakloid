@@ -35,14 +35,13 @@ BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<float> pitches):
 
 BaseWavsOverlapper::~BaseWavsOverlapper(){}
 
-bool BaseWavsOverlapper::overlapping(Note note, const Voice* voice)
+bool BaseWavsOverlapper::overlapping(const BaseWavsContainer* bwc, long pron_start, long pron_end, vector<short> velocities)
 {
-  if (note.getPronStart() < -ms_margin) {
-    ms_margin += -note.getPronStart();
+  if (pron_start < -ms_margin) {
+    ms_margin += -pron_start;
     output_wav.insert(output_wav.begin(), nak::ms2pos(ms_margin, format), 0);
   }
-  long ms_start=note.getPronStart()+ms_margin, ms_end=note.getPronEnd()+ms_margin;
-  const BaseWavsContainer *bwc = voice->getBWC();
+  long ms_start=pron_start+ms_margin, ms_end=pron_end+ms_margin;
   if (pitchmarks.empty()) {
     cerr << "[BaseWavsOverlapper::overlapping] pitchmarks not found" << endl;
     return false;
@@ -56,7 +55,6 @@ bool BaseWavsOverlapper::overlapping(Note note, const Voice* voice)
     return false;
   }
 
-  vector<short> velocities = note.getVelocities();
   unsigned long fade_start = (bwc->base_wavs.begin()+bwc->format.dwRepeatStart)->fact.dwPosition;
   unsigned long fade_last = bwc->base_wavs.back().fact.dwPosition;
   vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(nak::ms2pos(ms_start,format));

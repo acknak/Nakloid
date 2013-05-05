@@ -13,11 +13,10 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include "Voice.h"
-#include "parser/WavParser.h"
-#include "PSOLA/PitchMarker.h"
-#include "PSOLA/BaseWav.h"
-#include "PSOLA/BaseWavsMaker.h"
-#include "PSOLA/BaseWavsFileIO.h"
+#include "../parser/WavParser.h"
+#include "../PSOLA/BaseWav.h"
+#include "../PSOLA/PitchMarker.h"
+#include "../PSOLA/BaseWavsMaker.h"
 class Voice;
 
 // Reference Object

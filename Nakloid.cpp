@@ -170,7 +170,7 @@ bool Nakloid::vocalization()
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
     cout << "synthesize \"" << it_notes->getAlias() << "\" from " << it_notes->getPronStart() << "ms to " << it_notes->getPronEnd() << "ms" << endl;
 
-    overlapper->overlapping(*it_notes, voice_db->getVoice(it_notes->getAlias()));
+    overlapper->overlapping(voice_db->getVoice(it_notes->getAlias())->getBWC(), it_notes->getPronStart(), it_notes->getPronEnd(), it_notes->getVelocities());
 
     // show progress
     if (++counter/score->notes.size()>percent+0.1 && (percent=floor(counter/score->notes.size()*10)/10.0)<1.0)

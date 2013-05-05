@@ -10,17 +10,17 @@
 #include <iostream>
 #include <algorithm>
 #include <boost/utility.hpp>
-#include "Voice.h"
-#include "VoiceDB.h"
 #include "Utilities.h"
 #include "PitchArranger.h"
+#include "voiceDB/Voice.h"
+#include "voiceDB/VoiceDB.h"
+#include "parser/WavFormat.h"
+#include "parser/WavData.h"
+#include "parser/WavParser.h"
 #include "score/Score.h"
 #include "score/ScoreNAK.h"
 #include "score/ScoreUST.h"
 #include "score/ScoreSMF.h"
-#include "parser/WavFormat.h"
-#include "parser/WavData.h"
-#include "parser/WavParser.h"
 #include "PSOLA/BaseWavsOverlapper.h"
 
 // Reference Object

@@ -2,11 +2,7 @@
 
 using namespace std;
 
-BaseWavsFileIO::BaseWavsFileIO(){}
-
-BaseWavsFileIO::~BaseWavsFileIO(){}
-
-bool BaseWavsFileIO::isBaseWavsContainerFile(string filename)
+bool bwc::isBaseWavsContainerFile(string filename)
 {
   ifstream ifs(filename.c_str(), ios_base::binary);
 
@@ -39,7 +35,7 @@ bool BaseWavsFileIO::isBaseWavsContainerFile(string filename)
   return true;
 }
 
-BaseWavsContainer BaseWavsFileIO::get(string filename)
+BaseWavsContainer bwc::get(string filename)
 {
   BaseWavsContainer bwc;
   if (!isBaseWavsContainerFile(filename)) {
@@ -105,7 +101,7 @@ BaseWavsContainer BaseWavsFileIO::get(string filename)
   return bwc;
 }
 
-bool BaseWavsFileIO::set(string filename, BaseWavsContainer *bwc)
+bool bwc::set(string filename, BaseWavsContainer *bwc)
 {
   short wAdditionalSize = BaseWavsFormat::wAdditionalSize;
   long size_all = 28 + wAdditionalSize + sizeof(short);

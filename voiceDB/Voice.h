@@ -6,9 +6,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 #include "VoiceDB.h"
-#include "Utilities.h"
-#include "PSOLA/BaseWav.h"
-#include "PSOLA/BaseWavsFileIO.h"
+#include "BaseWavsFileIO.h"
+#include "../Utilities.h"
+#include "../PSOLA/BaseWav.h"
 class VoiceDB;
 
 // Value Object
