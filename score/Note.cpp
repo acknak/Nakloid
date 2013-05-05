@@ -62,12 +62,15 @@ bool Note::operator==(const Note& other) const
   is_eq &= (self.start == other.self.start);
   is_eq &= (self.end == other.self.end);
   is_eq &= (self.pron == other.self.pron);
+  is_eq &= (self.prefix == other.self.prefix);
+  is_eq &= (self.suffix == other.self.suffix);
   is_eq &= (self.base_pitch == other.self.base_pitch);
   is_eq &= (self.base_velocity == other.self.base_velocity);
   is_eq &= (self.velocity_points == other.self.velocity_points);
   is_eq &= (this->getPrec() == other.getPrec());
   is_eq &= (this->getOvrl() == other.getOvrl());
   is_eq &= (self.is_vcv == other.self.is_vcv);
+  is_eq &= (self.is_cv_proxy == other.self.is_cv_proxy);
   return is_eq;
 }
 
@@ -108,7 +111,7 @@ long Note::getEnd()
 
 long Note::getPronEnd()
 {
-  long tmp = self.end - (score->getNoteNextDist(this)>0?0:getLack());
+  long tmp = self.end - (score->getNextNoteDist(this)>0?0:getLack());
   if (getPronStart() > tmp) {
     cerr << "[Note::getPronEnd] pron_start > pron_end" << endl;
     return getPronStart();
@@ -135,6 +138,31 @@ void Note::setPron(string pron)
 {
   this->self.pron = pron;
   this->self.is_vcv = (pron.find(" ")!=string::npos && (pron[0]!='*'&&pron[0]!='-'));
+}
+
+string Note::getPrefix()
+{
+  return self.prefix;
+}
+
+void Note::setPrefix(string prefix)
+{
+  this->self.prefix = prefix;
+}
+
+string Note::getSuffix()
+{
+  return self.suffix;
+}
+
+void Note::setSuffix(string suffix)
+{
+  this->self.suffix = suffix;
+}
+
+string Note::getAlias()
+{
+  return self.prefix+self.pron+self.suffix;
 }
 
 unsigned char Note::getBasePitch()
@@ -181,8 +209,8 @@ list< pair<long,short> > Note::getVelocityPoints()
   } else {
     tmp_velocities.push_back(make_pair(nak::ms_front_edge, self.base_velocity));
   }
-  if (score->isNoteNextVCV(this)) {
-    tmp_velocities.push_back(make_pair(-score->getNoteNextOvrl(this), self.base_velocity));
+  if (score->isNextNoteVCV(this)) {
+    tmp_velocities.push_back(make_pair(-score->getNextNoteOvrl(this), self.base_velocity));
   } else {
     tmp_velocities.push_back(make_pair(-nak::ms_back_edge, self.base_velocity));
   }
@@ -274,6 +302,16 @@ void Note::isVCV(bool is_vcv)
   self.is_vcv = is_vcv;
 }
 
+bool Note::isCVProxy()
+{
+  return self.is_cv_proxy;
+}
+
+void Note::isCVProxy(bool is_cv_proxy)
+{
+  self.is_cv_proxy = is_cv_proxy;
+}
+
 void Note::initializeNoteFrame()
 {
   self.start = 0;
@@ -284,4 +322,5 @@ void Note::initializeNoteFrame()
   self.prec = 0;
   self.ovrl = 0;
   self.is_vcv = false;
+  self.is_cv_proxy = false;
 }

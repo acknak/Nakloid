@@ -16,12 +16,15 @@ typedef struct {
   long start;
   long end;
   std::string pron;
+  std::string prefix;
+  std::string suffix;
   unsigned char base_pitch;
   short base_velocity;
   std::list< std::pair<long,short> > velocity_points;
   short *prec;
   short *ovrl;
   bool is_vcv;
+  bool is_cv_proxy;
 } NoteFrame;
 
 // Value Object
@@ -48,6 +51,11 @@ class Note {
   void setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
   std::string getPron();
   void setPron(std::string pron);
+  std::string getPrefix();
+  void setPrefix(std::string prefix);
+  std::string getSuffix();
+  void setSuffix(std::string suffix);
+  std::string getAlias();
   unsigned char getBasePitch();
   double getBasePitchHz();
   void setBasePitch(unsigned char base_pitch);
@@ -66,6 +74,8 @@ class Note {
   void setOvrl(short ovrl);
   bool isVCV();
   void isVCV(bool is_vcv);
+  bool isCVProxy();
+  void isCVProxy(bool is_cv_proxy);
 
  protected:
   Score *score;

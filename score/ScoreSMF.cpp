@@ -53,14 +53,24 @@ bool ScoreSMF::load(string input, short track, string path_lyrics)
       notes.push_back(*note);
     }
   }
+
   if (notes.size() == 0) {
     cerr << "[Score::loadSmf] cannot read notes" << endl;
     return false;
   }
+
+  // assign notes to pron
   list<Note>::iterator it_notes = notes.begin();
   list<string>::iterator it_prons = prons.begin();
-  for (; it_notes!=notes.end()&&it_prons!=prons.end(); ++it_notes,++it_prons)
-    (*it_notes).setPron(*it_prons);
+  for (; it_notes!=notes.end()&&it_prons!=prons.end(); ++it_notes,++it_prons) {
+    string::size_type pos_prefix = it_prons->find(" ");
+    if (pos_prefix != string::npos) {
+      it_notes->setPrefix(it_prons->substr(0, pos_prefix+1));
+      it_notes->setPron(it_prons->substr(pos_prefix+1));
+    } else {
+      it_notes->setPron(*it_prons);
+    }
+  }
 
   if (!is_tempered)
     reloadPitches();

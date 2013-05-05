@@ -33,15 +33,15 @@ class Score {
   bool loadPitchesFromLf0(std::string path_input_pitches);
   void savePitches(std::string path_output_pitches);
 
-  bool loadPrefixMap(std::string path_prefix_map);
-  std::pair<std::string, std::string> getPrefix(short key);
+  bool loadModifierMap(std::string path_modifier_map);
+  std::pair<std::string, std::string> getModifier(short key);
 
   // Note mediator
   short getNoteLack(Note *note);
-  long getNoteNextDist(Note *note);
-  long getNotePrevDist(Note *note);
-  bool isNoteNextVCV(Note *note);
-  long getNoteNextOvrl(Note *note);
+  short getNextNoteOvrl(Note *note);
+  long getNextNoteDist(Note *note);
+  long getPrevNoteDist(Note *note);
+  bool isNextNoteVCV(Note *note);
 
   // member
   std::list<Note> notes;
@@ -65,7 +65,7 @@ class Score {
   std::string path_song;
   std::string path_singer;
   bool is_tempered;
-  std::map<short, std::pair<std::string, std::string> > key2prefix;
+  std::map<short, std::pair<std::string, std::string> > key2modifier;
 };
 
 #endif

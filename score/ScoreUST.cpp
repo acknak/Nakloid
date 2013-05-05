@@ -76,7 +76,13 @@ void ScoreUST::load(string input_ust)
       if (buf_vector[1]!="" && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0)
         notes.back().setEnd(pos+=tmp, 480, 1.0/tempo*60000000);
     } else if (buf_vector[0] == "Lyric") {
-      notes.back().setPron(buf_vector[1]);
+      string::size_type pos_prefix = buf_vector[1].find(" ");
+      if (pos_prefix != string::npos) {
+        notes.back().setPrefix(buf_vector[1].substr(0, pos_prefix+1));
+        notes.back().setPron(buf_vector[1].substr(pos_prefix+1));
+      } else {
+        notes.back().setPron(buf_vector[1]);
+      }
     } else if (buf_vector[0] == "NoteNum") {
       if (buf_vector[1]!="" && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0)
         notes.back().setBasePitch(tmp);

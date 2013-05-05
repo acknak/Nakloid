@@ -113,13 +113,13 @@ void Score::savePitches(std::string path_output_pitches)
   ofs.write((char*)&(pitches[0]), pitches.size()*sizeof(float));
 }
 
-bool Score::loadPrefixMap(std::string path_prefix_map)
+bool Score::loadModifierMap(std::string path_modifier_map)
 {
   if (key2notenum.empty())
     key2notenum = boost::assign::list_of("C")("C#")("D")("D#")("E")("F")("F#")("G")("G#")("A")("A#")("B");
 
   ifstream ifs;
-  ifs.open(path_prefix_map.c_str());
+  ifs.open(path_modifier_map.c_str());
   string buf_str;
   if (ifs) {
     while (getline(ifs, buf_str)) {
@@ -132,22 +132,22 @@ bool Score::loadPrefixMap(std::string path_prefix_map)
         if ((pos=find(key2notenum.begin(),key2notenum.end(),str_vector[0])) == key2notenum.end())
           throw "";
         short notenum = (++key_num)*12 + (pos-key2notenum.begin());
-        key2prefix[notenum] = make_pair(str_vector.at(1), str_vector.at(2));
+        key2modifier[notenum] = make_pair(str_vector.at(1), str_vector.at(2));
       } catch (...) {
-        cerr << "[Score::loadPrefixMap] unexpected key: \"" << buf_str << "\"" <<endl;
+        cerr << "[Score::loadModifierMap] unexpected key: \"" << buf_str << "\"" <<endl;
       }
     }
     return true;
   } else {
-    cerr << "[Score::loadPrefixMap] can't find prefix.map: \"" << path_prefix_map << "\"" << endl;
+    cerr << "[Score::loadModifierMap] can't find modifier map: \"" << path_modifier_map << "\"" << endl;
   }
   return false;
 }
 
-pair<string, string> Score::getPrefix(short key)
+pair<string, string> Score::getModifier(short key)
 {
-  if (!key2prefix.empty() && key2prefix.find(key)!=key2prefix.end())
-    return key2prefix[key];
+  if (!key2modifier.empty() && key2modifier.count(key>0))
+    return key2modifier[key];
   return make_pair("", "");
 }
 
@@ -156,42 +156,42 @@ pair<string, string> Score::getPrefix(short key)
  */
 short Score::getNoteLack(Note *note)
 {
-  list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
-  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end())
+  list<Note>::iterator it_tmp_note = find(notes.begin(), notes.end(), *note);
+  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end() || boost::next(it_tmp_note)->isCVProxy())
     return 0;
   return boost::next(it_tmp_note)->getPrec() - boost::next(it_tmp_note)->getOvrl();
 }
 
-long Score::getNoteNextDist(Note *note)
+short Score::getNextNoteOvrl(Note *note)
 {
-  list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
+  list<Note>::iterator it_tmp_note = find(notes.begin(), notes.end(), *note);
+  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end())
+    return 0;
+  return boost::next(it_tmp_note)->getOvrl();
+}
+
+long Score::getNextNoteDist(Note *note)
+{
+  list<Note>::iterator it_tmp_note = find(notes.begin(), notes.end(), *note);
   if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end())
     return 0;
   return boost::next(it_tmp_note)->getStart() - note->getEnd();
 }
 
-long Score::getNotePrevDist(Note *note)
+long Score::getPrevNoteDist(Note *note)
 {
-  list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
+  list<Note>::iterator it_tmp_note = find(notes.begin(), notes.end(), *note);
   if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==notes.begin())
     return 0;
   return note->getStart() - boost::prior(it_tmp_note)->getEnd();
 }
 
-bool Score::isNoteNextVCV(Note *note)
+bool Score::isNextNoteVCV(Note *note)
 {
-  list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
+  list<Note>::iterator it_tmp_note = find(notes.begin(), notes.end(), *note);
   if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end())
     return false;
   return boost::next(it_tmp_note)->isVCV();
-}
-
-long Score::getNoteNextOvrl(Note *note)
-{
-  list<Note>::iterator it_tmp_note=find(notes.begin(), notes.end(), *note);
-  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end())
-    return 0;
-  return boost::next(it_tmp_note)->getOvrl();
 }
 
 /*
