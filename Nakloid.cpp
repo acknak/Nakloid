@@ -86,13 +86,11 @@ bool Nakloid::vocalization()
   }
 
   voice_db = new VoiceDB(score->getSingerPath());
-  if (voice_db == 0) {
+  if (voice_db==0 || !voice_db->initVoiceMap()) {
     cerr << "[Nakloid::vocalization] can't find voiceDB" << endl;
     return false;
   }
-  voice_db->initVoiceMap();
   cout << endl;
-
 
   cout << "----- start vocalization -----" << endl;
   setMargin(nak::margin);
