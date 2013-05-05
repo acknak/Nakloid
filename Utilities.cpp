@@ -37,19 +37,19 @@ namespace nak {
   // PitchMarker
   unsigned short pitch_margin;
 
-  // BaseWavsMaker
+  // UnitWaveformMaker
   short target_rms;
-  unsigned char base_wavs_lobe;
+  unsigned char unit_waveform_lobe;
   bool is_normalize;
 
-  // BaseWavsOverlapper
+  // UnitWaveformOverlapper
   double fade_stretch;
   bool compressor;
   double threshold_x;
   double threshold_y;
   double max_volume;
 
-  // NoteArranger
+  // Note
   unsigned short ms_front_edge;
   unsigned short ms_back_edge;
 
@@ -148,23 +148,28 @@ bool nak::parse(string path_ini)
   // PitchMarker
   pitch_margin = ptree.get<unsigned short>("PitchMarker.pitch_margin", 10);
 
-  // BaseWavsMaker
-  target_rms = ptree.get<short>("BaseWavsMaker.target_rms", 2400);
-  base_wavs_lobe = ptree.get<unsigned char>("BaseWavsMaker.base_wavs_lobe", 3);
-  is_normalize = ptree.get<bool>("BaseWavsMaker.normalize", false);
+  // UnitWaveformMaker
+  target_rms = ptree.get<short>("UnitWaveformMaker.target_rms", 2400);
+  unit_waveform_lobe = ptree.get<unsigned char>("UnitWaveformMaker.unit_waveform_lobe", 3);
+  is_normalize = ptree.get<bool>("UnitWaveformMaker.normalize", false);
 
-  // BaseWavsOverlapper
-  fade_stretch = ptree.get<double>("BaseWavsOverlapper.fade_stretch", 1.0);
-  compressor = ptree.get<bool>("BaseWavsOverlapper.compressor", false);
-  threshold_x = ptree.get<double>("BaseWavsOverlapper.threshold_x", 0.98);
-  threshold_y = ptree.get<double>("BaseWavsOverlapper.threshold_y", 0.98);
-  max_volume = ptree.get<double>("BaseWavsOverlapper.max_volume", 0.9);
+  // UnitWaveformOverlapper
+  fade_stretch = ptree.get<double>("UnitWaveformOverlapper.fade_stretch", 1.0);
+  compressor = ptree.get<bool>("UnitWaveformOverlapper.compressor", false);
+  threshold_x = ptree.get<double>("UnitWaveformOverlapper.threshold_x", 0.98);
+  threshold_y = ptree.get<double>("UnitWaveformOverlapper.threshold_y", 0.98);
+  max_volume = ptree.get<double>("UnitWaveformOverlapper.max_volume", 0.9);
 
-  // NoteArranger
-  ms_front_edge = ptree.get<unsigned short>("NoteArranger.ms_front_edge", 5);
-  ms_back_edge = ptree.get<unsigned short>("NoteArranger.ms_back_edge", 35);
+  // Note
+  ms_front_edge = ptree.get<unsigned short>("Note.ms_front_edge", 5);
+  ms_back_edge = ptree.get<unsigned short>("Note.ms_back_edge", 35);
 
   // PitchArranger
+  vibrato = ptree.get<bool>("PitchArranger.vibrato", false);
+  overshoot = ptree.get<bool>("PitchArranger.overshoot", false);
+  preparation = ptree.get<bool>("PitchArranger.preparation", false);
+  interpolation = ptree.get<bool>("PitchArranger.interpolation", false);
+  finefluctuation = ptree.get<bool>("PitchArranger.finefluctuation", false);
   ms_overshoot = ptree.get<unsigned short>("PitchArranger.ms_overshoot", 50);
   pitch_overshoot = ptree.get<double>("PitchArranger.pitch_overshoot", 3.0);
   ms_preparation = ptree.get<unsigned short>("PitchArranger.ms_preparation", 50);
@@ -173,11 +178,6 @@ bool nak::parse(string path_ini)
   ms_vibrato_width = ptree.get<unsigned short>("PitchArranger.ms_vibrato_width", 200);
   pitch_vibrato = ptree.get<double>("PitchArranger.pitch_vibrato", 3.0);
   finefluctuation_deviation = ptree.get<double>("PitchArranger.finefluctuation_deviation", 0.5);
-  vibrato = ptree.get<bool>("PitchArranger.vibrato", false);
-  overshoot = ptree.get<bool>("PitchArranger.overshoot", false);
-  preparation = ptree.get<bool>("PitchArranger.preparation", false);
-  interpolation = ptree.get<bool>("PitchArranger.interpolation", false);
-  finefluctuation = ptree.get<bool>("PitchArranger.finefluctuation", false);
 
   return true;
 }

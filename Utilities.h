@@ -48,19 +48,19 @@ namespace nak {
   // PitchMarker
   extern unsigned short pitch_margin;
 
-  // BaseWavsMaker
+  // UnitWaveformMaker
   extern short target_rms;
-  extern unsigned char base_wavs_lobe;
+  extern unsigned char unit_waveform_lobe;
   extern bool is_normalize;
 
-  // BaseWavsOverlapper
+  // UnitWaveformOverlapper
   extern double fade_stretch;
   extern bool compressor;
   extern double threshold_x;
   extern double threshold_y;
   extern double max_volume;
 
-  // NoteArranger
+  // Note
   extern unsigned short ms_front_edge;
   extern unsigned short ms_back_edge;
 

@@ -1,39 +1,40 @@
-#include "BaseWavsMaker.h"
+#include "UnitWaveformMaker.h"
 
 using namespace std;
+using namespace uw;
 
-BaseWavsMaker::BaseWavsMaker():lobe(nak::base_wavs_lobe),sub_rep_start(0),sub_ovrl(0){}
+UnitWaveformMaker::UnitWaveformMaker():lobe(nak::unit_waveform_lobe),sub_rep_start(0),sub_ovrl(0){}
 
-BaseWavsMaker::~BaseWavsMaker(){}
+UnitWaveformMaker::~UnitWaveformMaker(){}
 
-vector<BaseWav> BaseWavsMaker::getBaseWavs()
+vector<UnitWaveform> UnitWaveformMaker::getUnitWaveform()
 {
-  return base_wavs;
+  return unit_waveforms;
 }
 
-vector<long> BaseWavsMaker::getPitchMarkVector()
+vector<long> UnitWaveformMaker::getPitchMarkVector()
 {
   return pitch_marks;
 }
 
-list<long> BaseWavsMaker::getPitchMarkList()
+list<long> UnitWaveformMaker::getPitchMarkList()
 {
   list<long> pitch_marks(this->pitch_marks.begin(), this->pitch_marks.end());
   return pitch_marks;
 }
 
-void BaseWavsMaker::setPitchMarks(vector<long> pitch_marks)
+void UnitWaveformMaker::setPitchMarks(vector<long> pitch_marks)
 {
   this->pitch_marks = pitch_marks;
   sub_rep_start = sub_ovrl = 0;
 }
 
-void BaseWavsMaker::setPitchMarks(vector<long> pitch_marks, long ms_rep_start, unsigned long fs)
+void UnitWaveformMaker::setPitchMarks(vector<long> pitch_marks, long ms_rep_start, unsigned long fs)
 {
   setPitchMarks(pitch_marks, ms_rep_start, 0, fs);
 }
 
-void BaseWavsMaker::setPitchMarks(vector<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs)
+void UnitWaveformMaker::setPitchMarks(vector<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs)
 {
   this->pitch_marks = pitch_marks;
 
@@ -54,33 +55,33 @@ void BaseWavsMaker::setPitchMarks(vector<long> pitch_marks, long ms_rep_start, l
   }
 }
 
-long BaseWavsMaker::getRepStartSub()
+long UnitWaveformMaker::getRepStartSub()
 {
-  return (base_wavs.size()-1+sub_rep_start) / 2;
+  return (unit_waveforms.size()-1+sub_rep_start) / 2;
 }
 
-bool BaseWavsMaker::makeBaseWavs(vector<short> voice, bool is_vcv)
+bool UnitWaveformMaker::makeUnitWaveform(vector<short> voice, bool is_vcv)
 {
-  return makeBaseWavs(voice, -1, is_vcv);
+  return makeUnitWaveform(voice, -1, is_vcv);
 }
 
-bool BaseWavsMaker::makeBaseWavs(vector<short> voice, short pitch, bool is_vcv)
+bool UnitWaveformMaker::makeUnitWaveform(vector<short> voice, short pitch, bool is_vcv)
 {
   this->voice = voice;
   if (voice.size()==0 || pitch_marks.empty() || lobe==0) {
-    cerr << "[BaseWavsMaker] voice or pitch mark or lobe is null" << endl;
+    cerr << "[UnitWaveformMaker] voice or pitch mark or lobe is null" << endl;
     return false;
   }
   if (sub_ovrl > sub_rep_start) {
-    cerr << "[BaseWavsMaker] invalid ovrl and rep_start" << endl;
+    cerr << "[UnitWaveformMaker] invalid ovrl and rep_start" << endl;
     return false;
   }
-  base_wavs.clear();
+  unit_waveforms.clear();
 
-  // make base wavs
-  double rep_scale = nak::target_rms/nak::getRMS(makeBaseWav(sub_rep_start, pitch).data.getDataVector());
-  double ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeBaseWav(0, pitch).data.getDataVector()):rep_scale;
-  base_wavs.reserve(pitch_marks.size());
+  // make unit waveforms
+  double rep_scale = nak::target_rms/nak::getRMS(makeUnitWaveform(sub_rep_start, pitch).data.getDataVector());
+  double ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeUnitWaveform(0, pitch).data.getDataVector()):rep_scale;
+  unit_waveforms.reserve(pitch_marks.size());
   for (int i=0; i<pitch_marks.size(); i++) {
     double scale = 1.0;
     if (sub_ovrl==0 || i>=sub_rep_start) {
@@ -91,15 +92,15 @@ bool BaseWavsMaker::makeBaseWavs(vector<short> voice, short pitch, bool is_vcv)
       double tmp = (i-sub_ovrl) / (double)(sub_rep_start-sub_ovrl);
       scale = (ovrl_scale*(1.0-tmp)) + (rep_scale*tmp);
     }
-    base_wavs.push_back(makeBaseWav(i, pitch, scale));
+    unit_waveforms.push_back(makeUnitWaveform(i, pitch, scale));
   }
 
   // make self fade
   long sub_base = getRepStartSub();
-  long sub_rep_len = base_wavs.size() - sub_base;
+  long sub_rep_len = unit_waveforms.size() - sub_base;
   for (int i=0; i<sub_rep_len; i++) {
-    BaseWav fore_wav = base_wavs[sub_rep_start+i];
-    BaseWav aft_wav = base_wavs[sub_base+i];
+    UnitWaveform fore_wav = unit_waveforms[sub_rep_start+i];
+    UnitWaveform aft_wav = unit_waveforms[sub_base+i];
     vector<short> fore_wav_data = fore_wav.data.getDataVector();
     vector<short> aft_wav_data = aft_wav.data.getDataVector();
 
@@ -120,35 +121,35 @@ bool BaseWavsMaker::makeBaseWavs(vector<short> voice, short pitch, bool is_vcv)
     for (int j=0; j<aft_wav_data.size(); j++) {
       aft_wav_data[j] = (fore_wav_data[j]*scale) + (aft_wav_data[j]*(1.0-scale));
     }
-    base_wavs[sub_base+i].data.setData(nak::normalize(aft_wav_data, nak::target_rms));
+    unit_waveforms[sub_base+i].data.setData(nak::normalize(aft_wav_data, nak::target_rms));
   }
 
   return true;
 }
 
-BaseWav BaseWavsMaker::makeBaseWav(short point, short pitch)
+UnitWaveform UnitWaveformMaker::makeUnitWaveform(short point, short pitch)
 {
-  return makeBaseWav(point, pitch, 1.0);
+  return makeUnitWaveform(point, pitch, 1.0);
 }
 
-BaseWav BaseWavsMaker::makeBaseWav(short point, short pitch, double scale)
+UnitWaveform UnitWaveformMaker::makeUnitWaveform(short point, short pitch, double scale)
 {
   // cut window out
-  BaseWav base_wav;
+  UnitWaveform unit_waveform;
   if (pitch <= 0) {
     pitch = (point>=pitch_marks.size()-1)?pitch_marks.back()-(*----pitch_marks.end()):pitch_marks[point+1]-pitch_marks[point];
   }
   long win_start = pitch_marks[point] - (pitch*lobe);
   long win_end = pitch_marks[point] + (pitch*lobe);
   vector<double> filter = nak::getLanczos(pitch*lobe*2+1 ,lobe);
-  base_wav.fact.dwPitchLeft = base_wav.fact.dwPitchRight = pitch * lobe;
-  base_wav.fact.dwPosition = pitch_marks[point] - pitch_marks[0];
+  unit_waveform.fact.dwPitchLeft = unit_waveform.fact.dwPitchRight = pitch * lobe;
+  unit_waveform.fact.dwPosition = pitch_marks[point] - pitch_marks[0];
 
-  // set base wav data
-  vector<short> base_wav_data(win_end-win_start+1, 0);
-  for (int i=0; i<base_wav_data.size(); i++)
-    base_wav_data[i] = (win_start+i<0 || win_start+i>=voice.size())?0:(voice[win_start+i]*filter[i])*scale;
-  base_wav.data.setData(base_wav_data);
+  // set unit waveform data
+  vector<short> unit_waveform_data(win_end-win_start+1, 0);
+  for (int i=0; i<unit_waveform_data.size(); i++)
+    unit_waveform_data[i] = (win_start+i<0 || win_start+i>=voice.size())?0:(voice[win_start+i]*filter[i])*scale;
+  unit_waveform.data.setData(unit_waveform_data);
 
-  return base_wav;
+  return unit_waveform;
 }

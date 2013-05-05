@@ -1,5 +1,5 @@
-#ifndef BaseWavsMaker_h
-#define BaseWavsMaker_h
+#ifndef UnitWaveformMaker_h
+#define UnitWaveformMaker_h
 
 #include <list>
 #include <cmath>
@@ -9,36 +9,36 @@
 #include <iostream>
 #include <algorithm>
 
-#include "BaseWav.h"
+#include "UnitWaveform.h"
 #include "../Utilities.h"
 #include "../parser/WavData.h"
 
 // Refference Object
-class BaseWavsMaker {
+class UnitWaveformMaker {
  public:
-  BaseWavsMaker();
-  virtual ~BaseWavsMaker();
+  UnitWaveformMaker();
+  virtual ~UnitWaveformMaker();
 
-  bool makeBaseWavs(std::vector<short> voice, bool is_vcv);
-  bool makeBaseWavs(std::vector<short> voice, short pitch, bool is_vcv);
+  bool makeUnitWaveform(std::vector<short> voice, bool is_vcv);
+  bool makeUnitWaveform(std::vector<short> voice, short pitch, bool is_vcv);
 
   // accessor
-  std::vector<BaseWav> getBaseWavs();
+  std::vector<uw::UnitWaveform> getUnitWaveform();
   std::vector<long> getPitchMarkVector();
   std::list<long> getPitchMarkList();
   void setPitchMarks(std::vector<long> pitch_marks);
   void setPitchMarks(std::vector<long> pitch_marks, long ms_rep_start, unsigned long fs);
   void setPitchMarks(std::vector<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs);
-  long BaseWavsMaker::getRepStartSub();
+  long UnitWaveformMaker::getRepStartSub();
 
  private:
-  BaseWavsMaker(const BaseWavsMaker& other);
-  BaseWavsMaker& operator=(const BaseWavsMaker& other);
+  UnitWaveformMaker(const UnitWaveformMaker& other);
+  UnitWaveformMaker& operator=(const UnitWaveformMaker& other);
 
-  BaseWav makeBaseWav(short point, short pitch);
-  BaseWav makeBaseWav(short point, short pitch, double scale);
+  uw::UnitWaveform makeUnitWaveform(short point, short pitch);
+  uw::UnitWaveform makeUnitWaveform(short point, short pitch, double scale);
 
-  std::vector<BaseWav> base_wavs;
+  std::vector<uw::UnitWaveform> unit_waveforms;
   std::vector<short> voice;
   std::vector<long> pitch_marks;
   unsigned char lobe;

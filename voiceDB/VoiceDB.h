@@ -5,18 +5,14 @@
 #include <cctype>
 #include <string>
 #include <fstream>
-#include <iostream>
-#include <algorithm>
-#include <boost/assign.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include "Voice.h"
 #include "../parser/WavParser.h"
-#include "../PSOLA/BaseWav.h"
 #include "../PSOLA/PitchMarker.h"
-#include "../PSOLA/BaseWavsMaker.h"
+#include "../PSOLA/UnitWaveformMaker.h"
 class Voice;
 
 // Reference Object

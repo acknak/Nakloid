@@ -1,5 +1,5 @@
-#ifndef BaseWavsOverlapper_h
-#define BaseWavsOverlapper_h
+#ifndef UnitWaveformOverlapper_h
+#define UnitWaveformOverlapper_h
 
 #include <list>
 #include <cmath>
@@ -10,20 +10,20 @@
 #include <iostream>
 #include <algorithm>
 
-#include "BaseWav.h"
+#include "UnitWaveform.h"
 #include "../Utilities.h"
 #include "../parser/WavFormat.h"
 #include "../parser/WavData.h"
 #include "../parser/WavParser.h"
 
 // Refference Object
-class BaseWavsOverlapper {
+class UnitWaveformOverlapper {
  public:
-  BaseWavsOverlapper(WavFormat format, std::list<float> pitches);
-  BaseWavsOverlapper(WavFormat format, std::vector<float> pitches);
-  virtual ~BaseWavsOverlapper();
+  UnitWaveformOverlapper(WavFormat format, std::list<float> pitches);
+  UnitWaveformOverlapper(WavFormat format, std::vector<float> pitches);
+  virtual ~UnitWaveformOverlapper();
 
-  bool overlapping(const BaseWavsContainer* bwc, long pron_start, long pron_end, std::vector<short> velocities);
+  bool overlapping(const uw::UnitWaveformContainer* uwc, long pron_start, long pron_end, std::vector<short> velocities);
   void outputWav(std::string output);
   void outputWav(std::string output, unsigned long ms_margin);
 
@@ -33,8 +33,8 @@ class BaseWavsOverlapper {
   std::vector<unsigned long> getPitchmarksVector();
 
  private:
-  BaseWavsOverlapper(const BaseWavsOverlapper& other);
-  BaseWavsOverlapper& operator=(const BaseWavsOverlapper& other);
+  UnitWaveformOverlapper(const UnitWaveformOverlapper& other);
+  UnitWaveformOverlapper& operator=(const UnitWaveformOverlapper& other);
 
   std::vector<unsigned long>::iterator pos2it(unsigned long pos);
 

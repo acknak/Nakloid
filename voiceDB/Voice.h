@@ -6,9 +6,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 #include "VoiceDB.h"
-#include "BaseWavsFileIO.h"
+#include "CacheFileIO.h"
 #include "../Utilities.h"
-#include "../PSOLA/BaseWav.h"
+#include "../PSOLA/UnitWaveform.h"
 class VoiceDB;
 
 // Value Object
@@ -39,15 +39,15 @@ class Voice {
   bool hasFrq() const;
   double getFrq() const;
   void setFrq(double frq);
-  bool hasBWC() const;
-  const BaseWavsContainer* getBWC() const;
-  void setBWC(const BaseWavsContainer *bwc);
+  bool hasUwc() const;
+  const uw::UnitWaveformContainer* getUwc() const;
+  void setUwc(const uw::UnitWaveformContainer *uwc);
 
  private:
   template <class Vector>
   Vector* trimVector(Vector* target_vector, long target_length) const;
   mutable double frq;
-  mutable BaseWavsContainer* bwc;
+  mutable uw::UnitWaveformContainer* uwc;
 };
 
 #endif

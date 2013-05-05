@@ -165,12 +165,12 @@ bool Nakloid::vocalization()
   }
 
   // Singing Voice Synthesis
-  BaseWavsOverlapper *overlapper = new BaseWavsOverlapper(format, score->getPitches());
+  UnitWaveformOverlapper *overlapper = new UnitWaveformOverlapper(format, score->getPitches());
   double counter=0, percent=0;
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
     cout << "synthesize \"" << it_notes->getAlias() << "\" from " << it_notes->getPronStart() << "ms to " << it_notes->getPronEnd() << "ms" << endl;
 
-    overlapper->overlapping(voice_db->getVoice(it_notes->getAlias())->getBWC(), it_notes->getPronStart(), it_notes->getPronEnd(), it_notes->getVelocities());
+    overlapper->overlapping(voice_db->getVoice(it_notes->getAlias())->getUwc(), it_notes->getPronStart(), it_notes->getPronEnd(), it_notes->getVelocities());
 
     // show progress
     if (++counter/score->notes.size()>percent+0.1 && (percent=floor(counter/score->notes.size()*10)/10.0)<1.0)

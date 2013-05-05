@@ -1,12 +1,13 @@
 #include "Voice.h"
 
 using namespace std;
+using namespace uw;
 
-Voice::Voice():voice_db(0),path_wav(""),pron(""),prefix(""),suffix(""),is_vcv(false),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),bwc(0){}
+Voice::Voice():voice_db(0),path_wav(""),pron(""),prefix(""),suffix(""),is_vcv(false),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0){}
 
-Voice::Voice(VoiceDB* voice_db):voice_db(voice_db),path_wav(""),pron(""),prefix(""),suffix(""),is_vcv(false),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),bwc(0){}
+Voice::Voice(VoiceDB* voice_db):voice_db(voice_db),path_wav(""),pron(""),prefix(""),suffix(""),is_vcv(false),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0){}
 
-Voice::Voice(const Voice& other):voice_db(0),path_wav(""),pron(""),prefix(""),suffix(""),is_vcv(false),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),bwc(0)
+Voice::Voice(const Voice& other):voice_db(0),path_wav(""),pron(""),prefix(""),suffix(""),is_vcv(false),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0)
 {
   voice_db = other.voice_db;
   path_wav = other.path_wav;
@@ -24,16 +25,16 @@ Voice::Voice(const Voice& other):voice_db(0),path_wav(""),pron(""),prefix(""),su
     setFrq(other.getFrq());
   }
 
-  if (other.hasBWC()) {
-    setBWC(other.getBWC());
+  if (other.hasUwc()) {
+    setUwc(other.getUwc());
   }
 }
 
 Voice::~Voice()
 {
-  if (bwc != 0) {
-    delete bwc;
-    bwc = 0;
+  if (uwc != 0) {
+    delete uwc;
+    uwc = 0;
   }
 }
 
@@ -54,8 +55,8 @@ Voice& Voice::operator=(const Voice& other)
     if (other.hasFrq()) {
       setFrq(other.getFrq());
     }
-    if (other.hasBWC()) {
-      setBWC(other.getBWC());
+    if (other.hasUwc()) {
+      setUwc(other.getUwc());
     }
   }
   return *this;
@@ -82,10 +83,10 @@ bool Voice::operator==(const Voice& other) const
     is_eq &= (hasFrq() == other.hasFrq());
   }
 
-  if (hasBWC() && other.hasBWC()) {
-    is_eq &= (getBWC() == other.getBWC());
+  if (hasUwc() && other.hasUwc()) {
+    is_eq &= (getUwc() == other.getUwc());
   } else {
-    is_eq &= (hasBWC() == other.hasBWC());
+    is_eq &= (hasUwc() == other.hasUwc());
   }
 
   return is_eq;
@@ -127,27 +128,27 @@ void Voice::setFrq(double frq)
   this->frq = frq;
 }
 
-bool Voice::hasBWC() const
+bool Voice::hasUwc() const
 {
-  return (bwc!=0);
+  return (uwc!=0);
 }
 
-const BaseWavsContainer* Voice::getBWC() const
+const UnitWaveformContainer* Voice::getUwc() const
 {
-  if (bwc != 0) {
-    return bwc;
+  if (uwc != 0) {
+    return uwc;
   }
 
-  this->bwc = new BaseWavsContainer;
+  this->uwc = new UnitWaveformContainer;
   string alias = prefix+pron+suffix;
-  boost::filesystem::path path_bwc(path_wav.parent_path().string()+"/"+boost::algorithm::replace_all_copy(alias, "*", "_")+".bwc");
+  boost::filesystem::path path_uwc(path_wav.parent_path().string()+"/"+boost::algorithm::replace_all_copy(alias, "*", "_")+".uwc");
 
   cout << "  loading voice \"" << alias << "\" from ";
 
-  if (nak::cache && bwc::isBaseWavsContainerFile(path_bwc.string())) {
+  if (nak::cache && uw::isUwcFile(path_uwc.string())) {
     cout << "cache" << endl;
-    *bwc = bwc::get(path_bwc.string());
-    return bwc;
+    *uwc = uw::load(path_uwc.string());
+    return uwc;
   }
 
   // get wav data
@@ -187,37 +188,37 @@ const BaseWavsContainer* Voice::getBWC() const
     delete marker;
   }
 
-  // make base waves
+  // make unit waveforms
   {
-    BaseWavsMaker *maker = new BaseWavsMaker();
+    UnitWaveformMaker *maker = new UnitWaveformMaker();
     maker->setPitchMarks(input_pitch_marks, offs+cons, offs+ovrl, wav_fs);
-    maker->makeBaseWavs(wav_data, wav_fs/getFrq(), is_vcv);
-    bwc->base_wavs = maker->getBaseWavs();
-    bwc->format.wLobeSize = nak::base_wavs_lobe;
-    bwc->format.dwRepeatStart = maker->getRepStartSub();
-    bwc->format.wF0 = getFrq();
+    maker->makeUnitWaveform(wav_data, wav_fs/getFrq(), is_vcv);
+    uwc->unit_waveforms = maker->getUnitWaveform();
+    uwc->format.wLobeSize = nak::unit_waveform_lobe;
+    uwc->format.dwRepeatStart = maker->getRepStartSub();
+    uwc->format.wF0 = getFrq();
     delete maker;
   }
 
-  // output bwc
+  // output uwc
   if (nak::cache) {
-    bwc->format.setDefaultValues();
-    bwc->format.chunkSize += BaseWavsFormat::wAdditionalSize + sizeof(short);
-    bwc->format.wFormatTag = BaseWavsFormat::BaseWavsFormatTag;
-    bwc->format.dwSamplesPerSec = wav_fs;
-    bwc::set(path_bwc.string(), bwc);
+    uwc->format.setDefaultValues();
+    uwc->format.chunkSize += UnitWaveformFormat::wAdditionalSize + sizeof(short);
+    uwc->format.wFormatTag = UnitWaveformFormat::UnitWaveformFormatTag;
+    uwc->format.dwSamplesPerSec = wav_fs;
+    uw::save(path_uwc.string(), uwc);
   }
 
-  return this->bwc;
+  return this->uwc;
 }
 
-void Voice::setBWC(const BaseWavsContainer *bwc)
+void Voice::setUwc(const UnitWaveformContainer *uwc)
 {
-  if (this->bwc != 0) {
-    delete this->bwc;
-    this->bwc = 0;
+  if (this->uwc != 0) {
+    delete this->uwc;
+    this->uwc = 0;
   }
-  *(this->bwc) = *bwc;
+  *(this->uwc) = *uwc;
 }
 
 template <class Vector>

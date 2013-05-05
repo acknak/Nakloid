@@ -1,14 +1,15 @@
-#include "BaseWavsOverlapper.h"
+#include "UnitWaveformOverlapper.h"
 
 using namespace std;
+using namespace uw;
 
-BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, list<float> pitches):ms_margin(0)
+UnitWaveformOverlapper::UnitWaveformOverlapper(WavFormat format, list<float> pitches):ms_margin(0)
 {
   vector<float> pitches_vector(pitches.begin(), pitches.end());
-  BaseWavsOverlapper(format, pitches_vector);
+  UnitWaveformOverlapper(format, pitches_vector);
 }
 
-BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<float> pitches):ms_margin(0)
+UnitWaveformOverlapper::UnitWaveformOverlapper(WavFormat format, vector<float> pitches):ms_margin(0)
 {
   this->format = format;
   unsigned long tmp_ms = 0;
@@ -33,9 +34,9 @@ BaseWavsOverlapper::BaseWavsOverlapper(WavFormat format, vector<float> pitches):
 }
 
 
-BaseWavsOverlapper::~BaseWavsOverlapper(){}
+UnitWaveformOverlapper::~UnitWaveformOverlapper(){}
 
-bool BaseWavsOverlapper::overlapping(const BaseWavsContainer* bwc, long pron_start, long pron_end, vector<short> velocities)
+bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* uwc, long pron_start, long pron_end, vector<short> velocities)
 {
   if (pron_start < -ms_margin) {
     ms_margin += -pron_start;
@@ -43,38 +44,38 @@ bool BaseWavsOverlapper::overlapping(const BaseWavsContainer* bwc, long pron_sta
   }
   long ms_start=pron_start+ms_margin, ms_end=pron_end+ms_margin;
   if (pitchmarks.empty()) {
-    cerr << "[BaseWavsOverlapper::overlapping] pitchmarks not found" << endl;
+    cerr << "[UnitWaveformOverlapper::overlapping] pitchmarks not found" << endl;
     return false;
   }
   if (ms_start >= ms_end) {
-    cerr << "[BaseWavsOverlapper::overlapping] ms_start >= ms_end" << endl;
+    cerr << "[UnitWaveformOverlapper::overlapping] ms_start >= ms_end" << endl;
     return false;
   }
-  if (bwc->base_wavs.empty()) {
-    cerr << "[BaseWavsOverlapper::overlapping] base_wavs not found" << endl;
+  if (uwc->unit_waveforms.empty()) {
+    cerr << "[UnitWaveformOverlapper::overlapping] unit waveforms not found" << endl;
     return false;
   }
 
-  unsigned long fade_start = (bwc->base_wavs.begin()+bwc->format.dwRepeatStart)->fact.dwPosition;
-  unsigned long fade_last = bwc->base_wavs.back().fact.dwPosition;
+  unsigned long fade_start = (uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart)->fact.dwPosition;
+  unsigned long fade_last = uwc->unit_waveforms.back().fact.dwPosition;
   vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(nak::ms2pos(ms_start,format));
   vector<unsigned long>::iterator it_end_pitchmarks = pos2it(nak::ms2pos(ms_end,format));
   vector<unsigned long>::iterator it_pitchmarks = it_begin_pitchmarks;
 
   while (it_pitchmarks != it_end_pitchmarks) {
-    // choose overlap base_wav
-    vector<BaseWav>::const_iterator it_base_wav = bwc->base_wavs.begin();
+    // choose unit waveform for overlap
+    vector<UnitWaveform>::const_iterator it_unit_waveform = uwc->unit_waveforms.begin();
     unsigned long dist = *it_pitchmarks - *it_begin_pitchmarks;
     if (dist > fade_start) {
       dist = (fade_last==fade_start)?fade_start:((dist-fade_start)/((short)nak::fade_stretch)%(fade_last-fade_start)+fade_start);
     }
-    while (it_base_wav->fact.dwPosition < dist)
-      ++it_base_wav;
+    while (it_unit_waveform->fact.dwPosition < dist)
+      ++it_unit_waveform;
 
     // overlap
-    vector<short> win = it_base_wav->data.getDataVector();
-    long win_start = *it_pitchmarks - it_base_wav->fact.dwPitchLeft;
-    long win_end = *it_pitchmarks + it_base_wav->fact.dwPitchRight;
+    vector<short> win = it_unit_waveform->data.getDataVector();
+    long win_start = *it_pitchmarks - it_unit_waveform->fact.dwPitchLeft;
+    long win_end = *it_pitchmarks + it_unit_waveform->fact.dwPitchRight;
     if (win_start < 0) {
       // left edge
       win.erase(win.begin(), win.begin()-win_start);
@@ -96,7 +97,7 @@ bool BaseWavsOverlapper::overlapping(const BaseWavsContainer* bwc, long pron_sta
   return true;
 }
 
-void BaseWavsOverlapper::outputWav(string output)
+void UnitWaveformOverlapper::outputWav(string output)
 {
   if (nak::compressor) {
     cout << "compressing..." << endl << endl;
@@ -130,7 +131,7 @@ void BaseWavsOverlapper::outputWav(string output)
   ofs.close();
 }
 
-void BaseWavsOverlapper::outputWav(string output, unsigned long ms_margin)
+void UnitWaveformOverlapper::outputWav(string output, unsigned long ms_margin)
 {
   if (ms_margin > this->ms_margin) {
     output_wav.insert(output_wav.begin(), nak::ms2pos(ms_margin-this->ms_margin, format), 0);
@@ -138,7 +139,7 @@ void BaseWavsOverlapper::outputWav(string output, unsigned long ms_margin)
   outputWav(output);
 }
 
-vector<unsigned long>::iterator BaseWavsOverlapper::pos2it(unsigned long pos)
+vector<unsigned long>::iterator UnitWaveformOverlapper::pos2it(unsigned long pos)
 {
   vector<unsigned long>::iterator it = pitchmarks.begin();
   do
@@ -152,19 +153,19 @@ vector<unsigned long>::iterator BaseWavsOverlapper::pos2it(unsigned long pos)
 /*
  * accessor
  */
-WavFormat BaseWavsOverlapper::getWavFormat()
+WavFormat UnitWaveformOverlapper::getWavFormat()
 {
   return format;
 }
 
-list<unsigned long> BaseWavsOverlapper::getPitchmarksList()
+list<unsigned long> UnitWaveformOverlapper::getPitchmarksList()
 {
   list<unsigned long> pitchmarks(this->pitchmarks.begin(), this->pitchmarks.end());
 
   return pitchmarks;
 }
 
-vector<unsigned long> BaseWavsOverlapper::getPitchmarksVector()
+vector<unsigned long> UnitWaveformOverlapper::getPitchmarksVector()
 {
   return pitchmarks;
 }

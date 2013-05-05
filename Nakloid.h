@@ -16,12 +16,12 @@
 #include "voiceDB/VoiceDB.h"
 #include "parser/WavFormat.h"
 #include "parser/WavData.h"
+#include "PSOLA/UnitWaveformOverlapper.h"
 #include "parser/WavParser.h"
 #include "score/Score.h"
 #include "score/ScoreNAK.h"
 #include "score/ScoreUST.h"
 #include "score/ScoreSMF.h"
-#include "PSOLA/BaseWavsOverlapper.h"
 
 // Reference Object
 class Nakloid {
