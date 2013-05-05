@@ -159,7 +159,7 @@ vector<Iterator> PitchMarker::mark(Iterator it_vowel_begin, Iterator it_vowel_en
   pitchmarks.reserve((it_target_end-it_target_begin)/win_size);
 
   long dist = win_size/2;
-  while (tmp_pitchmark<it_target_end && it_wav_end-tmp_pitchmark>dist*3/2) {
+  while (tmp_pitchmark<it_target_end && it_wav_end-tmp_pitchmark>dist*2) {
     if (autocorrelation && pitchmarks.size()>1) {
       xcorr(pitchmarks.back()-(win_size/2), pitchmarks.back()+(win_size/2), tmp_pitchmark+(win_size/2), xcorr_win.begin());
     } else {
