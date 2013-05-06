@@ -61,10 +61,10 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
       }
     }
     if (tmp_voice.ovrl > tmp_voice.prec) {
-      tmp_voice.ovrl = tmp_voice.prec;
+      tmp_voice.prec = tmp_voice.ovrl;
     }
     if (tmp_voice.prec > tmp_voice.cons) {
-      tmp_voice.prec = tmp_voice.cons;
+      tmp_voice.cons = tmp_voice.prec;
     }
     if (tmp_voice.blnk<0 && tmp_voice.cons > -tmp_voice.blnk) {
       tmp_voice.blnk = -tmp_voice.cons;

@@ -143,7 +143,7 @@ const UnitWaveformContainer* Voice::getUwc() const
   string alias = prefix+pron+suffix;
   boost::filesystem::path path_uwc(path_wav.parent_path().string()+"/"+boost::algorithm::replace_all_copy(alias, "*", "_")+".uwc");
 
-  cout << "  loading voice \"" << alias << "\" from ";
+  cout << "loading voice \"" << alias << "\" from ";
 
   if (nak::cache && uw::isUwcFile(path_uwc.string())) {
     cout << "cache" << endl;
@@ -170,12 +170,14 @@ const UnitWaveformContainer* Voice::getUwc() const
   {
     PitchMarker *marker = new PitchMarker();
     marker->setInputWav(wav_data, offs, ovrl, prec, blnk, wav_fs);
-    if (nak::pron2vow.count(alias) > 0) {
+    vector<short> aft_vowel_wav;
+    if (nak::pron2vow.count(pron.substr(pron.size()-2))>0 &&
+      (aft_vowel_wav=voice_db->getVowel(nak::pron2vow[pron.substr(pron.size()-2)+suffix])).size()>0) {
       short win_size = wav_fs / getFrq() * 2;
-      vector<short> aft_vowel_wav = voice_db->getVowel(nak::pron2vow[pron]+suffix);
       trimVector(&aft_vowel_wav, win_size);
-      if (is_vcv && voice_db->isVowel(prefix+suffix)) {
-        vector<short> fore_vowel_wav = voice_db->getVowel(prefix+suffix);
+      vector<short> fore_vowel_wav;
+      if (is_vcv && voice_db->isVowel(prefix+suffix) &&
+        (fore_vowel_wav=voice_db->getVowel(prefix+suffix)).size()>0) {
         trimVector(&fore_vowel_wav, win_size);
         marker->mark(fore_vowel_wav, aft_vowel_wav);
       } else {

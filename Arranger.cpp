@@ -33,8 +33,6 @@ void Arranger::arrange(VoiceDB *voice_db, Score *score)
       if (it_notes!=--score->notes.end() && it_notes->getEnd()==boost::next(it_notes)->getStart())
         preparation(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd(), *(pitches.begin()+boost::next(it_notes)->getStart()));
   }
-  cout << endl;
-
   if (nak::finefluctuation) {
     boost::minstd_rand gen;
     boost::normal_distribution<> dst( 0.0, nak::finefluctuation_deviation );
@@ -45,6 +43,7 @@ void Arranger::arrange(VoiceDB *voice_db, Score *score)
     }
   }
 
+  cout << endl;
   score->setPitches(pitches);
 }
 
@@ -59,10 +58,9 @@ void Arranger::checkAlias(list<Note>::iterator it_notes)
   if (nak::vowel_combining && it_notes!=score->notes.begin()
     && boost::prior(it_notes)->getEnd()==it_notes->getStart() && voice_db->isAlias("* "+it_notes->getPron())) {
     // vowel combining
-    it_notes->setPron("* "+it_notes->getPron());
-    if (voice_db->isVowel(it_notes->getPron())) {
-      it_notes->setBaseVelocity(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
-    }
+    it_notes->isVCV(true);
+    it_notes->setPrefix("* ");
+    it_notes->setBaseVelocity(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
   }
   if (!voice_db->isAlias(it_notes->getAlias())) {
     if (it_notes->getPron().find("を")!=string::npos
