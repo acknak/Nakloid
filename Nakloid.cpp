@@ -110,6 +110,9 @@ bool Nakloid::vocalization()
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
     cout << "synthesize \"" << it_notes->getAlias() << "\" from " << it_notes->getPronStart() << "ms to " << it_notes->getPronEnd() << "ms" << endl;
 
+    if (voice_db->getVoice(it_notes->getAlias()) == 0) {
+      continue;
+    }
     overlapper->overlapping(voice_db->getVoice(it_notes->getAlias())->getUwc(), it_notes->getPronStart(), it_notes->getPronEnd(), it_notes->getVelocities());
 
     // show progress

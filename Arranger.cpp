@@ -13,6 +13,9 @@ void Arranger::arrange(VoiceDB *voice_db, Score *score)
   cout << "set note params..." << endl;
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
     checkAlias(it_notes);
+    if (voice_db->getVoice(it_notes->getAlias()) == 0) {
+      continue;
+    }
     loadParamsFromVoiceDB(it_notes, voice_db->getVoice(it_notes->getAlias()));
   }
 
