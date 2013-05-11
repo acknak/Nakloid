@@ -43,7 +43,6 @@ namespace nak {
   extern std::string path_output_nak;
   extern std::string path_output_pit;
   extern std::string path_prefix_map;
-  extern bool cv_proxy;
 
   // PitchMarker
   extern unsigned short pitch_margin;

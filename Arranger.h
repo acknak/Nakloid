@@ -22,7 +22,6 @@ class Arranger {
 
   static void checkAlias(std::list<Note>::iterator it_notes);
   static void loadParamsFromVoiceDB(std::list<Note>::iterator it_notes, const Voice* voice);
-  static void checkProxy(std::list<Note>::iterator it_notes, const Voice* proxy_voice);
 
   static void vibrato(std::vector<float>::iterator it_pitches_begin, std::vector<float>::iterator it_pitches_end);
   static void overshoot(std::vector<float>::iterator it_pitches_begin, std::vector<float>::iterator it_pitches_end, float target_pitch);

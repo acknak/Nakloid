@@ -32,7 +32,6 @@ namespace nak {
   string path_output_nak;
   string path_output_pit;
   string path_prefix_map;
-  bool cv_proxy;
 
   // PitchMarker
   unsigned short pitch_margin;
@@ -143,7 +142,6 @@ bool nak::parse(string path_ini)
   path_output_nak = ptree.get<string>("Nakloid.path_output_nak", "");
   path_output_pit = ptree.get<string>("Nakloid.path_output_pit", "");
   path_prefix_map = ptree.get<string>("Nakloid.path_prefix_map", "");
-  cv_proxy = ptree.get<bool>("Nakloid.cv_proxy", true);
 
   // PitchMarker
   pitch_margin = ptree.get<unsigned short>("PitchMarker.pitch_margin", 10);

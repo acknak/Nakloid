@@ -14,9 +14,6 @@ void Arranger::arrange(VoiceDB *voice_db, Score *score)
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
     checkAlias(it_notes);
     loadParamsFromVoiceDB(it_notes, voice_db->getVoice(it_notes->getAlias()));
-    if (nak::cv_proxy && it_notes->isVCV() && it_notes!=score->notes.begin()) {
-      checkProxy(it_notes, voice_db->getVoice(it_notes->getAlias()));
-    }
   }
 
   cout << "arrange pitch params..." << endl;
@@ -80,22 +77,6 @@ void Arranger::loadParamsFromVoiceDB(list<Note>::iterator it_notes, const Voice*
     it_notes->setOvrl(voice->ovrl);
   if (!it_notes->isPrec())
     it_notes->setPrec(voice->prec);
-}
-
-void Arranger::checkProxy(list<Note>::iterator it_notes, const Voice* proxy_voice)
-{
-  list<Note>::iterator it_prior_notes = boost::prior(it_notes);
-  if (it_prior_notes->getPronStart()+it_prior_notes->getPrec() > it_prior_notes->getPronEnd()) {
-    if (voice_db->isAlias(it_notes->getPron())) {
-      it_notes->setPrefix("");
-    } else if (voice_db->isAlias("- "+it_notes->getPron())) {
-      it_notes->setPrefix("- ");
-    }
-    it_notes->isVCV(false);
-    it_notes->setOvrl(proxy_voice->ovrl);
-    it_notes->setPrec(proxy_voice->prec);
-    it_notes->isCVProxy(true);
-  }
 }
 
 void Arranger::vibrato(vector<float>::iterator it_pitches_begin, vector<float>::iterator it_pitches_end)

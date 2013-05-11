@@ -24,7 +24,6 @@ typedef struct {
   short *prec;
   short *ovrl;
   bool is_vcv;
-  bool is_cv_proxy;
 } NoteFrame;
 
 // Value Object
@@ -65,7 +64,7 @@ class Note {
   std::list< std::pair<long,short> > getVelocityPoints();
   short getVelocityPointNum();
   std::vector<short> getVelocities();
-  short getLack();
+  short getFadeinTime();
   bool isPrec();
   short getPrec() const;
   void setPrec(short prec);
@@ -74,8 +73,6 @@ class Note {
   void setOvrl(short ovrl);
   bool isVCV();
   void isVCV(bool is_vcv);
-  bool isCVProxy();
-  void isCVProxy(bool is_cv_proxy);
 
  protected:
   Score *score;

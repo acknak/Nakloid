@@ -70,7 +70,6 @@ bool Note::operator==(const Note& other) const
   is_eq &= (this->getPrec() == other.getPrec());
   is_eq &= (this->getOvrl() == other.getOvrl());
   is_eq &= (self.is_vcv == other.self.is_vcv);
-  is_eq &= (self.is_cv_proxy == other.self.is_cv_proxy);
   return is_eq;
 }
 
@@ -111,7 +110,7 @@ long Note::getEnd()
 
 long Note::getPronEnd()
 {
-  long tmp = self.end - (score->getNextNoteDist(this)>0?0:getLack());
+  long tmp = self.end - score->getNoteBackMargin(this);
   if (getPronStart() > tmp) {
     cerr << "[Note::getPronEnd] pron_start > pron_end" << endl;
     return getPronStart();
@@ -205,12 +204,16 @@ list< pair<long,short> > Note::getVelocityPoints()
   list < pair<long,short> > tmp_velocities;
   tmp_velocities.push_back(make_pair(0, 0));
   if (self.is_vcv && self.ovrl!=0) {
-    tmp_velocities.push_back(make_pair(*self.ovrl, self.base_velocity));
+    short margin = score->getNoteFrontMargin(this);
+    if (margin > 0) {
+      tmp_velocities.push_back(make_pair(margin-getFadeinTime(), 0));
+    }
+    tmp_velocities.push_back(make_pair(margin, self.base_velocity));
   } else {
     tmp_velocities.push_back(make_pair(nak::ms_front_edge, self.base_velocity));
   }
   if (score->isNextNoteVCV(this)) {
-    tmp_velocities.push_back(make_pair(-score->getNextNoteOvrl(this), self.base_velocity));
+    tmp_velocities.push_back(make_pair(-(score->getNextNote(this)->getFadeinTime()), self.base_velocity));
   } else {
     tmp_velocities.push_back(make_pair(-nak::ms_back_edge, self.base_velocity));
   }
@@ -249,9 +252,14 @@ vector<short> Note::getVelocities()
   return velocities;
 }
 
-short Note::getLack()
+short Note::getFadeinTime()
 {
-  return score->getNoteLack(this);
+  short margin = score->getNoteFrontMargin(this);
+  if (getPrec()-margin < getOvrl()) {
+    return getPrec() - margin;
+  } else {
+    return getOvrl();
+  }
 }
 
 bool Note::isPrec()
@@ -302,16 +310,6 @@ void Note::isVCV(bool is_vcv)
   self.is_vcv = is_vcv;
 }
 
-bool Note::isCVProxy()
-{
-  return self.is_cv_proxy;
-}
-
-void Note::isCVProxy(bool is_cv_proxy)
-{
-  self.is_cv_proxy = is_cv_proxy;
-}
-
 void Note::initializeNoteFrame()
 {
   self.start = 0;
@@ -322,5 +320,4 @@ void Note::initializeNoteFrame()
   self.prec = 0;
   self.ovrl = 0;
   self.is_vcv = false;
-  self.is_cv_proxy = false;
 }

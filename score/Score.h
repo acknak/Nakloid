@@ -37,8 +37,10 @@ class Score {
   std::pair<std::string, std::string> getModifier(short key);
 
   // Note mediator
-  short getNoteLack(Note *note);
-  short getNextNoteOvrl(Note *note);
+  short getNoteFrontMargin(Note *note);
+  short getNoteBackMargin(Note *note);
+  Note* getNextNote(Note *note);
+  Note* getPrevNote(Note *note);
   long getNextNoteDist(Note *note);
   long getPrevNoteDist(Note *note);
   bool isNextNoteVCV(Note *note);

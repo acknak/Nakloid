@@ -154,20 +154,45 @@ pair<string, string> Score::getModifier(short key)
 /*
  * Note mediator
  */
-short Score::getNoteLack(Note *note)
+short Score::getNoteFrontMargin(Note *note)
 {
   list<Note>::iterator it_tmp_note = find(notes.begin(), notes.end(), *note);
-  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end() || boost::next(it_tmp_note)->isCVProxy())
+  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==notes.begin())
     return 0;
-  return boost::next(it_tmp_note)->getPrec() - boost::next(it_tmp_note)->getOvrl();
+  list<Note>::iterator it_tmp_prev_note = boost::prior(it_tmp_note);
+  return it_tmp_note->getPrec() - getNoteBackMargin(&*it_tmp_prev_note);
 }
 
-short Score::getNextNoteOvrl(Note *note)
+short Score::getNoteBackMargin(Note *note)
 {
   list<Note>::iterator it_tmp_note = find(notes.begin(), notes.end(), *note);
   if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end())
     return 0;
-  return boost::next(it_tmp_note)->getOvrl();
+  list<Note>::iterator it_tmp_next_note = boost::next(it_tmp_note);
+  long tmp_margin = it_tmp_note->getEnd() - (it_tmp_next_note->getStart()-(it_tmp_next_note->getPrec()-it_tmp_next_note->getOvrl()));
+  if (tmp_margin <= 0) {
+    return 0;
+  } else if (it_tmp_note->getEnd()-tmp_margin < it_tmp_note->getStart()) {
+    return it_tmp_note->getStart() - (it_tmp_note->getEnd() - tmp_margin);
+  } else {
+    return tmp_margin;
+  }
+}
+
+Note* Score::getNextNote(Note *note)
+{
+  list<Note>::iterator it_tmp_note = find(notes.begin(), notes.end(), *note);
+  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==--notes.end())
+    return 0;
+  return &*(++it_tmp_note);
+}
+
+Note* Score::getPrevNote(Note *note)
+{
+  list<Note>::iterator it_tmp_note = find(notes.begin(), notes.end(), *note);
+  if (notes.size()==0 || it_tmp_note==notes.end() || it_tmp_note==notes.begin())
+    return 0;
+  return &*(--it_tmp_note);
 }
 
 long Score::getNextNoteDist(Note *note)
