@@ -67,8 +67,10 @@ bool Nakloid::loadScore(nak::ScoreMode mode)
     score->reloadPitches();
 
   // load prefix map
-  if (nak::path_prefix_map != "")
+  if (nak::path_prefix_map != "") {
     score->loadModifierMap(nak::path_prefix_map);
+    cout << "use modifier map..." << endl;
+  }
 
   return true;
 }
