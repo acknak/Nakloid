@@ -101,9 +101,18 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
         if (wav_parser.parse()) {
           vector<short> tmp_wav = (*(wav_parser.getDataChunks().begin())).getDataVector();
           vector<short>::iterator it_tmp_wav_cons = tmp_wav.begin()+((tmp_voice.offs+tmp_voice.cons)/1000.0*wav_parser.getFormat().dwSamplesPerSec);
+          vector<short>::iterator it_tmp_wav_min = it_tmp_wav_cons;
           short win_size = wav_parser.getFormat().dwSamplesPerSec / tmp_voice.getFrq();
-          vector<short>::iterator it_tmp_wav_max = max_element(it_tmp_wav_cons, it_tmp_wav_cons+(win_size*2));
-          vowel_map[nak::pron2vow[it->second]+tmp_voice.suffix].assign(it_tmp_wav_max-win_size, it_tmp_wav_max+win_size);
+          double tmp_min_rms = -1.0;
+          for (int i=0; i<win_size*2; i++) {
+            vector<short> tmp_wav(it_tmp_wav_cons+i-win_size, it_tmp_wav_cons+i+win_size);
+            double tmp_rms = nak::getRMS(tmp_wav);
+            if (tmp_rms<tmp_min_rms || tmp_min_rms<0) {
+              tmp_min_rms = tmp_rms;
+              it_tmp_wav_min = it_tmp_wav_cons+i;
+            }
+          }
+          vowel_map[nak::pron2vow[it->second]+tmp_voice.suffix].assign(it_tmp_wav_min-win_size, it_tmp_wav_min+win_size);
         }
       }
     }
