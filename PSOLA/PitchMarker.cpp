@@ -190,7 +190,6 @@ void PitchMarker::setInputWav(vector<short>input_wav)
   this->input_wav = input_wav;
   this->pos_offs = 0;
   this->it_input_wav_offs = this->input_wav.begin();
-  vector<short>::iterator it_input_wav_max = max_element(this->input_wav.begin(), this->input_wav.end());
   this->it_input_wav_blnk = this->input_wav.end();
 }
 

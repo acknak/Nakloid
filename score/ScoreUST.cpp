@@ -163,7 +163,7 @@ void ScoreUST::load(string input_ust)
           tick_end_ms = note_start_ms + note_velocities.size() - 1;
         double tmp_pitch = it_notes->getBasePitchHz()*pow(2.0,it_pitches->second[i]/1200.0);
         if (i == it_pitches->second.size()-1) {
-          for (int j=tick_end_ms; j<note_end_ms; j++) {
+          for (long j=tick_end_ms; j<note_end_ms; j++) {
             pitches[j] = tmp_pitch;
             velocities[j] = note_velocities[j-tick_end_ms];
           }
