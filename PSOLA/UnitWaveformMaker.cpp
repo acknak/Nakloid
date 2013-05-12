@@ -107,13 +107,13 @@ bool UnitWaveformMaker::makeUnitWaveform(vector<short> voice, short pitch, bool 
     long left_diff = aft_wav.fact.dwPitchLeft - fore_wav.fact.dwPitchLeft;
     if (left_diff < 0) {
       fore_wav_data.erase(fore_wav_data.begin(), fore_wav_data.begin()-left_diff);
-    } else {
+    } else if (left_diff > 0) {
       fore_wav_data.insert(fore_wav_data.begin(), left_diff, 0);
     }
     long right_diff = aft_wav.fact.dwPitchRight - fore_wav.fact.dwPitchRight;
     if (right_diff < 0) {
       fore_wav_data.erase(fore_wav_data.end()+right_diff, fore_wav_data.end());
-    } else {
+    } else if (right_diff > 0) {
       fore_wav_data.insert(fore_wav_data.end(), right_diff, 0);
     }
 

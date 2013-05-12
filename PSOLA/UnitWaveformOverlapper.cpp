@@ -56,7 +56,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* uwc, long 
     return false;
   }
 
-  unsigned long fade_start = (uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart)->fact.dwPosition;
+  unsigned long fade_start = (uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart-1)->fact.dwPosition;
   unsigned long fade_last = uwc->unit_waveforms.back().fact.dwPosition;
   vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(nak::ms2pos(ms_start,format));
   vector<unsigned long>::iterator it_end_pitchmarks = pos2it(nak::ms2pos(ms_end,format));
