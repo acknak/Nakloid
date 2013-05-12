@@ -1,4 +1,4 @@
-#ifndef Utilities_h
+﻿#ifndef Utilities_h
 #define Utilities_h
 
 #include <map>

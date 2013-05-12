@@ -1,4 +1,4 @@
-#include "Utilities.h"
+﻿#include "Utilities.h"
 
 using namespace std;
 using namespace nak;
@@ -320,9 +320,4 @@ map<string, string>::const_iterator nak::getVow2PronIt(string pron)
     }
   } while (++it != nak::vow2pron.end());
   return it;
-}
-
-bool nak::isVowel(string pron)
-{
-  return (pron=="* あ"||pron=="* い"||pron=="* う"||pron=="* え"||pron=="* お"||pron=="* ん");
 }
