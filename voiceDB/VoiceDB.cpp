@@ -78,7 +78,7 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
       if (tmp_alias.size()>1 && pos_prefix != string::npos) {
         tmp_voice.prefix = tmp_alias.substr(0, pos_prefix+1);
         tmp_alias.erase(0, pos_prefix+1);
-        if (tmp_voice.prefix != "- ") {
+        if (tmp_voice.prefix!="- " && tmp_voice.prefix!="* ") {
           tmp_voice.is_vcv = true;
         }
       }

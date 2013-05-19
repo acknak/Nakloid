@@ -143,7 +143,7 @@ const UnitWaveformContainer* Voice::getUwc() const
   string alias = prefix+pron+suffix;
   boost::filesystem::path path_uwc(path_wav.parent_path().string()+"/"+boost::algorithm::replace_all_copy(alias, "*", "_")+".uwc");
 
-  cout << "loading voice \"" << alias << "\" from ";
+  cout << "load voice \"" << alias << "\" from ";
 
   if (nak::cache && uw::isUwcFile(path_uwc.string())) {
     cout << "cache" << endl;
