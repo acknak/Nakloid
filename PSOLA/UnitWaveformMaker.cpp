@@ -80,7 +80,7 @@ bool UnitWaveformMaker::makeUnitWaveform(vector<short> voice, short pitch, bool 
 
   // make unit waveforms
   double rep_scale = nak::target_rms/nak::getRMS(makeUnitWaveform(sub_rep_start, pitch).data.getDataVector());
-  double ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeUnitWaveform(0, pitch).data.getDataVector()):rep_scale;
+  double ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeUnitWaveform(0, pitch).data.getDataVector()):1;
   unit_waveforms.reserve(pitch_marks.size());
   for (int i=0; i<pitch_marks.size(); i++) {
     double scale = 1.0;
