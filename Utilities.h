@@ -38,7 +38,7 @@ namespace nak {
   // Nakloid
   extern bool cache;
   extern std::string path_log;
-  extern bool vowel_combining;
+  extern bool auto_vowel_combining;
   extern double vowel_combining_volume;
   extern std::string path_output_nak;
   extern std::string path_output_pit;

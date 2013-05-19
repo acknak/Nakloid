@@ -27,7 +27,7 @@ namespace nak {
   // Nakloid
   bool cache;
   string path_log;
-  bool vowel_combining;
+  bool auto_vowel_combining;
   double vowel_combining_volume;
   string path_output_nak;
   string path_output_pit;
@@ -137,7 +137,7 @@ bool nak::parse(string path_ini)
   // Nakloid
   cache = ptree.get<bool>("Nakloid.cache", false);
   path_log = ptree.get<string>("Nakloid.path_log", "");
-  vowel_combining = ptree.get<bool>("Nakloid.vowel_combining", false);
+  auto_vowel_combining = ptree.get<bool>("Nakloid.auto_vowel_combining", false);
   vowel_combining_volume = ptree.get<double>("Nakloid.vowel_combining_volume", 1.0);
   path_output_nak = ptree.get<string>("Nakloid.path_output_nak", "");
   path_output_pit = ptree.get<string>("Nakloid.path_output_pit", "");

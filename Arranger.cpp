@@ -55,11 +55,14 @@ void Arranger::checkAlias(list<Note>::iterator it_notes)
     it_notes->setPrefix(tmp_modifier.first + it_notes->getPrefix());
     it_notes->setSuffix(it_notes->getSuffix() + tmp_modifier.second);
   }
-  if (nak::vowel_combining && it_notes!=score->notes.begin()
-    && boost::prior(it_notes)->getEnd()==it_notes->getStart() && voice_db->isAlias("* "+it_notes->getPron())) {
+  if (nak::auto_vowel_combining && it_notes!=score->notes.begin()
+    && boost::prior(it_notes)->getEnd()==it_notes->getStart()
+    && (it_notes->getPrefix()=="*"||it_notes->getPrefix().empty())
+    && voice_db->isAlias("* "+it_notes->getPron())) {
     // vowel combining
-    it_notes->isVCV(true);
     it_notes->setPrefix("* ");
+  }
+  if (it_notes->getPrefix() == "* ") {
     it_notes->setBaseVelocity(it_notes->getBaseVelocity()*nak::vowel_combining_volume);
   }
   if (!voice_db->isAlias(it_notes->getAlias())) {
