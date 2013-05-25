@@ -29,7 +29,7 @@ class UnitWaveformMaker {
   void setPitchMarks(std::vector<long> pitch_marks);
   void setPitchMarks(std::vector<long> pitch_marks, long ms_rep_start, unsigned long fs);
   void setPitchMarks(std::vector<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs);
-  long UnitWaveformMaker::getRepStartSub();
+  long UnitWaveformMaker::getFadeStartSub();
 
  private:
   UnitWaveformMaker(const UnitWaveformMaker& other);

@@ -195,7 +195,7 @@ const UnitWaveformContainer* Voice::getUwc() const
     maker->makeUnitWaveform(wav_data, wav_fs/getFrq(), is_vcv);
     uwc->unit_waveforms = maker->getUnitWaveform();
     uwc->format.wLobeSize = nak::unit_waveform_lobe;
-    uwc->format.dwRepeatStart = maker->getRepStartSub();
+    uwc->format.dwRepeatStart = maker->getFadeStartSub();
     uwc->format.wF0 = getFrq();
     delete maker;
   }

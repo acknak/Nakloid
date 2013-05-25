@@ -55,9 +55,10 @@ void UnitWaveformMaker::setPitchMarks(vector<long> pitch_marks, long ms_rep_star
   }
 }
 
-long UnitWaveformMaker::getRepStartSub()
+long UnitWaveformMaker::getFadeStartSub()
 {
-  return (unit_waveforms.size()-1+sub_rep_start) / 2;
+  long tmp_fade_start = (pitch_marks.size()-1+sub_rep_start) / 2;
+  return tmp_fade_start + (tmp_fade_start%2);
 }
 
 bool UnitWaveformMaker::makeUnitWaveform(vector<short> voice, bool is_vcv)
@@ -79,49 +80,54 @@ bool UnitWaveformMaker::makeUnitWaveform(vector<short> voice, short pitch, bool 
   unit_waveforms.clear();
 
   // make unit waveforms
-  double rep_scale = nak::target_rms/nak::getRMS(makeUnitWaveform(sub_rep_start, pitch).data.getDataVector());
-  double ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeUnitWaveform(0, pitch).data.getDataVector()):1;
-  unit_waveforms.reserve(pitch_marks.size());
-  for (int i=0; i<pitch_marks.size(); i++) {
-    double scale = 1.0;
-    if (sub_ovrl==0 || i>=sub_rep_start) {
-      scale = rep_scale;
-    } else if (i <= sub_ovrl) {
-      scale = ovrl_scale;
-    } else {
-      double tmp = (i-sub_ovrl) / (double)(sub_rep_start-sub_ovrl);
-      scale = (ovrl_scale*(1.0-tmp)) + (rep_scale*tmp);
+  long sub_fade_start = getFadeStartSub();
+  {
+    double fade_scale = nak::target_rms/nak::getRMS(makeUnitWaveform(sub_fade_start, pitch).data.getDataVector());
+    double ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeUnitWaveform(0, pitch).data.getDataVector()):1;
+    unit_waveforms.reserve(pitch_marks.size());
+    for (int i=0; i<pitch_marks.size(); i++) {
+      double scale = 1.0;
+      if (sub_ovrl==0 || i>=sub_fade_start) {
+        scale = fade_scale;
+      } else if (i <= sub_ovrl) {
+        scale = ovrl_scale;
+      } else {
+        double tmp = (i-sub_ovrl) / (double)(sub_fade_start-sub_ovrl);
+        scale = (ovrl_scale*(1.0-tmp)) + (fade_scale*tmp);
+      }
+      unit_waveforms.push_back(makeUnitWaveform(i, pitch, scale));
     }
-    unit_waveforms.push_back(makeUnitWaveform(i, pitch, scale));
   }
 
   // make self fade
-  long sub_base = getRepStartSub();
-  long sub_rep_len = unit_waveforms.size() - sub_base;
-  for (int i=0; i<sub_rep_len; i++) {
-    UnitWaveform fore_wav = unit_waveforms[sub_rep_start+i];
-    UnitWaveform aft_wav = unit_waveforms[sub_base+i];
-    vector<short> fore_wav_data = fore_wav.data.getDataVector();
-    vector<short> aft_wav_data = aft_wav.data.getDataVector();
+  {
+    long sub_rep_len = unit_waveforms.size() - sub_fade_start;
+    double fade_start_rms = nak::getRMS(unit_waveforms[sub_fade_start].data.getDataVector());
+    for (int i=0; i<sub_rep_len; i++) {
+      UnitWaveform fore_wav = unit_waveforms[sub_rep_start+i];
+      UnitWaveform aft_wav = unit_waveforms[sub_fade_start+i];
+      vector<short> fore_wav_data = fore_wav.data.getDataVector();
+      vector<short> aft_wav_data = aft_wav.data.getDataVector();
 
-    long left_diff = aft_wav.fact.dwPitchLeft - fore_wav.fact.dwPitchLeft;
-    if (left_diff < 0) {
-      fore_wav_data.erase(fore_wav_data.begin(), fore_wav_data.begin()-left_diff);
-    } else if (left_diff > 0) {
-      fore_wav_data.insert(fore_wav_data.begin(), left_diff, 0);
-    }
-    long right_diff = aft_wav.fact.dwPitchRight - fore_wav.fact.dwPitchRight;
-    if (right_diff < 0) {
-      fore_wav_data.erase(fore_wav_data.end()+right_diff, fore_wav_data.end());
-    } else if (right_diff > 0) {
-      fore_wav_data.insert(fore_wav_data.end(), right_diff, 0);
-    }
+      long left_diff = aft_wav.fact.dwPitchLeft - fore_wav.fact.dwPitchLeft;
+      if (left_diff < 0) {
+        fore_wav_data.erase(fore_wav_data.begin(), fore_wav_data.begin()-left_diff);
+      } else if (left_diff > 0) {
+        fore_wav_data.insert(fore_wav_data.begin(), left_diff, 0);
+      }
+      long right_diff = aft_wav.fact.dwPitchRight - fore_wav.fact.dwPitchRight;
+      if (right_diff < 0) {
+        fore_wav_data.erase(fore_wav_data.end()+right_diff, fore_wav_data.end());
+      } else if (right_diff > 0) {
+        fore_wav_data.insert(fore_wav_data.end(), right_diff, 0);
+      }
 
-    double scale = 1.0 / (sub_rep_len-1) * i;
-    for (int j=0; j<aft_wav_data.size(); j++) {
-      aft_wav_data[j] = (fore_wav_data[j]*scale) + (aft_wav_data[j]*(1.0-scale));
+      double scale = 1.0 / (sub_rep_len-1) * i;
+      for (int j=0; j<aft_wav_data.size(); j++) {
+        aft_wav_data[j] = (fore_wav_data[j]*scale) + (aft_wav_data[j]*(1.0-scale));
+      }
+      unit_waveforms[sub_fade_start+i].data.setData(nak::normalize(aft_wav_data, fade_start_rms));
     }
-    unit_waveforms[sub_base+i].data.setData(nak::normalize(aft_wav_data, nak::target_rms));
   }
 
   return true;

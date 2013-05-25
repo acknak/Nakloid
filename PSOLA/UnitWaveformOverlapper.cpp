@@ -66,7 +66,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* uwc, long 
     // choose unit waveform for overlap
     vector<UnitWaveform>::const_iterator it_unit_waveform = uwc->unit_waveforms.begin();
     unsigned long dist = *it_pitchmarks - *it_begin_pitchmarks;
-    if (dist > fade_start) {
+    if (dist > fade_last) {
       dist = (fade_last==fade_start)?fade_start:((dist-fade_start)/((short)nak::fade_stretch)%(fade_last-fade_start)+fade_start);
     }
     while (it_unit_waveform->fact.dwPosition < dist)
