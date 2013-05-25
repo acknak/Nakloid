@@ -71,7 +71,7 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
     }
     // get Voice pron
     {
-      string tmp_alias = v2[0];
+      string tmp_alias = (v2[0]=="")?tmp_voice.path_wav.stem().string():v2[0];
       tmp_voice.pron = tmp_voice.prefix = tmp_voice.suffix = "";
       // get prefix
       string::size_type pos_prefix = tmp_alias.find(" ");
