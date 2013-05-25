@@ -116,7 +116,7 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
         }
       }
     }
-    voice_map[tmp_voice.pron] = tmp_voice;
+    voice_map[tmp_voice.prefix+tmp_voice.pron+tmp_voice.suffix] = tmp_voice;
   }
   return true;
 }
