@@ -44,20 +44,21 @@ bool PitchMarker::mark(vector<short> fore_vowel_wav, vector<short> aft_vowel_wav
     xcorr(fore_vowel_wav.begin(), fore_vowel_wav.end(), it_mark_start, xcorr_win.begin());
     it_mark_start += max_element(xcorr_win.begin(), xcorr_win.end()) - xcorr_win.begin() - (win_size/2);
 
-    vector<vector<short>::iterator> tmp_pitchmarks_vowel =
+    vector<vector<short>::iterator> tmp_pitchmarks_fore_vowel =
       mark(fore_vowel_wav.begin(), fore_vowel_wav.end(),
       it_mark_start, it_input_wav_ovrl, input_wav.end(), false);
-    for(int i=0; i<tmp_pitchmarks_vowel.size(); i++) {
-      pitchmarks.push_back(tmp_pitchmarks_vowel[i] - input_wav.begin());
+    for(int i=0; i<tmp_pitchmarks_fore_vowel.size(); i++) {
+      pitchmarks.push_back(tmp_pitchmarks_fore_vowel[i] - input_wav.begin());
     }
 
     vector<vector<short>::iterator> tmp_pitchmarks_consonant =
-      mark(*(tmp_pitchmarks_vowel.end()-3), tmp_pitchmarks_vowel.back(),
-      tmp_pitchmarks_vowel.back(), it_input_wav_prec, input_wav.end(), true);
+      mark(*(tmp_pitchmarks_fore_vowel.end()-3), tmp_pitchmarks_fore_vowel.back(),
+      tmp_pitchmarks_fore_vowel.back(), it_input_wav_prec, input_wav.end(), true);
     for(int i=0; i<tmp_pitchmarks_consonant.size(); i++) {
       pitchmarks.push_back(tmp_pitchmarks_consonant[i] - input_wav.begin());
     }
 
+    // aft vowel
     vector<vector<short>::iterator> tmp_pitchmarks_aft_vowel =
       mark(aft_vowel_wav.begin(), aft_vowel_wav.end(),
       tmp_pitchmarks_consonant.back(), it_input_wav_blnk, input_wav.end(), false);
@@ -65,23 +66,6 @@ bool PitchMarker::mark(vector<short> fore_vowel_wav, vector<short> aft_vowel_wav
       pitchmarks.push_back(tmp_pitchmarks_aft_vowel[i] - input_wav.begin());
     }
   }
-  /*
-  {
-    // aft vowel
-    vector<short>::reverse_iterator rit_input_wav_offs(it_input_wav_blnk);
-    vector<short>::reverse_iterator rit_mark_end(input_wav.begin()+pitchmarks.back());
-    rit_mark_start = max_element(rit_input_wav_offs+(win_size/2), rit_input_wav_offs+(win_size/2*3));
-    xcorr(aft_vowel_wav.rbegin(), aft_vowel_wav.rend(), rit_mark_start, xcorr_win.begin());
-    rit_mark_start += max_element(xcorr_win.begin(), xcorr_win.end()) - xcorr_win.begin() - (win_size/2);
-
-    vector<vector<short>::reverse_iterator> tmp_pitchmarks_vowel =
-      mark(aft_vowel_wav.rbegin(), aft_vowel_wav.rend(),
-      rit_mark_start, rit_mark_end, input_wav.rend(), false);
-    for(int i=0; i<tmp_pitchmarks_vowel.size(); i++) {
-      pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks_vowel[i]);
-    }
-  }
-  */
 
   sort(pitchmarks.begin(), pitchmarks.end());
   pitchmarks.erase(unique(pitchmarks.begin(), pitchmarks.end()), pitchmarks.end());
