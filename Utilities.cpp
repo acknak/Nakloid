@@ -10,7 +10,8 @@ namespace nak {
   string path_pitches;
   string path_singer;
   string path_song;
-  unsigned long margin;
+
+  long margin;
   unsigned char pitch_frame_length;
 
   // General nak
@@ -34,7 +35,7 @@ namespace nak {
   string path_prefix_map;
 
   // PitchMarker
-  unsigned short pitch_margin;
+  short pitch_margin;
 
   // UnitWaveformMaker
   short target_rms;
@@ -49,16 +50,16 @@ namespace nak {
   double max_volume;
 
   // Note
-  unsigned short ms_front_edge;
-  unsigned short ms_back_edge;
+  short ms_front_edge;
+  short ms_back_edge;
 
   // PitchArranger
-  unsigned short ms_overshoot;
+  short ms_overshoot;
   double pitch_overshoot;
-  unsigned short ms_preparation;
+  short ms_preparation;
   double pitch_preparation;
-  unsigned short ms_vibrato_offset;
-  unsigned short ms_vibrato_width;
+  short ms_vibrato_offset;
+  short ms_vibrato_width;
   double pitch_vibrato;
   double finefluctuation_deviation;
   bool vibrato;
@@ -131,7 +132,7 @@ bool nak::parse(string path_ini)
   path_pitches = ptree.get<string>("General.path_pitches", "");
   path_singer = ptree.get<string>("General.path_singer", "");
   path_song = ptree.get<string>("General.path_song", "");
-  margin = ptree.get<unsigned long>("General.margin", 0);
+  margin = ptree.get<long>("General.margin", 0);
   pitch_frame_length = ptree.get<unsigned char>("General.pitch_frame_length", 1);
 
   // Nakloid
@@ -144,7 +145,7 @@ bool nak::parse(string path_ini)
   path_prefix_map = ptree.get<string>("Nakloid.path_prefix_map", "");
 
   // PitchMarker
-  pitch_margin = ptree.get<unsigned short>("PitchMarker.pitch_margin", 10);
+  pitch_margin = ptree.get<short>("PitchMarker.pitch_margin", 10);
 
   // UnitWaveformMaker
   target_rms = ptree.get<short>("UnitWaveformMaker.target_rms", 2400);
@@ -159,8 +160,8 @@ bool nak::parse(string path_ini)
   max_volume = ptree.get<double>("UnitWaveformOverlapper.max_volume", 0.9);
 
   // Note
-  ms_front_edge = ptree.get<unsigned short>("Note.ms_front_edge", 5);
-  ms_back_edge = ptree.get<unsigned short>("Note.ms_back_edge", 35);
+  ms_front_edge = ptree.get<short>("Note.ms_front_edge", 5);
+  ms_back_edge = ptree.get<short>("Note.ms_back_edge", 35);
 
   // PitchArranger
   vibrato = ptree.get<bool>("PitchArranger.vibrato", false);
@@ -168,34 +169,34 @@ bool nak::parse(string path_ini)
   preparation = ptree.get<bool>("PitchArranger.preparation", false);
   interpolation = ptree.get<bool>("PitchArranger.interpolation", false);
   finefluctuation = ptree.get<bool>("PitchArranger.finefluctuation", false);
-  ms_overshoot = ptree.get<unsigned short>("PitchArranger.ms_overshoot", 50);
+  ms_overshoot = ptree.get<short>("PitchArranger.ms_overshoot", 50);
   pitch_overshoot = ptree.get<double>("PitchArranger.pitch_overshoot", 3.0);
-  ms_preparation = ptree.get<unsigned short>("PitchArranger.ms_preparation", 50);
+  ms_preparation = ptree.get<short>("PitchArranger.ms_preparation", 50);
   pitch_preparation = ptree.get<double>("PitchArranger.pitch_preparation", 3.0);
-  ms_vibrato_offset = ptree.get<unsigned short>("PitchArranger.ms_vibrato_offset", 400);
-  ms_vibrato_width = ptree.get<unsigned short>("PitchArranger.ms_vibrato_width", 200);
+  ms_vibrato_offset = ptree.get<short>("PitchArranger.ms_vibrato_offset", 400);
+  ms_vibrato_width = ptree.get<short>("PitchArranger.ms_vibrato_width", 200);
   pitch_vibrato = ptree.get<double>("PitchArranger.pitch_vibrato", 3.0);
   finefluctuation_deviation = ptree.get<double>("PitchArranger.finefluctuation_deviation", 0.5);
 
   return true;
 }
 
-unsigned long nak::ms2pos(unsigned long ms, WavFormat format)
+long nak::ms2pos(long ms, WavFormat format)
 {
-  return (unsigned long)(ms/1000.0*format.dwSamplesPerSec);
+  return (long)(ms/1000.0*format.dwSamplesPerSec);
 }
 
-unsigned long nak::pos2ms(unsigned long pos, WavFormat format)
+long nak::pos2ms(long pos, WavFormat format)
 {
-  return (unsigned long)(pos/(double)format.dwSamplesPerSec*1000);
+  return (long)(pos/(double)format.dwSamplesPerSec*1000);
 }
 
-unsigned long nak::tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo)
+long nak::tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo)
 {
-  return (unsigned long)(((double)tick) / timebase * (tempo/1000.0));
+  return (long)(((double)tick) / timebase * (tempo/1000.0));
 }
 
-vector<short> nak::normalize(vector<short> wav, double target_rms)
+vector<double> nak::normalize(vector<double> wav, double target_rms)
 {
   double scale = target_rms / getRMS(wav);
   for (int i=0; i<wav.size(); i++)
@@ -203,7 +204,7 @@ vector<short> nak::normalize(vector<short> wav, double target_rms)
   return wav;
 }
 
-vector<short> nak::normalize(vector<short> wav, double target_mean, double target_var)
+vector<double> nak::normalize(vector<double> wav, double target_mean, double target_var)
 {
   double wav_mean = getMean(wav);
   double wav_var = getVar(wav, wav_mean);
@@ -212,7 +213,7 @@ vector<short> nak::normalize(vector<short> wav, double target_mean, double targe
   return wav;
 }
 
-vector<short> nak::normalize(vector<short> wav, short target_max, short target_min)
+vector<double> nak::normalize(vector<double> wav, short target_max, short target_min)
 {
   short wav_max = *max_element(wav.begin(), wav.end());
   short wav_min = *min_element(wav.begin(), wav.end());
@@ -229,7 +230,7 @@ vector<short> nak::normalize(vector<short> wav, short target_max, short target_m
   return wav;
 }
 
-double nak::getRMS(vector<short> wav)
+double nak::getRMS(vector<double> wav)
 {
   double rms = 0.0;
   for (int i=0; i<wav.size(); i++)
@@ -237,7 +238,7 @@ double nak::getRMS(vector<short> wav)
   return sqrt(rms);
 }
 
-double nak::getMean(vector<short> wav)
+double nak::getMean(vector<double> wav)
 {
   double mean = 0.0;
   for (int i=0; i<wav.size(); i++)
@@ -245,7 +246,7 @@ double nak::getMean(vector<short> wav)
   return mean;
 }
 
-double nak::getVar(vector<short> wav, double mean)
+double nak::getVar(vector<double> wav, double mean)
 {
   double var = 0.0;
   for (int i=0; i<wav.size(); i++)
@@ -288,7 +289,7 @@ vector<double> nak::getHann(long len)
   return filter;
 }
 
-vector<double> nak::getLanczos(long len, unsigned short lobe)
+vector<double> nak::getLanczos(long len, unsigned char lobe)
 {
   vector<double> fore_filter(len/2, 0);
   vector<double> aft_filter(len/2, 0);

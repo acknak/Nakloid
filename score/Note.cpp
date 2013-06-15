@@ -2,13 +2,13 @@
 
 using namespace std;
 
-Note::Note(Score *score, unsigned long id)
+Note::Note(Score *score, long id)
   :score(score),id(id)
 {
   initializeNoteFrame();
 }
 
-Note::Note(Score *score, unsigned long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short base_velocity)
+Note::Note(Score *score, long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short base_velocity)
   :score(score),id(id)
 {
   initializeNoteFrame();
@@ -87,7 +87,7 @@ bool Note::operator!=(const Note& other) const
     return !(*this == other);
 }
 
-unsigned long Note::getId()
+long Note::getId()
 {
   return id;
 }
@@ -102,7 +102,7 @@ long Note::getPronStart()
   return self.start - getPrec();
 }
 
-void Note::setStart(unsigned long ms_start)
+void Note::setStart(long ms_start)
 {
   this->self.start = ms_start;
 }
@@ -126,7 +126,7 @@ long Note::getPronEnd()
   return self.end;
 }
 
-void Note::setEnd(unsigned long ms_end)
+void Note::setEnd(long ms_end)
 {
   self.end = ms_end;
 }

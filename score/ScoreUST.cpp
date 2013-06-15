@@ -21,7 +21,7 @@ void ScoreUST::load(string input_ust)
   list<string> buf_list;
   list< pair< short, vector<short> > > pitches_ust;
   long tmp, tempo=120;
-  unsigned long pos = 0;
+  long pos = 0;
   bool is_parse = false;
   notes.clear();
   while (ifs && getline(ifs, buf_str)) {

@@ -1,7 +1,6 @@
 #ifndef WavData_h
 #define WavData_h
 
-#include <list>
 #include <vector>
 #include <cstring>
 #include <iostream>
@@ -10,7 +9,7 @@
 class WavData {
  public:
   WavData();
-  explicit WavData(std::vector<short> data_vector);
+  explicit WavData(std::vector<double> data_vector);
   WavData(const short* data, long size);
   WavData(const WavData& other);
   ~WavData();
@@ -19,17 +18,13 @@ class WavData {
   bool operator==(const WavData& other) const;
   bool operator!=(const WavData& other) const;
   const short* getData() const;
-  std::list<short> getDataList() const;
-  std::vector<short> getDataVector() const;
+  std::vector<double> getDataVector() const;
   void setData(const short* data, long size);
-  void setData(std::list<short> data);
-  void setData(std::vector<short> data);
-  long getSize();
+  void setData(std::vector<double> data);
+  long getWavDataSize() const;
 
  private:
-  void setSize(long size);
-  short* data;
-  long size;
+  std::vector<double> data;
 };
 
 #endif

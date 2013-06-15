@@ -164,7 +164,7 @@ void WavParser::normalize()
   for (list<WavData>::iterator it=data_chunks.begin(); it!=data_chunks.end(); ++it) {
     long max = numeric_limits<short>::min();
     long min = numeric_limits<short>::max();
-    long length = (*it).getSize()/sizeof(short);
+    long length = (*it).getWavDataSize()/sizeof(short);
     double avg = 0.0, rate = 1.0;
     const short* fore_data = (*it).getData();
     short* aft_data = new short[length];
@@ -183,7 +183,7 @@ void WavParser::normalize()
       rate = (numeric_limits<short>::min()*0.5) / (avg-min);
     for (int i=0; i<length; i++)
       aft_data[i] = (fore_data[i]-avg) * rate;
-    (*it).setData(aft_data, (*it).getSize());
+    (*it).setData(aft_data, (*it).getWavDataSize());
 
     delete[] aft_data;
   }
@@ -208,10 +208,10 @@ void WavParser::debug_txt(string output)
 
   for (list<WavData>::iterator it=data_chunks.begin(); it!=data_chunks.end(); ++it) {
     ofs << "---------- data chunk ----------" << endl << endl
-        << setw(20) << "chunkSize: " << setw(8) << (*it).getSize() << endl << endl
+        << setw(20) << "chunkSize: " << setw(8) << (*it).getWavDataSize() << endl << endl
         << "wavformData" << endl;
     const short* tmp_wav_data = (*it).getData();
-    for (long i=0; i<(*it).getSize()/sizeof(short); i++)
+    for (long i=0; i<(*it).getWavDataSize()/sizeof(short); i++)
       ofs << setw(11) << tmp_wav_data[i] << endl;
   }
 }
@@ -221,7 +221,7 @@ void WavParser::debug_wav(string output)
   cout << "start wav output" << endl;
   long size_all = 28;
   for (list<WavData>::iterator it=data_chunks.begin(); it!=data_chunks.end(); ++it)
-    size_all += (*it).getSize() + 8;
+    size_all += (*it).getWavDataSize() + 8;
 
   ofstream ofs;
   ofs.open(output.c_str(), ios_base::out|ios_base::trunc|ios_base::binary);
@@ -229,9 +229,9 @@ void WavParser::debug_wav(string output)
 
   for (list<WavData>::iterator it=data_chunks.begin(); it!=data_chunks.end(); ++it) {
     ofs.write((char*)WavFormat::data, sizeof(char)*4);
-    long size = (*it).getSize();
+    long size = (*it).getWavDataSize();
     ofs.write((char*)&size, sizeof(long));
-    ofs.write((char*)(*it).getData(), (*it).getSize());
+    ofs.write((char*)(*it).getData(), (*it).getWavDataSize());
   }
 
   ofs.close();

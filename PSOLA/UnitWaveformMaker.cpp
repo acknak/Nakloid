@@ -61,12 +61,12 @@ long UnitWaveformMaker::getFadeStartSub()
   return tmp_fade_start + (tmp_fade_start%2);
 }
 
-bool UnitWaveformMaker::makeUnitWaveform(vector<short> voice, bool is_vcv)
+bool UnitWaveformMaker::makeUnitWaveform(vector<double> voice, bool is_vcv)
 {
   return makeUnitWaveform(voice, -1, is_vcv);
 }
 
-bool UnitWaveformMaker::makeUnitWaveform(vector<short> voice, short pitch, bool is_vcv)
+bool UnitWaveformMaker::makeUnitWaveform(vector<double> voice, short pitch, bool is_vcv)
 {
   this->voice = voice;
   if (voice.size()==0 || pitch_marks.empty() || lobe==0) {
@@ -106,8 +106,8 @@ bool UnitWaveformMaker::makeUnitWaveform(vector<short> voice, short pitch, bool 
     for (int i=0; i<sub_rep_len; i++) {
       UnitWaveform fore_wav = unit_waveforms[sub_rep_start+i];
       UnitWaveform aft_wav = unit_waveforms[sub_fade_start+i];
-      vector<short> fore_wav_data = fore_wav.data.getDataVector();
-      vector<short> aft_wav_data = aft_wav.data.getDataVector();
+      vector<double> fore_wav_data = fore_wav.data.getDataVector();
+      vector<double> aft_wav_data = aft_wav.data.getDataVector();
 
       long left_diff = aft_wav.fact.dwPitchLeft - fore_wav.fact.dwPitchLeft;
       if (left_diff < 0) {
@@ -152,7 +152,7 @@ UnitWaveform UnitWaveformMaker::makeUnitWaveform(short point, short pitch, doubl
   unit_waveform.fact.dwPosition = pitch_marks[point] - pitch_marks[0];
 
   // set unit waveform data
-  vector<short> unit_waveform_data(win_end-win_start+1, 0);
+  vector<double> unit_waveform_data(win_end-win_start+1, 0);
   for (int i=0; i<unit_waveform_data.size(); i++)
     unit_waveform_data[i] = (win_start+i<0 || win_start+i>=voice.size())?0:(voice[win_start+i]*filter[i])*scale;
   unit_waveform.data.setData(unit_waveform_data);

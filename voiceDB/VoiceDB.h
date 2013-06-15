@@ -27,7 +27,7 @@ class VoiceDB {
   const Voice* getVoice(std::string alias);
   bool isAlias(std::string alias);
   bool isVowel(std::string pron);
-  std::vector<short> getVowel(std::string alias);
+  std::vector<double> getVowel(std::string alias);
 
   // accessor
   void setSingerPath(std::string path_singer);
@@ -39,7 +39,7 @@ class VoiceDB {
 
   std::string path_singer;
   std::map<std::string, Voice> voice_map;
-  std::map<std::string, std::vector<short>> vowel_map;
+  std::map<std::string, std::vector<double>> vowel_map;
 };
 
 #endif

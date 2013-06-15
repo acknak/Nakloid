@@ -99,13 +99,13 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
         WavParser wav_parser(tmp_voice.path_wav.string());
         wav_parser.addTargetTrack(0);
         if (wav_parser.parse()) {
-          vector<short> tmp_wav = (*(wav_parser.getDataChunks().begin())).getDataVector();
-          vector<short>::iterator it_tmp_wav_cons = tmp_wav.begin()+((tmp_voice.offs+tmp_voice.cons)/1000.0*wav_parser.getFormat().dwSamplesPerSec);
-          vector<short>::iterator it_tmp_wav_min = it_tmp_wav_cons;
+          vector<double> tmp_wav = (*(wav_parser.getDataChunks().begin())).getDataVector();
+          vector<double>::iterator it_tmp_wav_cons = tmp_wav.begin()+((tmp_voice.offs+tmp_voice.cons)/1000.0*wav_parser.getFormat().dwSamplesPerSec);
+          vector<double>::iterator it_tmp_wav_min = it_tmp_wav_cons;
           short win_size = wav_parser.getFormat().dwSamplesPerSec / tmp_voice.getFrq();
           double tmp_min_rms = -1.0;
           for (int i=0; i<win_size*2; i++) {
-            vector<short> tmp_wav(it_tmp_wav_cons+i-win_size, it_tmp_wav_cons+i+win_size);
+            vector<double> tmp_wav(it_tmp_wav_cons+i-win_size, it_tmp_wav_cons+i+win_size);
             double tmp_rms = nak::getRMS(tmp_wav);
             if (tmp_rms<tmp_min_rms || tmp_min_rms<0) {
               tmp_min_rms = tmp_rms;
@@ -139,7 +139,7 @@ bool VoiceDB::isVowel(string alias)
   return vowel_map.count(alias)>0;
 }
 
-vector<short> VoiceDB::getVowel(string alias)
+vector<double> VoiceDB::getVowel(string alias)
 {
   return vowel_map[alias];
 }

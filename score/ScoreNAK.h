@@ -27,7 +27,7 @@ class ScoreNAK : public Score {
   ScoreNAK& operator=(const ScoreNAK& other);
 
   Note *note_parse;
-  unsigned long id_parse;
+  long id_parse;
 };
 
 #endif

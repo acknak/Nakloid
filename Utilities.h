@@ -21,7 +21,7 @@ namespace nak {
   extern std::string path_pitches;
   extern std::string path_singer;
   extern std::string path_song;
-  extern unsigned long margin;
+  extern long margin;
   extern unsigned char pitch_frame_length;
 
   // General nak
@@ -45,7 +45,7 @@ namespace nak {
   extern std::string path_prefix_map;
 
   // PitchMarker
-  extern unsigned short pitch_margin;
+  extern short pitch_margin;
 
   // UnitWaveformMaker
   extern short target_rms;
@@ -60,16 +60,16 @@ namespace nak {
   extern double max_volume;
 
   // Note
-  extern unsigned short ms_front_edge;
-  extern unsigned short ms_back_edge;
+  extern short ms_front_edge;
+  extern short ms_back_edge;
 
   // PitchArranger
-  extern unsigned short ms_overshoot;
+  extern short ms_overshoot;
   extern double pitch_overshoot;
-  extern unsigned short ms_preparation;
+  extern short ms_preparation;
   extern double pitch_preparation;
-  extern unsigned short ms_vibrato_offset;
-  extern unsigned short ms_vibrato_width;
+  extern short ms_vibrato_offset;
+  extern short ms_vibrato_width;
   extern double pitch_vibrato;
   extern double finefluctuation_deviation;
   extern bool vibrato;
@@ -86,22 +86,22 @@ namespace nak {
   extern bool parse(std::string path_ini);
 
   // tools
-  extern unsigned long ms2pos(unsigned long ms, WavFormat format);
-  extern unsigned long pos2ms(unsigned long pos, WavFormat format);
-  extern unsigned long tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
+  extern long ms2pos(long ms, WavFormat format);
+  extern long pos2ms(long pos, WavFormat format);
+  extern long tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
 
-  extern std::vector<short> normalize(std::vector<short>wav, double target_rms);
-  extern std::vector<short> normalize(std::vector<short>wav, double target_mean, double target_var);
-  extern std::vector<short> normalize(std::vector<short>wav, short target_max, short target_min);
-  extern double getRMS(std::vector<short> wav);
-  extern double getMean(std::vector<short> wav);
-  extern double getVar(std::vector<short> wav, double mean);
+  extern std::vector<double> normalize(std::vector<double>wav, double target_rms);
+  extern std::vector<double> normalize(std::vector<double>wav, double target_mean, double target_var);
+  extern std::vector<double> normalize(std::vector<double>wav, short target_max, short target_min);
+  extern double getRMS(std::vector<double> wav);
+  extern double getMean(std::vector<double> wav);
+  extern double getVar(std::vector<double> wav, double mean);
   extern double getDB(long wav_value);
   extern short reverseDB(double db);
 
   extern std::vector<double> getHann(long len);
   extern std::vector<double> getTri(long len);
-  extern std::vector<double> getLanczos(long len, unsigned short lobe);
+  extern std::vector<double> getLanczos(long len, unsigned char lobe);
   extern double sinc(double x);
 
   extern std::map<std::string, std::string>::const_iterator getVow2PronIt(std::string pron);

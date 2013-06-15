@@ -30,8 +30,8 @@ typedef struct {
 // Value Object
 class Note {
  public:
-  Note(Score *score, unsigned long id);
-  Note(Score *score, unsigned long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short base_velocity);
+  Note(Score *score, long id);
+  Note(Score *score, long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short base_velocity);
   Note(const Note& other);
   ~Note();
 
@@ -40,14 +40,14 @@ class Note {
   bool operator!=(const Note& other) const;
 
   // accessor
-  unsigned long getId();
+  long getId();
   long getStart();
   long getPronStart();
-  void setStart(unsigned long ms_start);
+  void setStart(long ms_start);
   void setStart(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
   long getEnd();
   long getPronEnd();
-  void setEnd(unsigned long ms_end);
+  void setEnd(long ms_end);
   void setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
   short getFrontMargin();
   short getBackMargin();
@@ -83,7 +83,7 @@ class Note {
 
  protected:
   Score *score;
-  unsigned long id;
+  long id;
   NoteFrame self;
 
   void initializeNoteFrame();

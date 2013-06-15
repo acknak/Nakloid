@@ -87,7 +87,7 @@ UnitWaveformContainer uw::load(string filename)
         cerr << "[UnitWaveformFileIO::get] data chunk not found" << endl;
         continue;
       } else {
-        vector<short> tmp_wav_data_vector(chunkSize/sizeof(short), 0);
+        vector<double> tmp_wav_data_vector(chunkSize/sizeof(short), 0);
         ifs.read((char*)&(tmp_wav_data_vector[0]), chunkSize);
         WavData tmp_wav_data(tmp_wav_data_vector);
         tmp_unit_waveform.data = tmp_wav_data;
@@ -118,7 +118,7 @@ bool uw::save(string filename, UnitWaveformContainer *uwc)
   vector<UnitWaveform> unit_waveforms = uwc->unit_waveforms;
   for(vector<UnitWaveform>::iterator it=uwc->unit_waveforms.begin(); it!=uwc->unit_waveforms.end(); ++it) {
     long factChunkSize = UnitWaveformFact::chunkSize;
-    long dataChunkSize = it->data.getSize();
+    long dataChunkSize = it->data.getWavDataSize();
     ofs.write((char*)WavFormat::fact, sizeof(char)*4);
     ofs.write((char*)&(factChunkSize), sizeof(long));
     ofs.write((char*)&(it->fact.dwPitchLeft), sizeof(long));
@@ -126,7 +126,7 @@ bool uw::save(string filename, UnitWaveformContainer *uwc)
     ofs.write((char*)&(it->fact.dwPosition), sizeof(long));
     ofs.write((char*)WavFormat::data, sizeof(char)*4);
     ofs.write((char*)&(dataChunkSize), sizeof(long));
-    ofs.write((char*)it->data.getData(), it->data.getSize());
+    ofs.write((char*)it->data.getData(), it->data.getWavDataSize());
     size_all += factChunkSize + sizeof(char)*4 + sizeof(long)
       + dataChunkSize + sizeof(char)*4 + sizeof(long);
   }

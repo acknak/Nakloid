@@ -26,7 +26,7 @@ void Score::reloadPitches()
   pitches.clear();
   pitches.resize(notes.back().getEnd(), 0.0);
   for (list<Note>::iterator it=notes.begin(); it!=notes.end(); ++it)
-    for (unsigned long i=it->getStart(); i<it->getEnd(); i++)
+    for (long i=it->getStart(); i<it->getEnd(); i++)
       pitches[i] = it->getBasePitchHz();
 }
 
@@ -73,7 +73,7 @@ bool Score::loadPitchesFromPit(std::string path_input_pitches)
   ifstream ifs;
   ifs.open(path_input_pitches.c_str(), ios::binary);
   if (ifs) {
-    unsigned long pitches_size = boost::filesystem::file_size(path_input_pitches);
+    long pitches_size = boost::filesystem::file_size(path_input_pitches);
     pitches.assign(pitches_size/sizeof(float), 0.0);
     ifs.read((char*)&(pitches[0]), pitches_size);
     return (is_tempered=true);
@@ -88,7 +88,7 @@ bool Score::loadPitchesFromLf0(std::string path_input_pitches)
   ifstream ifs;
   ifs.open(path_input_pitches.c_str(), ios::binary);
   if (ifs) {
-    unsigned long pitches_size = boost::filesystem::file_size(path_input_pitches);
+    long pitches_size = boost::filesystem::file_size(path_input_pitches);
     vector<float> tmp_pitches(pitches_size/sizeof(float), 0.0);
     pitches.assign(pitches_size*nak::pitch_frame_length/sizeof(float), 0.0);
     ifs.read((char*)&(tmp_pitches[0]), pitches_size);

@@ -12,8 +12,8 @@ UnitWaveformOverlapper::UnitWaveformOverlapper(WavFormat format, list<float> pit
 UnitWaveformOverlapper::UnitWaveformOverlapper(WavFormat format, vector<float> pitches):ms_margin(0)
 {
   this->format = format;
-  unsigned long tmp_ms = 0;
-  list<unsigned long> tmp_pitchmarks(0);
+  long tmp_ms = 0;
+  list<long> tmp_pitchmarks(0);
   bool is_note_on = false;
 
   while (tmp_ms < pitches.size()) {
@@ -56,16 +56,16 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* uwc, long 
     return false;
   }
 
-  unsigned long fade_start = (uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart-1)->fact.dwPosition;
-  unsigned long fade_last = uwc->unit_waveforms.back().fact.dwPosition;
-  vector<unsigned long>::iterator it_begin_pitchmarks = pos2it(nak::ms2pos(ms_start,format));
-  vector<unsigned long>::iterator it_end_pitchmarks = pos2it(nak::ms2pos(ms_end,format));
-  vector<unsigned long>::iterator it_pitchmarks = it_begin_pitchmarks;
+  long fade_start = (uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart-1)->fact.dwPosition;
+  long fade_last = uwc->unit_waveforms.back().fact.dwPosition;
+  vector<long>::iterator it_begin_pitchmarks = pos2it(nak::ms2pos(ms_start,format));
+  vector<long>::iterator it_end_pitchmarks = pos2it(nak::ms2pos(ms_end,format));
+  vector<long>::iterator it_pitchmarks = it_begin_pitchmarks;
 
   while (it_pitchmarks != it_end_pitchmarks) {
     // choose unit waveform for overlap
     vector<UnitWaveform>::const_iterator it_unit_waveform = uwc->unit_waveforms.begin();
-    unsigned long dist = *it_pitchmarks - *it_begin_pitchmarks;
+    long dist = *it_pitchmarks - *it_begin_pitchmarks;
     if (dist > fade_last) {
       dist = (fade_last==fade_start)?fade_start:((dist-fade_start)/((short)nak::fade_stretch)%(fade_last-fade_start)+fade_start);
     }
@@ -73,7 +73,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* uwc, long 
       ++it_unit_waveform;
 
     // overlap
-    vector<short> win = it_unit_waveform->data.getDataVector();
+    vector<double> win = it_unit_waveform->data.getDataVector();
     long win_start = *it_pitchmarks - it_unit_waveform->fact.dwPitchLeft;
     long win_end = *it_pitchmarks + it_unit_waveform->fact.dwPitchRight;
     if (win_start < 0) {
@@ -86,7 +86,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* uwc, long 
       win.erase(win.end()-(win_end-pitchmarks.back()), win.end());
       win_end = pitchmarks.back();
     }
-    unsigned long ms_dist = nak::pos2ms(*it_pitchmarks-*it_begin_pitchmarks, format);
+    long ms_dist = nak::pos2ms(*it_pitchmarks-*it_begin_pitchmarks, format);
     double scale = ((ms_dist<velocities.size())?velocities[ms_dist]:velocities.back())/100.0;
     for (int i=0; i<win_end-win_start; i++)
       output_wav[win_start+i] += win[i] * scale;
@@ -131,7 +131,7 @@ void UnitWaveformOverlapper::outputWav(string output)
   ofs.close();
 }
 
-void UnitWaveformOverlapper::outputWav(string output, unsigned long ms_margin)
+void UnitWaveformOverlapper::outputWav(string output, long ms_margin)
 {
   if (ms_margin > this->ms_margin) {
     output_wav.insert(output_wav.begin(), nak::ms2pos(ms_margin-this->ms_margin, format), 0);
@@ -139,9 +139,9 @@ void UnitWaveformOverlapper::outputWav(string output, unsigned long ms_margin)
   outputWav(output);
 }
 
-vector<unsigned long>::iterator UnitWaveformOverlapper::pos2it(unsigned long pos)
+vector<long>::iterator UnitWaveformOverlapper::pos2it(long pos)
 {
-  vector<unsigned long>::iterator it = pitchmarks.begin();
+  vector<long>::iterator it = pitchmarks.begin();
   do
     if (*it > pos)
       return it;
@@ -158,14 +158,14 @@ WavFormat UnitWaveformOverlapper::getWavFormat()
   return format;
 }
 
-list<unsigned long> UnitWaveformOverlapper::getPitchmarksList()
+list<long> UnitWaveformOverlapper::getPitchmarksList()
 {
-  list<unsigned long> pitchmarks(this->pitchmarks.begin(), this->pitchmarks.end());
+  list<long> pitchmarks(this->pitchmarks.begin(), this->pitchmarks.end());
 
   return pitchmarks;
 }
 
-vector<unsigned long> UnitWaveformOverlapper::getPitchmarksVector()
+vector<long> UnitWaveformOverlapper::getPitchmarksVector()
 {
   return pitchmarks;
 }

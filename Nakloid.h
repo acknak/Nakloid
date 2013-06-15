@@ -48,7 +48,7 @@ class Nakloid {
   Score *score;
   VoiceDB *voice_db;
   WavFormat format;
-  unsigned long margin;
+  long margin;
 };
 
 #endif

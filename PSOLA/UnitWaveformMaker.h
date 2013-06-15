@@ -19,8 +19,8 @@ class UnitWaveformMaker {
   UnitWaveformMaker();
   virtual ~UnitWaveformMaker();
 
-  bool makeUnitWaveform(std::vector<short> voice, bool is_vcv);
-  bool makeUnitWaveform(std::vector<short> voice, short pitch, bool is_vcv);
+  bool makeUnitWaveform(std::vector<double> voice, bool is_vcv);
+  bool makeUnitWaveform(std::vector<double> voice, short pitch, bool is_vcv);
 
   // accessor
   std::vector<uw::UnitWaveform> getUnitWaveform();
@@ -39,7 +39,7 @@ class UnitWaveformMaker {
   uw::UnitWaveform makeUnitWaveform(short point, short pitch, double scale);
 
   std::vector<uw::UnitWaveform> unit_waveforms;
-  std::vector<short> voice;
+  std::vector<double> voice;
   std::vector<long> pitch_marks;
   unsigned char lobe;
   long sub_rep_start;

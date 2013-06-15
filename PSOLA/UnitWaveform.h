@@ -11,8 +11,8 @@ namespace uw {
    public:
     static const unsigned short UnitWaveformFormatTag = 0xFFFF;
     static const short wAdditionalSize = 12;
-    unsigned short wLobeSize;
-    unsigned long dwRepeatStart;
+    short wLobeSize;
+    long dwRepeatStart;
     double wF0;
   };
 

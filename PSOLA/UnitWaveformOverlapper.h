@@ -25,23 +25,23 @@ class UnitWaveformOverlapper {
 
   bool overlapping(const uw::UnitWaveformContainer* uwc, long pron_start, long pron_end, std::vector<short> velocities);
   void outputWav(std::string output);
-  void outputWav(std::string output, unsigned long ms_margin);
+  void outputWav(std::string output, long ms_margin);
 
   // accessor
   WavFormat getWavFormat();
-  std::list<unsigned long> getPitchmarksList();
-  std::vector<unsigned long> getPitchmarksVector();
+  std::list<long> getPitchmarksList();
+  std::vector<long> getPitchmarksVector();
 
  private:
   UnitWaveformOverlapper(const UnitWaveformOverlapper& other);
   UnitWaveformOverlapper& operator=(const UnitWaveformOverlapper& other);
 
-  std::vector<unsigned long>::iterator pos2it(unsigned long pos);
+  std::vector<long>::iterator pos2it(long pos);
 
   long ms_margin;
   WavFormat format;
-  std::vector<unsigned long> pitchmarks;
-  std::vector<long> output_wav;
+  std::vector<long> pitchmarks;
+  std::vector<double> output_wav;
 };
 
 #endif

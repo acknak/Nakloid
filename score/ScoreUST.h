@@ -24,7 +24,7 @@ class ScoreUST : public Score {
   ScoreUST(const ScoreUST& other);
   ScoreUST& operator=(const ScoreUST& other);
 
-  unsigned long id_parse;
+  long id_parse;
 };
 
 #endif
