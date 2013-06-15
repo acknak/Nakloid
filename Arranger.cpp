@@ -25,7 +25,7 @@ void Arranger::arrange(VoiceDB *voice_db, Score *score)
     if (nak::vibrato)
       vibrato(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd());
     if (nak::interpolation)
-      interpolation(pitches.begin(), it_notes->getStart()-it_notes->getFadeinTime(), it_notes->getPronEnd(), it_notes->getBasePitchHz());
+      interpolation(pitches.begin(), it_notes->getPronStart(), it_notes->getPronEnd(), it_notes->getBasePitchHz());
     if (nak::overshoot)
       if (it_notes!=score->notes.begin() && it_notes->getStart()==boost::prior(it_notes)->getEnd())
         overshoot(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd(), *(pitches.begin()+boost::prior(it_notes)->getEnd()-1));
@@ -83,6 +83,8 @@ void Arranger::loadParamsFromVoiceDB(list<Note>::iterator it_notes, const Voice*
     it_notes->setOvrl(voice->ovrl);
   if (!it_notes->isPrec())
     it_notes->setPrec(voice->prec);
+  if (!it_notes->isCons())
+    it_notes->setCons(voice->cons);
 }
 
 void Arranger::vibrato(vector<float>::iterator it_pitches_begin, vector<float>::iterator it_pitches_end)

@@ -26,17 +26,23 @@ Note::Note(const Note& other)
     self.prec = new short (*(other.self.prec));
   if (other.self.ovrl != 0)
     self.ovrl = new short (*(other.self.ovrl));
+  if (other.self.cons != 0)
+    self.cons = new short (*(other.self.cons));
 }
 
 Note::~Note()
 {
+  if (self.prec != 0) {
+    delete self.prec;
+    self.prec = 0;
+  }
   if (self.ovrl != 0) {
     delete self.ovrl;
     self.ovrl = 0;
   }
-  if (self.prec != 0) {
-    delete self.prec;
-    self.prec = 0;
+  if (self.cons != 0) {
+    delete self.cons;
+    self.cons = 0;
   }
 }
 
@@ -50,6 +56,8 @@ Note& Note::operator=(const Note& other)
       self.prec = new short (*(other.self.prec));
     if (other.self.ovrl != 0)
       self.ovrl = new short (*(other.self.ovrl));
+    if (other.self.cons != 0)
+      self.cons = new short (*(other.self.cons));
   }
   return *this;
 }
@@ -69,6 +77,7 @@ bool Note::operator==(const Note& other) const
   is_eq &= (self.velocity_points == other.self.velocity_points);
   is_eq &= (this->getPrec() == other.getPrec());
   is_eq &= (this->getOvrl() == other.getOvrl());
+  is_eq &= (this->getCons() == other.getCons());
   is_eq &= (self.is_vcv == other.self.is_vcv);
   return is_eq;
 }
@@ -110,12 +119,11 @@ long Note::getEnd()
 
 long Note::getPronEnd()
 {
-  long tmp = self.end - score->getNoteBackMargin(this);
-  if (getPronStart() > tmp) {
+  if (getPronStart() > self.end) {
     cerr << "[Note::getPronEnd] pron_start > pron_end" << endl;
     return getPronStart();
   }
-  return tmp;
+  return self.end;
 }
 
 void Note::setEnd(unsigned long ms_end)
@@ -126,6 +134,64 @@ void Note::setEnd(unsigned long ms_end)
 void Note::setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo)
 {
   setEnd(nak::tick2ms(deltatime, timebase, tempo));
+}
+
+short Note::getFrontMargin()
+{
+  Note* note_prev = score->getPrevNote(this);
+  if (note_prev == 0) {
+    return 0;
+  }
+
+  if (isVCV()) {
+    long tmp_margin = (note_prev->getPronEnd()-note_prev->getBackMargin()) - getPronStart();
+    if (tmp_margin > 0) {
+      if (tmp_margin > getOvrl()-nak::ms_front_edge) {
+        long test = getOvrl()-nak::ms_front_edge;
+        return getOvrl()-nak::ms_front_edge;
+      } else {
+        return tmp_margin;
+      }
+    }
+  }
+  return 0;
+}
+
+short Note::getBackMargin()
+{
+  Note* note_next = score->getNextNote(this);
+  if (note_next == 0){
+    return 0;
+  }
+
+  if (note_next->isVCV()) {
+    long tmp_margin = getPronEnd() - note_next->getPronStart();
+    if (tmp_margin > 0) {
+      if (getPronEnd()-tmp_margin-nak::ms_back_edge < getPronStart()+getCons()) {
+        long test = getPronEnd() - nak::ms_back_edge - (getPronStart()+getCons());
+        return getPronEnd() - nak::ms_back_edge - (getPronStart()+getCons());
+      } else {
+        return tmp_margin;
+      }
+    }
+  }
+  return 0;
+}
+
+short Note::getFrontPadding()
+{
+  return (isVCV())?getOvrl()-getFrontMargin():nak::ms_front_edge;
+}
+
+short Note::getBackPadding()
+{
+  if (isVCV()) {
+    Note* note_next = score->getNextNote(this);
+    if (note_next!=0) {
+      return note_next->getFrontPadding();
+    }
+  }
+  return nak::ms_back_edge;
 }
 
 string Note::getPron()
@@ -202,21 +268,12 @@ list< pair<long,short> > Note::getVelocityPoints()
 
   // return default points
   list < pair<long,short> > tmp_velocities;
+  short margin_front=getFrontMargin(), margin_back=getBackMargin();
   tmp_velocities.push_back(make_pair(0, 0));
-  if (self.is_vcv && self.ovrl!=0) {
-    short margin = score->getNoteFrontMargin(this);
-    if (margin > 0) {
-      tmp_velocities.push_back(make_pair(margin-getFadeinTime(), 0));
-    }
-    tmp_velocities.push_back(make_pair(margin, self.base_velocity));
-  } else {
-    tmp_velocities.push_back(make_pair(nak::ms_front_edge, self.base_velocity));
-  }
-  if (score->isNextNoteVCV(this)) {
-    tmp_velocities.push_back(make_pair(-(score->getNextNote(this)->getFadeinTime()), self.base_velocity));
-  } else {
-    tmp_velocities.push_back(make_pair(-nak::ms_back_edge, self.base_velocity));
-  }
+  tmp_velocities.push_back(make_pair(margin_front, 0));
+  tmp_velocities.push_back(make_pair(margin_front+getFrontPadding(), self.base_velocity));
+  tmp_velocities.push_back(make_pair(-margin_back-getBackPadding()-1, self.base_velocity));
+  tmp_velocities.push_back(make_pair(-margin_back-1, self.base_velocity));
   tmp_velocities.push_back(make_pair(-1, 0));
   return tmp_velocities;
 }
@@ -250,16 +307,6 @@ vector<short> Note::getVelocities()
   }
 
   return velocities;
-}
-
-short Note::getFadeinTime()
-{
-  short margin = score->getNoteFrontMargin(this);
-  if (getPrec()-margin < getOvrl()) {
-    return getPrec() - margin;
-  } else {
-    return getOvrl();
-  }
 }
 
 bool Note::isPrec()
@@ -300,7 +347,26 @@ void Note::setOvrl(short ovrl)
   self.ovrl = new short (ovrl);
 }
 
-bool Note::isVCV()
+bool Note::isCons()
+{
+  return self.cons!=0;
+}
+
+short Note::getCons() const
+{
+  return (self.cons==0)?0:*self.cons;
+}
+
+void Note::setCons(short cons)
+{
+  if (self.cons != 0) {
+    delete self.cons;
+    self.cons = 0;
+  }
+  self.cons = new short (cons);
+}
+
+bool Note::isVCV() const
 {
   return self.is_vcv;
 }
@@ -319,5 +385,6 @@ void Note::initializeNoteFrame()
   self.base_velocity = 100;
   self.prec = 0;
   self.ovrl = 0;
+  self.cons = 0;
   self.is_vcv = false;
 }

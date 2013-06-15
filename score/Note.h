@@ -23,6 +23,7 @@ typedef struct {
   std::list< std::pair<long,short> > velocity_points;
   short *prec;
   short *ovrl;
+  short *cons;
   bool is_vcv;
 } NoteFrame;
 
@@ -48,6 +49,10 @@ class Note {
   long getPronEnd();
   void setEnd(unsigned long ms_end);
   void setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
+  short getFrontMargin();
+  short getBackMargin();
+  short getFrontPadding();
+  short getBackPadding();
   std::string getPron();
   void setPron(std::string pron);
   std::string getPrefix();
@@ -64,14 +69,16 @@ class Note {
   std::list< std::pair<long,short> > getVelocityPoints();
   short getVelocityPointNum();
   std::vector<short> getVelocities();
-  short getFadeinTime();
   bool isPrec();
   short getPrec() const;
   void setPrec(short prec);
   bool isOvrl();
   short getOvrl() const;
   void setOvrl(short ovrl);
-  bool isVCV();
+  bool isCons();
+  short getCons() const;
+  void setCons(short cons);
+  bool isVCV() const;
   void isVCV(bool is_vcv);
 
  protected:

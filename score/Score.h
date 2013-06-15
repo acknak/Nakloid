@@ -37,15 +37,6 @@ class Score {
   bool loadModifierMap(std::string path_modifier_map);
   std::pair<std::string, std::string> getModifier(short key);
 
-  // Note mediator
-  short getNoteFrontMargin(Note *note);
-  short getNoteBackMargin(Note *note);
-  Note* getNextNote(Note *note);
-  Note* getPrevNote(Note *note);
-  long getNextNoteDist(Note *note);
-  long getPrevNoteDist(Note *note);
-  bool isNextNoteVCV(Note *note);
-
   // member
   std::list<Note> notes;
 
@@ -57,6 +48,8 @@ class Score {
   std::string getSingerPath();
   void setSingerPath(std::string paht_singer);
   bool isTempered();
+  Note* getNextNote(Note *note);
+  Note* getPrevNote(Note *note);
 
  private:
   Score(const Score& other);
