@@ -7,25 +7,22 @@ const char WavFormat::fact[] = {'f','a','c','t'};
 const char WavFormat::data[] = {'d','a','t','a'};
 const char WavFormat::list[] = {'L','I','S','T'};
 
-bool WavFormat::operator==(const WavFormat& other) const
+WavFormat& WavFormat::operator=(const WavFormat& other)
 {
-  return chunkSize == other.chunkSize
-    && wFormatTag == other.wFormatTag
-    && wChannels == other.wChannels
-    && dwSamplesPerSec == other.dwSamplesPerSec
-    && dwAvgBytesPerSec == other.dwAvgBytesPerSec
-    && wBlockAlign == other.wBlockAlign
-    && wBitsPerSamples == other.wBitsPerSamples;
-}
-
-bool WavFormat::operator!=(const WavFormat& other) const
-{
-  return !(*this == other);
+  if (this != &other) {
+    wFormatTag = other.wFormatTag;
+    wChannels = other.wChannels;
+    dwSamplesPerSec = other.dwSamplesPerSec;
+    dwAvgBytesPerSec = other.dwAvgBytesPerSec;
+    wBlockAlign = other.wBlockAlign;
+    wBitsPerSamples = other.wBitsPerSamples;
+  }
+  return *this;
 }
 
 void WavFormat::setDefaultValues()
 {
-  wFormatTag = 1; //rinear
+  wFormatTag = 1; //linear
   wChannels = 1; //monoral
   dwSamplesPerSec = 44100;
   dwAvgBytesPerSec = 88200;

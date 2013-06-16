@@ -3,7 +3,13 @@
 
 class WavFormat {
  public:
-  static const long chunkSize = 16;
+  WavFormat() : chunkSize(const_chunk_size) {};
+  explicit WavFormat(long chunkSize) : chunkSize(chunkSize) {};
+  virtual ~WavFormat(){}
+  WavFormat& operator=(const WavFormat& other);
+
+  static const long const_chunk_size = 16;
+  const long chunkSize;
   short wFormatTag;
   unsigned short wChannels;
   unsigned long dwSamplesPerSec;
@@ -26,9 +32,6 @@ class WavFormat {
   static const char fact[]; //fact chunk
   static const char data[]; //data chunk
   static const char list[]; //list chunk
-
-  bool operator==(const WavFormat& other) const;
-  bool operator!=(const WavFormat& other) const;
 };
 
 #endif

@@ -9,9 +9,9 @@ WavData::WavData(vector<double> data_vector)
   setData(data_vector);
 }
 
-WavData::WavData(const short* data, long size)
+WavData::WavData(const short* data, long chunk_size)
 {
-  setData(data, size);
+  setData(data, chunk_size);
 }
 
 WavData::WavData(const WavData& other)
@@ -20,24 +20,6 @@ WavData::WavData(const WavData& other)
 }
 
 WavData::~WavData(){}
-
-WavData& WavData::operator=(const WavData& other)
-{
-  if (this != &other) {
-    data = other.getData();
-  }
-  return *this;
-}
-
-bool WavData::operator==(const WavData& other) const
-{
-  return data==other.getData();
-}
-
-bool WavData::operator!=(const WavData& other) const
-{
-  return !(*this == other);
-}
 
 vector<short> WavData::getWavData() const
 {
@@ -56,14 +38,14 @@ vector<double>::const_iterator WavData::getDataIterator() const
   return data.begin();
 }
 
-void WavData::setData(const short* data, long size)
+void WavData::setData(const short* data, long chunk_size)
 {
-  if (data==0 || size==0) {
+  if (data==0 || chunk_size==0) {
     cerr << "[WavData::setData] can't assign null data";
     return;
   }
 
-  this->data.assign(size/sizeof(short), 0);
+  this->data.assign(chunk_size/sizeof(short), 0);
   for (int i=0; i<this->data.size(); i++) {
     this->data[i] = data[i]/32768.0;
   }

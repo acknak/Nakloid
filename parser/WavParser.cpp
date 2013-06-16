@@ -193,7 +193,7 @@ void WavParser::setWavFileFormat(ofstream *ofs, WavFormat format, long wav_size)
   ofs->write((char*)&wav_size, sizeof(long));
   ofs->write((char*)WavFormat::wave, sizeof(char)*4);
   ofs->write((char*)WavFormat::fmt, sizeof(char)*4);
-  ofs->write((char*)&(WavFormat::chunkSize), sizeof(long));
+  ofs->write((char*)&(format.chunkSize), sizeof(long));
   ofs->write((char*)&(format.wFormatTag), sizeof(short));
   ofs->write((char*)&(format.wChannels), sizeof(short));
   ofs->write((char*)&(format.dwSamplesPerSec), sizeof(long));
@@ -207,7 +207,7 @@ void WavParser::setWavFile(ofstream *ofs, WavFormat format, const vector<double>
 
   dbl2sht(data, &output_data);
   long data_chunk_size = output_data.size() * sizeof(short);
-  long wav_size = data_chunk_size + WavFormat::chunkSize + 12;
+  long wav_size = data_chunk_size + format.chunkSize + 12;
 
   setWavFileFormat(ofs, format, wav_size);
 

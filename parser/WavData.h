@@ -13,22 +13,18 @@ class WavData {
  public:
   WavData();
   explicit WavData(std::vector<double> data_vector);
-  WavData(const short* data, long size);
+  WavData(const short* data, long chunk_size);
   WavData(const WavData& other);
-  ~WavData();
-
-  WavData& operator = (const WavData& other);
-  bool operator==(const WavData& other) const;
-  bool operator!=(const WavData& other) const;
+  virtual ~WavData();
 
   std::vector<short> getWavData() const;
   std::vector<double> getData() const;
   std::vector<double>::const_iterator getDataIterator() const;
-  void setData(const short* data, long size);
+  void setData(const short* data, long chunk_size);
   void setData(std::vector<double> data);
   long getSize() const;
 
- private:
+ protected:
   std::vector<double> data;
 };
 

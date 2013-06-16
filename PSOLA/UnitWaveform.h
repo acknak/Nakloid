@@ -9,17 +9,35 @@
 namespace uw {
   class UnitWaveformFormat : public WavFormat {
    public:
-    static const long chunkSize = 30; // 16(linearPCM)+14(extension)
+    UnitWaveformFormat() : WavFormat(const_chunk_size) {}
+    explicit UnitWaveformFormat(long chunkSize) : WavFormat(chunkSize) {}
+    virtual ~UnitWaveformFormat() {}
+    UnitWaveformFormat& operator=(const WavFormat& other){
+      WavFormat::operator=(other);return *this;
+    }
+    UnitWaveformFormat& operator=(const UnitWaveformFormat& other){
+      WavFormat::operator=(other);wLobeSize=other.wLobeSize;dwRepeatStart=other.dwRepeatStart;wF0=other.wF0;return *this;
+    }
+
+    static const long const_chunk_size = 30; //16(linearPCM)+14(extension)
     static const unsigned short UnitWaveformFormatTag = 0xFFFF;
-    static const short wAdditionalSize = 12;
+    static const short wAdditionalSize = 10; //short(2byte)+long(4byte)+float(4byte)
     short wLobeSize;
     long dwRepeatStart;
-    double wF0;
+    float wF0;
   };
 
   class UnitWaveformFact {
    public:
-    static const long chunkSize = 12;
+    explicit UnitWaveformFact() : chunkSize(const_chunk_size) {};
+    explicit UnitWaveformFact(long chunkSize) : chunkSize(chunkSize) {};
+    virtual ~UnitWaveformFact(){}
+    UnitWaveformFact& operator=(const UnitWaveformFact& other){
+      dwPitchLeft=other.dwPitchLeft;dwPitchRight=other.dwPitchRight;dwPosition=other.dwPosition;return *this;
+    }
+
+    static const long const_chunk_size = 12;
+    const long chunkSize;
     long dwPitchLeft;
     long dwPitchRight;
     long dwPosition;
