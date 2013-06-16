@@ -15,53 +15,58 @@
 #include "./parser/WavFormat.h"
 
 namespace nak {
-  // General
-  extern enum ScoreMode{score_mode_nak, score_mode_ust, score_mode_smf} score_mode;
-  extern enum PitchesMode{pitches_mode_pit, pitches_mode_lf0, pitches_mode_none} pitches_mode;
-  extern std::string path_pitches;
+  enum ScoreMode {
+    score_mode_nak, score_mode_ust, score_mode_smf
+  };
+  enum PitchesMode{
+    pitches_mode_pit, pitches_mode_lf0, pitches_mode_none
+  };
+
+  // Input
   extern std::string path_singer;
-  extern std::string path_song;
-  extern long margin;
+  extern std::string path_prefix_map;
+
+  extern enum ScoreMode score_mode;
+  extern std::string path_nak;
+  extern std::string path_ust;
+  extern std::string path_smf;
+  extern short track;
+  extern std::string path_lyrics;
+
+  extern enum PitchesMode pitches_mode;
+  extern std::string path_pitches;
   extern unsigned char pitch_frame_length;
 
-  // General nak
-  extern std::string path_nak;
-
-  // General ust
-  extern std::string path_ust;
-
-  // General smf
-  extern short track;
-  extern std::string path_smf;
-  extern std::string path_lyrics;
+  // Output
+  extern long margin;
+  extern std::string path_song;
+  extern std::string path_output_nak;
+  extern std::string path_output_pit;
 
   // Nakloid
   extern bool cache;
   extern std::string path_log;
   extern bool auto_vowel_combining;
   extern double vowel_combining_volume;
-  extern std::string path_output_nak;
-  extern std::string path_output_pit;
-  extern std::string path_prefix_map;
 
   // PitchMarker
   extern short pitch_margin;
 
   // UnitWaveformMaker
-  extern short target_rms;
+  extern double target_rms;
   extern unsigned char unit_waveform_lobe;
   extern bool is_normalize;
 
   // UnitWaveformOverlapper
   extern double fade_stretch;
-  extern bool compressor;
-  extern double threshold_x;
-  extern double threshold_y;
   extern double max_volume;
+  extern bool compressor;
+  extern double threshold;
+  extern double ratio;
 
   // Note
-  extern short ms_front_edge;
-  extern short ms_back_edge;
+  extern short ms_front_padding;
+  extern short ms_back_padding;
 
   // PitchArranger
   extern short ms_overshoot;
@@ -96,8 +101,8 @@ namespace nak {
   extern double getRMS(std::vector<double> wav);
   extern double getMean(std::vector<double> wav);
   extern double getVar(std::vector<double> wav, double mean);
-  extern double getDB(long wav_value);
-  extern short reverseDB(double db);
+  extern std::pair<bool, double> val2dB(double wav_value);
+  extern double dB2val(std::pair<bool, double> dB);
 
   extern std::vector<double> getHann(long len);
   extern std::vector<double> getTri(long len);

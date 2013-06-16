@@ -10,6 +10,7 @@
 #include <iomanip>
 #include "WavFormat.h"
 #include "WavData.h"
+class WavData;
 
 // Reference Object
 class WavParser {
@@ -22,10 +23,13 @@ class WavParser {
   bool isWavFile();
   bool parse();
   void normalize();
-  void debug_txt(std::string output);
-  void debug_wav(std::string output);
 
-  static void setWavHeader(std::ofstream *ofs, WavFormat format, long size_all);
+  static void setWavFileFormat(std::ofstream *ofs, WavFormat format, long wav_size);
+  static void setWavFile(std::ofstream *ofs, WavFormat format, const std::vector<double>* data);
+  static void WavParser::sht2dbl(const std::vector<short>* from, std::vector<double>* to);
+  static void WavParser::sht2dbl(const std::vector<short>::const_iterator from, std::vector<double>* to);
+  static void WavParser::dbl2sht(const std::vector<double>* from, std::vector<short>* to);
+  static void WavParser::dbl2sht(const std::vector<double>::const_iterator from, std::vector<short>* to);
 
   // accessor
   std::string getInput();

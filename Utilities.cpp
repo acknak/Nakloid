@@ -4,54 +4,51 @@ using namespace std;
 using namespace nak;
 
 namespace nak {
-  // General
-  enum ScoreMode score_mode;
-  enum PitchesMode pitches_mode;
-  string path_pitches;
+  // Input
   string path_singer;
-  string path_song;
+  string path_prefix_map;
 
-  long margin;
-  unsigned char pitch_frame_length;
-
-  // General nak
+  enum ScoreMode score_mode;
   string path_nak;
-
-  // General ust
   string path_ust;
-
-  // General smf
-  short track;
   string path_smf;
+  short track;
   string path_lyrics;
 
+  enum PitchesMode pitches_mode;
+  string path_pitches;
+  unsigned char pitch_frame_length;
+
+  // Output
+  string path_song;
+  string path_output_nak;
+  string path_output_pit;
+
   // Nakloid
+  long margin;
   bool cache;
   string path_log;
   bool auto_vowel_combining;
   double vowel_combining_volume;
-  string path_output_nak;
-  string path_output_pit;
-  string path_prefix_map;
 
   // PitchMarker
   short pitch_margin;
 
   // UnitWaveformMaker
-  short target_rms;
+  double target_rms;
   unsigned char unit_waveform_lobe;
   bool is_normalize;
 
   // UnitWaveformOverlapper
   double fade_stretch;
-  bool compressor;
-  double threshold_x;
-  double threshold_y;
   double max_volume;
+  bool compressor;
+  double threshold;
+  double ratio;
 
   // Note
-  short ms_front_edge;
-  short ms_back_edge;
+  short ms_front_padding;
+  short ms_back_padding;
 
   // PitchArranger
   short ms_overshoot;
@@ -104,24 +101,27 @@ bool nak::parse(string path_ini)
     cerr << "[nak::parse] can't parse Nakloid.ini" << endl;
   }
 
-  // General
-  string tmp_score = ptree.get<string>("General.score_mode", "nak");
+  // Input
+  path_singer = ptree.get<string>("Input.path_singer", "");
+  path_prefix_map = ptree.get<string>("Input.path_prefix_map", "");
+
+  string tmp_score = ptree.get<string>("Input.score_mode", "nak");
   if (tmp_score == "nak") {
     score_mode = score_mode_nak;
-    path_nak = ptree.get<string>("General.path_nak", "score.nak");
+    path_nak = ptree.get<string>("Input.path_nak", "score.nak");
   } else if (tmp_score == "ust") {
     score_mode = score_mode_ust;
-    path_ust = ptree.get<string>("General.path_ust", "score.ust");
+    path_ust = ptree.get<string>("Input.path_ust", "score.ust");
   } else if (tmp_score == "smf") {
     score_mode = score_mode_smf;
-    track = ptree.get<short>("General.track", 1);
-    path_smf = ptree.get<string>("General.path_smf", "score.mid");
-    path_lyrics = ptree.get<string>("General.path_lyrics", "lyrics.txt");
+    track = ptree.get<short>("Input.track", 1);
+    path_smf = ptree.get<string>("Input.path_smf", "score.mid");
+    path_lyrics = ptree.get<string>("Input.path_lyrics", "lyrics.txt");
   } else {
     cerr << "[nak::parse] can't recognize score_mode" << endl;
     return false;
   }
-  string tmp_pitches = ptree.get<string>("General.pitches_mode", "");
+  string tmp_pitches = ptree.get<string>("Input.pitches_mode", "");
   if (tmp_pitches == "pit") {
     pitches_mode = pitches_mode_pit;
   } else if (tmp_pitches == "lf0") {
@@ -129,39 +129,39 @@ bool nak::parse(string path_ini)
   } else {
     pitches_mode = pitches_mode_none;
   }
-  path_pitches = ptree.get<string>("General.path_pitches", "");
-  path_singer = ptree.get<string>("General.path_singer", "");
-  path_song = ptree.get<string>("General.path_song", "");
-  margin = ptree.get<long>("General.margin", 0);
-  pitch_frame_length = ptree.get<unsigned char>("General.pitch_frame_length", 1);
+  path_pitches = ptree.get<string>("Input.path_pitches", "");
+  pitch_frame_length = ptree.get<unsigned char>("Input.pitch_frame_length", 1);
+
+  // Output
+  margin = ptree.get<long>("Output.margin", 0);
+  path_song = ptree.get<string>("Output.path_song", "");
+  path_output_nak = ptree.get<string>("Output.path_output_nak", "");
+  path_output_pit = ptree.get<string>("Output.path_output_pit", "");
 
   // Nakloid
   cache = ptree.get<bool>("Nakloid.cache", false);
   path_log = ptree.get<string>("Nakloid.path_log", "");
   auto_vowel_combining = ptree.get<bool>("Nakloid.auto_vowel_combining", false);
   vowel_combining_volume = ptree.get<double>("Nakloid.vowel_combining_volume", 1.0);
-  path_output_nak = ptree.get<string>("Nakloid.path_output_nak", "");
-  path_output_pit = ptree.get<string>("Nakloid.path_output_pit", "");
-  path_prefix_map = ptree.get<string>("Nakloid.path_prefix_map", "");
 
   // PitchMarker
   pitch_margin = ptree.get<short>("PitchMarker.pitch_margin", 10);
 
   // UnitWaveformMaker
-  target_rms = ptree.get<short>("UnitWaveformMaker.target_rms", 2400);
+  target_rms = ptree.get<double>("UnitWaveformMaker.target_rms", 0.05);
   unit_waveform_lobe = ptree.get<unsigned char>("UnitWaveformMaker.unit_waveform_lobe", 3);
   is_normalize = ptree.get<bool>("UnitWaveformMaker.normalize", false);
 
   // UnitWaveformOverlapper
   fade_stretch = ptree.get<double>("UnitWaveformOverlapper.fade_stretch", 1.0);
-  compressor = ptree.get<bool>("UnitWaveformOverlapper.compressor", false);
-  threshold_x = ptree.get<double>("UnitWaveformOverlapper.threshold_x", 0.98);
-  threshold_y = ptree.get<double>("UnitWaveformOverlapper.threshold_y", 0.98);
   max_volume = ptree.get<double>("UnitWaveformOverlapper.max_volume", 0.9);
+  compressor = ptree.get<bool>("UnitWaveformOverlapper.compressor", false);
+  threshold = ptree.get<double>("UnitWaveformOverlapper.threshold", -18.0);
+  ratio = ptree.get<double>("UnitWaveformOverlapper.threshold_y", 2.5);
 
   // Note
-  ms_front_edge = ptree.get<short>("Note.ms_front_edge", 5);
-  ms_back_edge = ptree.get<short>("Note.ms_back_edge", 35);
+  ms_front_padding = ptree.get<short>("Note.ms_front_padding", 5);
+  ms_back_padding = ptree.get<short>("Note.ms_back_padding", 35);
 
   // PitchArranger
   vibrato = ptree.get<bool>("PitchArranger.vibrato", false);
@@ -215,8 +215,8 @@ vector<double> nak::normalize(vector<double> wav, double target_mean, double tar
 
 vector<double> nak::normalize(vector<double> wav, short target_max, short target_min)
 {
-  short wav_max = *max_element(wav.begin(), wav.end());
-  short wav_min = *min_element(wav.begin(), wav.end());
+  double wav_max = *max_element(wav.begin(), wav.end());
+  double wav_min = *min_element(wav.begin(), wav.end());
 
   for (int i=0; i<wav.size(); i++)
     wav[i] -= ((wav_max+wav_min)/2.0);
@@ -254,19 +254,23 @@ double nak::getVar(vector<double> wav, double mean)
   return sqrt(var);
 }
 
-double nak::getDB(long wav_value)
+pair<bool, double> nak::val2dB(double wav_value)
 {
-  if (wav_value == 0)
-    return 1;
-  double tmp = log10(abs(wav_value)/32768.0) * 20;
-  return (tmp>0)?1:tmp;
+  if (wav_value >= 1.0)
+    wav_value = 32768.0/32767.0;
+  else if (wav_value<= -1.0)
+    wav_value = -32769.0/32768.0;
+  else if (wav_value == 0)
+    return make_pair(true, 1.0);
+
+  return make_pair(wav_value>0, log10(abs(wav_value))*20);
 }
 
-short nak::reverseDB(double db)
+double nak::dB2val(pair<bool, double> dB)
 {
-  if (db > 0)
-    return 32767;
-  return (db>0)?32726:pow(10,db/20)*32767;
+  if (dB.second > 0)
+    return 0.0;
+  return pow(10, dB.second/20)*(dB.first?1:-1);
 }
 
 vector<double> nak::getTri(long len)

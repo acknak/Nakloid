@@ -23,7 +23,7 @@ bool uw::isUwcFile(string filename)
   long chunkSize = 0;
   ifs.seekg(16, ios::beg);
   ifs.read((char*)&chunkSize, sizeof(long));
-  if (chunkSize != 16+UnitWaveformFormat::wAdditionalSize+sizeof(short))
+  if (chunkSize != UnitWaveformFormat::chunkSize)
     return false;
 
   // check format ID
@@ -45,8 +45,7 @@ UnitWaveformContainer uw::load(string filename)
     ifstream ifs(filename.c_str(), ios_base::binary);
 
     // fmt chunk
-    ifs.seekg(16, ios_base::beg);
-    ifs.read((char*)&uwc.format.chunkSize, sizeof(long));
+    ifs.seekg(20, ios_base::beg);
     ifs.read((char*)&uwc.format.wFormatTag, sizeof(short));
     ifs.read((char*)&uwc.format.wChannels, sizeof(short));
     ifs.read((char*)&uwc.format.dwSamplesPerSec, sizeof(long));
@@ -105,9 +104,9 @@ UnitWaveformContainer uw::load(string filename)
 bool uw::save(string filename, UnitWaveformContainer *uwc)
 {
   short wAdditionalSize = UnitWaveformFormat::wAdditionalSize;
-  long size_all = 28 + wAdditionalSize + sizeof(short);
+  long size_all = wAdditionalSize + sizeof(short);
   ofstream ofs(filename.c_str(), ios_base::trunc|ios_base::binary);
-  WavParser::setWavHeader(&ofs, uwc->format, size_all);
+  WavParser::setWavFileFormat(&ofs, uwc->format, size_all);
 
   ofs.write((char*)&(wAdditionalSize), sizeof(short));
   ofs.write((char*)&(uwc->format.wLobeSize), sizeof(short));
@@ -117,17 +116,18 @@ bool uw::save(string filename, UnitWaveformContainer *uwc)
   // fact chunk & data chunk
   vector<UnitWaveform> unit_waveforms = uwc->unit_waveforms;
   for(vector<UnitWaveform>::iterator it=uwc->unit_waveforms.begin(); it!=uwc->unit_waveforms.end(); ++it) {
-    long factChunkSize = UnitWaveformFact::chunkSize;
-    long dataChunkSize = it->data.getWavDataSize();
+    vector<short> cache_data(it->data.getSize(), 0);
+    WavParser::dbl2sht(it->data.getDataIterator(), &cache_data);
+    long dataChunkSize = it->data.getSize()*sizeof(short);
     ofs.write((char*)WavFormat::fact, sizeof(char)*4);
-    ofs.write((char*)&(factChunkSize), sizeof(long));
+    ofs.write((char*)&UnitWaveformFact::chunkSize, sizeof(long));
     ofs.write((char*)&(it->fact.dwPitchLeft), sizeof(long));
     ofs.write((char*)&(it->fact.dwPitchRight), sizeof(long));
     ofs.write((char*)&(it->fact.dwPosition), sizeof(long));
     ofs.write((char*)WavFormat::data, sizeof(char)*4);
     ofs.write((char*)&(dataChunkSize), sizeof(long));
-    ofs.write((char*)it->data.getData(), it->data.getWavDataSize());
-    size_all += factChunkSize + sizeof(char)*4 + sizeof(long)
+    ofs.write((char*)&it->data.getData()[0], dataChunkSize);
+    size_all += UnitWaveformFact::chunkSize + sizeof(char)*4 + sizeof(long)
       + dataChunkSize + sizeof(char)*4 + sizeof(long);
   }
   ofs.seekp(4, ios::beg);

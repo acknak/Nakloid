@@ -102,19 +102,20 @@ bool WavParser::parse()
 
   ifstream ifs(input.c_str(), ios::in | ios::binary);
   long rest_size = 0;
+  long fmtChunkSize = 0;
 
   // fmt chunk
   ifs.seekg(sizeof(char)*4, ios_base::cur);
   ifs.read((char*)&rest_size, sizeof(long));
   ifs.seekg(sizeof(char)*8, ios_base::cur);
-  ifs.read((char*)&format.chunkSize, sizeof(long));
+  ifs.read((char*)&fmtChunkSize, sizeof(long));
   ifs.read((char*)&format.wFormatTag, sizeof(short));
   ifs.read((char*)&format.wChannels, sizeof(short));
   ifs.read((char*)&format.dwSamplesPerSec, sizeof(long));
   ifs.read((char*)&format.dwAvgBytesPerSec, sizeof(long));
   ifs.read((char*)&format.wBlockAlign, sizeof(short));
   ifs.read((char*)&format.wBitsPerSamples, sizeof(short));
-  ifs.seekg(sizeof(char)*(format.chunkSize - 16), ios_base::cur);
+  ifs.seekg(sizeof(char)*(fmtChunkSize - 16), ios_base::cur);
 
   // data chunk
   rest_size -= 24;
@@ -164,10 +165,10 @@ void WavParser::normalize()
   for (list<WavData>::iterator it=data_chunks.begin(); it!=data_chunks.end(); ++it) {
     long max = numeric_limits<short>::min();
     long min = numeric_limits<short>::max();
-    long length = (*it).getWavDataSize()/sizeof(short);
+    long length = it->getSize();
     double avg = 0.0, rate = 1.0;
-    const short* fore_data = (*it).getData();
-    short* aft_data = new short[length];
+    vector<short> fore_data(it->getWavData());
+    vector<short> aft_data(fore_data.size(), 0);
 
     for (int i=0; i<length; i++) {
       short tmp_data = fore_data[i];
@@ -183,70 +184,66 @@ void WavParser::normalize()
       rate = (numeric_limits<short>::min()*0.5) / (avg-min);
     for (int i=0; i<length; i++)
       aft_data[i] = (fore_data[i]-avg) * rate;
-    (*it).setData(aft_data, (*it).getWavDataSize());
-
-    delete[] aft_data;
+    it->setData(&aft_data[0], aft_data.size());
   }
 }
 
-void WavParser::debug_txt(string output)
-{
-  if (&format == NULL || &data_chunks == NULL)
-    return;
-
-  ofstream ofs;
-  ofs.open(output.c_str());
-
-  ofs << "---------- format chunk ----------" << endl << endl
-      << setw(20) << "chunkSize: " << setw(8) << format.chunkSize << endl
-      << setw(20) << "wFormatTag: " << setw(8) << format.wFormatTag << endl
-      << setw(20) << "wChannels: " << setw(8) << format.wChannels << endl
-      << setw(20) << "dwSamplesPerSec: " << setw(8) << format.dwSamplesPerSec << endl
-      << setw(20) << "dwAvgBytesPerSec: " << setw(8) << format.dwAvgBytesPerSec << endl
-      << setw(20) << "wBlockAlign: " << setw(8) << format.wBlockAlign << endl
-      << setw(20) << "wBitsPerSamples: " << setw(8) << format.wBitsPerSamples << endl << endl << endl;
-
-  for (list<WavData>::iterator it=data_chunks.begin(); it!=data_chunks.end(); ++it) {
-    ofs << "---------- data chunk ----------" << endl << endl
-        << setw(20) << "chunkSize: " << setw(8) << (*it).getWavDataSize() << endl << endl
-        << "wavformData" << endl;
-    const short* tmp_wav_data = (*it).getData();
-    for (long i=0; i<(*it).getWavDataSize()/sizeof(short); i++)
-      ofs << setw(11) << tmp_wav_data[i] << endl;
-  }
-}
-
-void WavParser::debug_wav(string output)
-{
-  cout << "start wav output" << endl;
-  long size_all = 28;
-  for (list<WavData>::iterator it=data_chunks.begin(); it!=data_chunks.end(); ++it)
-    size_all += (*it).getWavDataSize() + 8;
-
-  ofstream ofs;
-  ofs.open(output.c_str(), ios_base::out|ios_base::trunc|ios_base::binary);
-  setWavHeader(&ofs, format, size_all);
-
-  for (list<WavData>::iterator it=data_chunks.begin(); it!=data_chunks.end(); ++it) {
-    ofs.write((char*)WavFormat::data, sizeof(char)*4);
-    long size = (*it).getWavDataSize();
-    ofs.write((char*)&size, sizeof(long));
-    ofs.write((char*)(*it).getData(), (*it).getWavDataSize());
-  }
-
-  ofs.close();
-}
-
-void WavParser::setWavHeader(ofstream *ofs, WavFormat format, long size_all) {
+void WavParser::setWavFileFormat(ofstream *ofs, WavFormat format, long wav_size) {
   ofs->write((char*)WavFormat::riff, sizeof(char)*4);
-  ofs->write((char*)&size_all, sizeof(long));
+  ofs->write((char*)&wav_size, sizeof(long));
   ofs->write((char*)WavFormat::wave, sizeof(char)*4);
-  ofs->write((char*)WavFormat::fmt, sizeof(char)*4); 
-  ofs->write((char*)&(format.chunkSize), sizeof(long));
+  ofs->write((char*)WavFormat::fmt, sizeof(char)*4);
+  ofs->write((char*)&(WavFormat::chunkSize), sizeof(long));
   ofs->write((char*)&(format.wFormatTag), sizeof(short));
   ofs->write((char*)&(format.wChannels), sizeof(short));
   ofs->write((char*)&(format.dwSamplesPerSec), sizeof(long));
   ofs->write((char*)&(format.dwAvgBytesPerSec), sizeof(long));
   ofs->write((char*)&(format.wBlockAlign), sizeof(short));
   ofs->write((char*)&(format.wBitsPerSamples), sizeof(short));
+}
+
+void WavParser::setWavFile(ofstream *ofs, WavFormat format, const vector<double>* data) {
+  vector<short> output_data(data->size(), 0);
+
+  dbl2sht(data, &output_data);
+  long data_chunk_size = output_data.size() * sizeof(short);
+  long wav_size = data_chunk_size + WavFormat::chunkSize + 12;
+
+  setWavFileFormat(ofs, format, wav_size);
+
+  ofs->write((char*)WavFormat::data, sizeof(char)*4);
+  ofs->write((char*)&data_chunk_size, sizeof(long));
+  ofs->write((char*)&output_data[0], data_chunk_size);
+}
+
+void WavParser::sht2dbl(const vector<short>* from, vector<double>* to)
+{
+  if (from->size() != to->size()) {
+    cerr << "[WavParser::sht2dbl] 'from' size different from 'to' size" << endl;
+    return;
+  }
+  sht2dbl(from->begin(), to);
+}
+
+void WavParser::sht2dbl(const vector<short>::const_iterator from, vector<double>* to)
+{
+  for (int i=0; i<to->size(); i++) {
+    to->at(i) = *(from+i) / 32768.0;
+  }
+}
+
+void WavParser::dbl2sht(const vector<double>* from, vector<short>* to)
+{
+  if (from->size() != to->size()) {
+    cerr << "[WavParser::dbl2sht] 'from' size different from 'to' size" << endl;
+    return;
+  }
+  dbl2sht(from->begin(), to);
+}
+
+void WavParser::dbl2sht(const vector<double>::const_iterator from, vector<short>* to)
+{
+  for (int i=0; i<to->size(); i++) {
+    to->at(i) = *(from+i) * 32767;
+  }
 }

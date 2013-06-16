@@ -27,7 +27,6 @@ Nakloid::~Nakloid()
 
 void Nakloid::loadDefaultFormat()
 {
-  format.chunkSize = 16;
   format.wFormatTag = 1;
   format.wChannels = 1;
   format.dwSamplesPerSec = 44100;

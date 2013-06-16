@@ -16,7 +16,7 @@ WavData::WavData(const short* data, long size)
 
 WavData::WavData(const WavData& other)
 {
-  data = other.getDataVector();
+  data = other.getData();
 }
 
 WavData::~WavData(){}
@@ -24,14 +24,14 @@ WavData::~WavData(){}
 WavData& WavData::operator=(const WavData& other)
 {
   if (this != &other) {
-    data = other.getDataVector();
+    data = other.getData();
   }
   return *this;
 }
 
 bool WavData::operator==(const WavData& other) const
 {
-  return data==other.getDataVector();
+  return data==other.getData();
 }
 
 bool WavData::operator!=(const WavData& other) const
@@ -39,23 +39,21 @@ bool WavData::operator!=(const WavData& other) const
   return !(*this == other);
 }
 
-const short* WavData::getData() const
+vector<short> WavData::getWavData() const
 {
-  if (data.size() == 0) {
-    cerr << "[WavData::getData] can't find wav data" << endl;
-    return 0;
-  }
-
-  vector<short> data_short(getWavDataSize()/sizeof(short), 0);
-  for (int i=0; i<data.size(); i++) {
-    data_short[i] = data[i]*32767;
-  }
-  return &data_short[0];
+  vector<short> tmp(data.size(), 0);
+  WavParser::dbl2sht(&data, &tmp);
+  return tmp;
 }
 
-vector<double> WavData::getDataVector() const
+vector<double> WavData::getData() const
 {
   return data;
+}
+
+vector<double>::const_iterator WavData::getDataIterator() const
+{
+  return data.begin();
 }
 
 void WavData::setData(const short* data, long size)
@@ -76,7 +74,7 @@ void WavData::setData(vector<double> data)
   this->data = data;
 }
 
-long WavData::getWavDataSize() const
+long WavData::getSize() const
 {
-  return data.size()/sizeof(short);
+  return data.size();
 }

@@ -5,6 +5,9 @@
 #include <cstring>
 #include <iostream>
 
+#include "WavParser.h"
+class WavParser;
+
 // Value Object
 class WavData {
  public:
@@ -17,11 +20,13 @@ class WavData {
   WavData& operator = (const WavData& other);
   bool operator==(const WavData& other) const;
   bool operator!=(const WavData& other) const;
-  const short* getData() const;
-  std::vector<double> getDataVector() const;
+
+  std::vector<short> getWavData() const;
+  std::vector<double> getData() const;
+  std::vector<double>::const_iterator getDataIterator() const;
   void setData(const short* data, long size);
   void setData(std::vector<double> data);
-  long getWavDataSize() const;
+  long getSize() const;
 
  private:
   std::vector<double> data;

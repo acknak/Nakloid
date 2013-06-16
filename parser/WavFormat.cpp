@@ -25,7 +25,6 @@ bool WavFormat::operator!=(const WavFormat& other) const
 
 void WavFormat::setDefaultValues()
 {
-  chunkSize = 16;
   wFormatTag = 1; //rinear
   wChannels = 1; //monoral
   dwSamplesPerSec = 44100;

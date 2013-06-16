@@ -99,7 +99,7 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
         WavParser wav_parser(tmp_voice.path_wav.string());
         wav_parser.addTargetTrack(0);
         if (wav_parser.parse()) {
-          vector<double> tmp_wav = (*(wav_parser.getDataChunks().begin())).getDataVector();
+          vector<double> tmp_wav = (*(wav_parser.getDataChunks().begin())).getData();
           vector<double>::iterator it_tmp_wav_cons = tmp_wav.begin()+((tmp_voice.offs+tmp_voice.cons)/1000.0*wav_parser.getFormat().dwSamplesPerSec);
           vector<double>::iterator it_tmp_wav_min = it_tmp_wav_cons;
           short win_size = wav_parser.getFormat().dwSamplesPerSec / tmp_voice.getFrq();

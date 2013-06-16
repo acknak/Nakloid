@@ -9,6 +9,7 @@
 namespace uw {
   class UnitWaveformFormat : public WavFormat {
    public:
+    static const long chunkSize = 30; // 16(linearPCM)+14(extension)
     static const unsigned short UnitWaveformFormatTag = 0xFFFF;
     static const short wAdditionalSize = 12;
     short wLobeSize;

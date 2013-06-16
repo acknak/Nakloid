@@ -144,11 +144,11 @@ short Note::getFrontMargin()
   }
 
   if (isVCV()) {
-    long tmp_margin = (note_prev->getPronEnd()-note_prev->getBackMargin()) - getPronStart();
+    short tmp_margin = (note_prev->getPronEnd()-note_prev->getBackMargin()) - getPronStart();
     if (tmp_margin > 0) {
-      if (tmp_margin > getOvrl()-nak::ms_front_edge) {
-        long test = getOvrl()-nak::ms_front_edge;
-        return getOvrl()-nak::ms_front_edge;
+      if (tmp_margin > getOvrl()-nak::ms_front_padding) {
+        long test = getOvrl()-nak::ms_front_padding;
+        return getOvrl()-nak::ms_front_padding;
       } else {
         return tmp_margin;
       }
@@ -165,11 +165,11 @@ short Note::getBackMargin()
   }
 
   if (note_next->isVCV()) {
-    long tmp_margin = getPronEnd() - note_next->getPronStart();
+    short tmp_margin = getPronEnd() - note_next->getPronStart();
     if (tmp_margin > 0) {
-      if (getPronEnd()-tmp_margin-nak::ms_back_edge < getPronStart()+getCons()) {
-        long test = getPronEnd() - nak::ms_back_edge - (getPronStart()+getCons());
-        return getPronEnd() - nak::ms_back_edge - (getPronStart()+getCons());
+      if (getPronEnd()-tmp_margin-nak::ms_back_padding < getPronStart()+getCons()) {
+        long test = getPronEnd() - nak::ms_back_padding - (getPronStart()+getCons());
+        return getPronEnd() - nak::ms_back_padding - (getPronStart()+getCons());
       } else {
         return tmp_margin;
       }
@@ -180,7 +180,7 @@ short Note::getBackMargin()
 
 short Note::getFrontPadding()
 {
-  return (isVCV())?getOvrl()-getFrontMargin():nak::ms_front_edge;
+  return (isVCV())?getOvrl()-getFrontMargin():nak::ms_front_padding;
 }
 
 short Note::getBackPadding()
@@ -191,7 +191,7 @@ short Note::getBackPadding()
       return note_next->getFrontPadding();
     }
   }
-  return nak::ms_back_edge;
+  return nak::ms_back_padding;
 }
 
 string Note::getPron()

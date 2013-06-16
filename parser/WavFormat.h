@@ -3,7 +3,7 @@
 
 class WavFormat {
  public:
-  long chunkSize;
+  static const long chunkSize = 16;
   short wFormatTag;
   unsigned short wChannels;
   unsigned long dwSamplesPerSec;

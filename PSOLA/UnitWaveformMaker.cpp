@@ -82,8 +82,8 @@ bool UnitWaveformMaker::makeUnitWaveform(vector<double> voice, short pitch, bool
   // make unit waveforms
   long sub_fade_start = getFadeStartSub();
   {
-    double fade_scale = nak::target_rms/nak::getRMS(makeUnitWaveform(sub_fade_start, pitch).data.getDataVector());
-    double ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeUnitWaveform(0, pitch).data.getDataVector()):1;
+    double fade_scale = nak::target_rms/nak::getRMS(makeUnitWaveform(sub_fade_start, pitch).data.getData());
+    double ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeUnitWaveform(0, pitch).data.getData()):1;
     unit_waveforms.reserve(pitch_marks.size());
     for (int i=0; i<pitch_marks.size(); i++) {
       double scale = 1.0;
@@ -102,12 +102,12 @@ bool UnitWaveformMaker::makeUnitWaveform(vector<double> voice, short pitch, bool
   // make self fade
   {
     long sub_rep_len = unit_waveforms.size() - sub_fade_start;
-    double fade_start_rms = nak::getRMS(unit_waveforms[sub_fade_start].data.getDataVector());
+    double fade_start_rms = nak::getRMS(unit_waveforms[sub_fade_start].data.getData());
     for (int i=0; i<sub_rep_len; i++) {
       UnitWaveform fore_wav = unit_waveforms[sub_rep_start+i];
       UnitWaveform aft_wav = unit_waveforms[sub_fade_start+i];
-      vector<double> fore_wav_data = fore_wav.data.getDataVector();
-      vector<double> aft_wav_data = aft_wav.data.getDataVector();
+      vector<double> fore_wav_data = fore_wav.data.getData();
+      vector<double> aft_wav_data = aft_wav.data.getData();
 
       long left_diff = aft_wav.fact.dwPitchLeft - fore_wav.fact.dwPitchLeft;
       if (left_diff < 0) {

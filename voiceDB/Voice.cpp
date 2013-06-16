@@ -161,7 +161,7 @@ const UnitWaveformContainer* Voice::getUwc() const
     if (!wav_parser.parse()) {
       return 0;
     }
-    wav_data = (*(wav_parser.getDataChunks().begin())).getDataVector();
+    wav_data = (*(wav_parser.getDataChunks().begin())).getData();
     wav_fs = wav_parser.getFormat().dwSamplesPerSec;
   }
 
@@ -203,7 +203,6 @@ const UnitWaveformContainer* Voice::getUwc() const
   // output uwc
   if (nak::cache) {
     uwc->format.setDefaultValues();
-    uwc->format.chunkSize += UnitWaveformFormat::wAdditionalSize + sizeof(short);
     uwc->format.wFormatTag = UnitWaveformFormat::UnitWaveformFormatTag;
     uwc->format.dwSamplesPerSec = wav_fs;
     uw::save(path_uwc.string(), uwc);

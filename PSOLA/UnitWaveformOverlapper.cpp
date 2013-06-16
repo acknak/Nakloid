@@ -73,7 +73,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* uwc, long 
       ++it_unit_waveform;
 
     // overlap
-    vector<double> win = it_unit_waveform->data.getDataVector();
+    vector<double> win = it_unit_waveform->data.getData();
     long win_start = *it_pitchmarks - it_unit_waveform->fact.dwPitchLeft;
     long win_end = *it_pitchmarks + it_unit_waveform->fact.dwPitchRight;
     if (win_start < 0) {
@@ -99,35 +99,33 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* uwc, long 
 
 void UnitWaveformOverlapper::outputWav(string output)
 {
-  if (nak::compressor) {
-    cout << "compressing..." << endl << endl;
-    if (nak::max_volume > 1.0)
-      nak::max_volume = 1.0;
-    else if (nak::max_volume < 0)
-      nak::max_volume = 0;
-    long tmp_max_volume = max(*max_element(output_wav.begin(), output_wav.end()),*max_element(output_wav.begin(), output_wav.end())*-1);
-    double tmp_max_db = log10((double)tmp_max_volume) * 20;
-    double border_db_x = log10(pow(32767*nak::max_volume,2.0)) * 10 * nak::threshold_x;
-    double slope_fore = nak::threshold_y / nak::threshold_x;
-    double border_db_y = border_db_x * slope_fore;
-    double slope_aft =  (border_db_y/nak::threshold_y-border_db_y) / (tmp_max_db-border_db_x);
+  cout << "normalize..." << endl << endl;
+  double tmp_max_volume = max(*max_element(output_wav.begin(), output_wav.end()),*min_element(output_wav.begin(), output_wav.end())*-1);
+  if (tmp_max_volume > nak::max_volume) {
+    double tmp_scale = nak::max_volume / tmp_max_volume;
     for (int i=0; i<output_wav.size(); i++) {
-      if (output_wav[i] == 0)
-        continue;
-      double tmp_db = log10(pow(output_wav[i],2.0)) * 10;
-      if (tmp_db < border_db_x)
-        output_wav[i] *= pow(10, (tmp_db*slope_fore-tmp_db)/20);
-      else
-        output_wav[i] *= pow(10, ((tmp_db-border_db_x)*slope_aft+border_db_y-tmp_db)/20);
+      output_wav[i] *= tmp_scale;
     }
   }
-  vector<short> tmp_output_wav(output_wav.begin(), output_wav.end());
+  if (nak::compressor) {
+    cout << "compressing..." << endl << endl;
+    for (int i=0; i<output_wav.size(); i++) {
+      pair<bool, double> tmp_dB = nak::val2dB(output_wav[i]);
+      if (tmp_dB.second<1.0 && tmp_dB.second>nak::threshold) {
+        tmp_dB.second -= (tmp_dB.second - nak::threshold) / nak::ratio;
+        output_wav[i] = nak::dB2val(tmp_dB);
+      }
+    }
+  }
+
+  vector<short> output_wav_short(output_wav.size(), 0);
+  WavParser::dbl2sht(&output_wav, &output_wav_short);
   long size = output_wav.size()*sizeof(short);
   ofstream ofs(output.c_str(), ios_base::out|ios_base::trunc|ios_base::binary);
-  WavParser::setWavHeader(&ofs, format, size+28);
+  WavParser::setWavFileFormat(&ofs, format, size+28);
   ofs.write((char*)WavFormat::data, sizeof(char)*4);
   ofs.write((char*)&size, sizeof(long));
-  ofs.write((char*)(&tmp_output_wav[0]), size);
+  ofs.write((char*)&output_wav_short[0], size);
   ofs.close();
 }
 
