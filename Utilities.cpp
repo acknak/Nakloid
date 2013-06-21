@@ -63,7 +63,7 @@ namespace nak {
   bool vibrato;
   bool overshoot;
   bool preparation;
-  bool interpolation;
+  bool completion;
   bool finefluctuation;
 
   // internal parameters
@@ -169,7 +169,7 @@ bool nak::parse(string path_ini)
   vibrato = ptree.get<bool>("PitchArranger.vibrato", false);
   overshoot = ptree.get<bool>("PitchArranger.overshoot", false);
   preparation = ptree.get<bool>("PitchArranger.preparation", false);
-  interpolation = ptree.get<bool>("PitchArranger.interpolation", false);
+  completion = ptree.get<bool>("PitchArranger.completion", true);
   finefluctuation = ptree.get<bool>("PitchArranger.finefluctuation", false);
   ms_overshoot = ptree.get<short>("PitchArranger.ms_overshoot", 50);
   pitch_overshoot = ptree.get<double>("PitchArranger.pitch_overshoot", 3.0);

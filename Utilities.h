@@ -81,7 +81,7 @@ namespace nak {
   extern bool vibrato;
   extern bool overshoot;
   extern bool preparation;
-  extern bool interpolation;
+  extern bool completion;
   extern bool finefluctuation;
 
   // internal parameters

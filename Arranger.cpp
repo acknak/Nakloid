@@ -24,8 +24,8 @@ void Arranger::arrange(VoiceDB *voice_db, Score *score)
   for (list<Note>::iterator it_notes=score->notes.begin();it_notes!=score->notes.end();++it_notes) {
     if (nak::vibrato)
       vibrato(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd());
-    if (nak::interpolation)
-      interpolation(pitches.begin(), it_notes->getPronStart(), it_notes->getPronEnd(), it_notes->getBasePitchHz());
+    if (nak::completion)
+      completion(pitches.begin(), it_notes->getPronStart(), it_notes->getPronEnd(), it_notes->getBasePitchHz());
     if (nak::overshoot)
       if (it_notes!=score->notes.begin() && it_notes->getStart()==boost::prior(it_notes)->getEnd())
         overshoot(pitches.begin()+it_notes->getStart(), pitches.begin()+it_notes->getEnd(), *(pitches.begin()+boost::prior(it_notes)->getEnd()-1));
@@ -130,7 +130,7 @@ void Arranger::preparation(vector<float>::iterator it_pitches_begin, vector<floa
       *(rit_pitches_begin+i) += -diff + (diff/(rit_pitches_end-rit_pitches_begin)*i);
 }
 
-void Arranger::interpolation(vector<float>::iterator it_pitches, long ms_pron_start, long ms_pron_end, float target_pitch)
+void Arranger::completion(vector<float>::iterator it_pitches, long ms_pron_start, long ms_pron_end, float target_pitch)
 {
   for (long i=0; i<ms_pron_end-ms_pron_start; i++)
     if (*(it_pitches+ms_pron_start+i) == 0)
