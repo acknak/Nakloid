@@ -59,6 +59,7 @@ namespace nak {
 
   // UnitWaveformOverlapper
   extern double fade_stretch;
+  extern bool interpolation;
   extern double max_volume;
   extern bool compressor;
   extern double threshold;

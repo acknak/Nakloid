@@ -41,6 +41,7 @@ namespace nak {
 
   // UnitWaveformOverlapper
   double fade_stretch;
+  bool interpolation;
   double max_volume;
   bool compressor;
   double threshold;
@@ -154,6 +155,7 @@ bool nak::parse(string path_ini)
 
   // UnitWaveformOverlapper
   fade_stretch = ptree.get<double>("UnitWaveformOverlapper.fade_stretch", 1.0);
+  interpolation = ptree.get<bool>("UnitWaveformOverlapper.interpolation", false);
   max_volume = ptree.get<double>("UnitWaveformOverlapper.max_volume", 0.9);
   compressor = ptree.get<bool>("UnitWaveformOverlapper.compressor", false);
   threshold = ptree.get<double>("UnitWaveformOverlapper.threshold", -18.0);
