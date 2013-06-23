@@ -153,8 +153,9 @@ UnitWaveform UnitWaveformMaker::makeUnitWaveform(short point, short pitch, doubl
 
   // set unit waveform data
   vector<double> unit_waveform_data(win_end-win_start+1, 0);
-  for (int i=0; i<unit_waveform_data.size(); i++)
+  for (int i=0; i<unit_waveform_data.size(); i++) {
     unit_waveform_data[i] = (win_start+i<0 || win_start+i>=voice.size())?0:(voice[win_start+i]*filter[i])*scale;
+  }
   unit_waveform.data.setData(unit_waveform_data);
 
   return unit_waveform;

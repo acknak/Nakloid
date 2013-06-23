@@ -144,14 +144,8 @@ short Note::getFrontMargin()
   }
 
   if (isVCV()) {
-    short tmp_margin = (note_prev->getPronEnd()-note_prev->getBackMargin()) - getPronStart();
-    if (tmp_margin > 0) {
-      if (tmp_margin > getOvrl()-nak::ms_front_padding) {
-        long test = getOvrl()-nak::ms_front_padding;
-        return getOvrl()-nak::ms_front_padding;
-      } else {
-        return tmp_margin;
-      }
+    if (note_prev->getPronEnd()-note_prev->getBackMargin()-nak::ms_back_padding > getPronStart()) {
+      return note_prev->getPronEnd()-note_prev->getBackMargin()-nak::ms_back_padding-getPronStart();
     }
   }
   return 0;
@@ -165,14 +159,10 @@ short Note::getBackMargin()
   }
 
   if (note_next->isVCV()) {
-    short tmp_margin = getPronEnd() - note_next->getPronStart();
-    if (tmp_margin > 0) {
-      if (getPronEnd()-tmp_margin-nak::ms_back_padding < getPronStart()+getCons()) {
-        long test = getPronEnd() - nak::ms_back_padding - (getPronStart()+getCons());
-        return getPronEnd() - nak::ms_back_padding - (getPronStart()+getCons());
-      } else {
-        return tmp_margin;
-      }
+    if (getPronStart()+getCons()+nak::ms_back_padding < note_next->getPronStart()+note_next->getOvrl()) {
+      return note_next->getPrec() - note_next->getOvrl();
+    } else {
+      return getPronEnd() - (getPronStart()+getCons()+nak::ms_back_padding);
     }
   }
   return 0;
@@ -180,13 +170,16 @@ short Note::getBackMargin()
 
 short Note::getFrontPadding()
 {
-  return (isVCV())?getOvrl()-getFrontMargin():nak::ms_front_padding;
+  if (isVCV() && getOvrl()>getFrontMargin()+nak::ms_back_padding) {
+    return getOvrl() - (getFrontMargin()+nak::ms_back_padding);
+  }
+  return nak::ms_back_padding;
 }
 
 short Note::getBackPadding()
 {
-  if (isVCV()) {
-    Note* note_next = score->getNextNote(this);
+  Note* note_next = score->getNextNote(this);
+  if (note_next!=0 && note_next->isVCV()) {
     if (note_next!=0) {
       return note_next->getFrontPadding();
     }
@@ -268,12 +261,12 @@ list< pair<long,short> > Note::getVelocityPoints()
 
   // return default points
   list < pair<long,short> > tmp_velocities;
-  short margin_front=getFrontMargin(), margin_back=getBackMargin();
+  short margin_front=getFrontMargin(), margin_back=getBackMargin(), padding_front=getFrontPadding(), padding_back=getBackPadding();
   tmp_velocities.push_back(make_pair(0, 0));
   tmp_velocities.push_back(make_pair(margin_front, 0));
-  tmp_velocities.push_back(make_pair(margin_front+getFrontPadding(), self.base_velocity));
-  tmp_velocities.push_back(make_pair(-margin_back-getBackPadding()-1, self.base_velocity));
-  tmp_velocities.push_back(make_pair(-margin_back-1, self.base_velocity));
+  tmp_velocities.push_back(make_pair(margin_front+padding_front, self.base_velocity));
+  tmp_velocities.push_back(make_pair(-margin_back-padding_back, self.base_velocity));
+  tmp_velocities.push_back(make_pair(-margin_back, 0));
   tmp_velocities.push_back(make_pair(-1, 0));
   return tmp_velocities;
 }
