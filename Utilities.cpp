@@ -328,3 +328,30 @@ map<string, string>::const_iterator nak::getVow2PronIt(string pron)
   } while (++it != nak::vow2pron.end());
   return it;
 }
+
+tuple<string, string, string, bool> nak::parseAlias(string alias)
+{
+  string prefix, pron=alias, suffix;
+  bool is_vcv = false;
+
+  // get prefix
+  string::size_type pos_prefix = pron.find(" ");
+  if (pron.size()>1 && pos_prefix != string::npos) {
+    prefix = pron.substr(0, pos_prefix+1);
+    pron.erase(0, pos_prefix+1);
+    if (prefix!="- " && prefix!="* ") {
+      is_vcv = true;
+    }
+  }
+
+  // get suffix
+  if (pron.size() > 2) {
+    string tmp_suffix = pron.substr(pron.size()-2);
+    if (isalpha(tmp_suffix[0]) && isdigit(tmp_suffix[1])) {
+      suffix = tmp_suffix;
+      pron.erase(pron.size()-2, 2);
+    }
+  }
+
+  return tuple<string,string,string,bool>(prefix, pron, suffix, is_vcv);
+}

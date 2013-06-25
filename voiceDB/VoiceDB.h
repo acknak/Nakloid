@@ -2,6 +2,7 @@
 #define VoiceDB_h
 
 #include <map>
+#include <tuple>
 #include <cctype>
 #include <string>
 #include <fstream>

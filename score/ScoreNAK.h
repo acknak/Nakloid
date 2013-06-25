@@ -3,6 +3,7 @@
 
 #include <list>
 #include <cmath>
+#include <tuple>
 #include <string>
 #include <cstdlib>
 #include <boost/foreach.hpp>
@@ -11,6 +12,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "Note.h"
+#include "../Utilities.h"
 #include "../parser/SmfParser.h"
 #include "../parser/SmfHandler.h"
 

@@ -35,6 +35,8 @@ class Voice {
   short prec; // preceding utterance
   short ovrl; // overlap range
 
+  std::string getAlias();
+  void setAlias(std::string alias);
   void setWavPath(std::string path_wav);
   bool hasFrq() const;
   double getFrq() const;

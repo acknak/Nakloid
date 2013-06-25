@@ -25,13 +25,17 @@ void ScoreNAK::load(string path_nak)
       tmp_note = new Note(this, id.get());
     else
       continue;
-    if (boost::optional<wstring> pron_w = pt_note.get_optional<wstring>(L"pron")) {
-      string pron;
-	    char *mbs = new char[pron_w.get().length() * MB_CUR_MAX + 1];
-	    wcstombs(mbs, pron_w.get().c_str(), pron_w.get().length() * MB_CUR_MAX + 1);
-      tmp_note->setPron(mbs);
+    if (boost::optional<wstring> alias_w = pt_note.get_optional<wstring>(L"alias")) {
+	    char *mbs = new char[alias_w.get().length() * MB_CUR_MAX + 1];
+	    wcstombs(mbs, alias_w.get().c_str(), alias_w.get().length() * MB_CUR_MAX + 1);
+      tuple<string,string,string,bool> alias = nak::parseAlias(mbs);
 	    delete [] mbs;
+      tmp_note->setPrefix(get<0>(alias));
+      tmp_note->setPron(get<1>(alias));
+      tmp_note->setSuffix(get<2>(alias));
     }
+    if (boost::optional<bool> is_vcv = pt_note.get_optional<bool>(L"vcv"))
+      tmp_note->isVCV(is_vcv);
     if (boost::optional<long> start = pt_note.get_optional<long>(L"start"))
       tmp_note->setStart(start.get());
     if (boost::optional<long> end = pt_note.get_optional<long>(L"end"))
@@ -40,6 +44,8 @@ void ScoreNAK::load(string path_nak)
       tmp_note->setPrec(prec.get());
     if (boost::optional<short> ovrl = pt_note.get_optional<short>(L"ovrl"))
       tmp_note->setOvrl(ovrl.get());
+    if (boost::optional<short> cons = pt_note.get_optional<short>(L"cons"))
+      tmp_note->setCons(cons.get());
     if (boost::optional<short> vel = pt_note.get_optional<short>(L"vel"))
       tmp_note->setBaseVelocity(vel.get());
     if (boost::optional<unsigned char> pitch = pt_note.get_optional<unsigned char>(L"pitch"))

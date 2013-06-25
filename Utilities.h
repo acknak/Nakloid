@@ -4,6 +4,7 @@
 #include <map>
 #include <list>
 #include <cmath>
+#include <tuple>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -111,6 +112,7 @@ namespace nak {
   extern double sinc(double x);
 
   extern std::map<std::string, std::string>::const_iterator getVow2PronIt(std::string pron);
+  extern std::tuple<std::string, std::string, std::string, bool> parseAlias(std::string alias);
 }
 
 #endif

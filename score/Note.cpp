@@ -22,6 +22,10 @@ Note::Note(const Note& other)
   score = other.score;
   id = other.id;
   self = other.self;
+  if (other.self.margin != 0)
+    self.margin = new pair<short,short>(*(other.self.margin));
+  if (other.self.padding != 0)
+    self.padding = new pair<short,short>(*(other.self.padding));
   if (other.self.prec != 0)
     self.prec = new short (*(other.self.prec));
   if (other.self.ovrl != 0)
@@ -32,6 +36,14 @@ Note::Note(const Note& other)
 
 Note::~Note()
 {
+  if (self.margin != 0) {
+    delete self.margin;
+    self.margin = 0;
+  }
+  if (self.padding != 0) {
+    delete self.padding;
+    self.padding = 0;
+  }
   if (self.prec != 0) {
     delete self.prec;
     self.prec = 0;
@@ -52,6 +64,10 @@ Note& Note::operator=(const Note& other)
     score = other.score;
     id = other.id;
     self = other.self;
+    if (other.self.margin != 0)
+      self.margin = new pair<short,short>(*(other.self.margin));
+    if (other.self.padding != 0)
+      self.padding = new pair<short,short>(*(other.self.padding));
     if (other.self.prec != 0)
       self.prec = new short (*(other.self.prec));
     if (other.self.ovrl != 0)
@@ -75,6 +91,12 @@ bool Note::operator==(const Note& other) const
   is_eq &= (self.base_pitch == other.self.base_pitch);
   is_eq &= (self.base_velocity == other.self.base_velocity);
   is_eq &= (self.velocity_points == other.self.velocity_points);
+  if (self.margin!=other.self.margin && self.margin!=0 && other.self.margin!=0) {
+    is_eq &= (*self.margin!=*other.self.margin);
+  }
+  if (self.padding!=other.self.padding && self.padding!=0 && other.self.padding!=0) {
+    is_eq &= (*self.padding!=*other.self.padding);
+  }
   is_eq &= (this->getPrec() == other.getPrec());
   is_eq &= (this->getOvrl() == other.getOvrl());
   is_eq &= (this->getCons() == other.getCons());
@@ -138,6 +160,10 @@ void Note::setEnd(unsigned long deltatime, unsigned short timebase, unsigned lon
 
 short Note::getFrontMargin()
 {
+  if (self.margin != 0) {
+    return self.margin->first;
+  }
+
   Note* note_prev = score->getPrevNote(this);
   if (note_prev == 0) {
     return 0;
@@ -153,6 +179,10 @@ short Note::getFrontMargin()
 
 short Note::getBackMargin()
 {
+  if (self.margin != 0) {
+    return self.margin->second;
+  }
+
   Note* note_next = score->getNextNote(this);
   if (note_next == 0){
     return 0;
@@ -168,8 +198,21 @@ short Note::getBackMargin()
   return 0;
 }
 
+void Note::setMargin(short front, short back)
+{
+  if (self.margin != 0) {
+    delete self.margin;
+    self.margin = 0;
+  }
+  self.margin = new pair<short,short>(front, back);
+}
+
 short Note::getFrontPadding()
 {
+  if (self.padding != 0) {
+    return self.padding->first;
+  }
+
   if (isVCV() && getOvrl()>getFrontMargin()+nak::ms_back_padding) {
     return getOvrl() - (getFrontMargin()+nak::ms_back_padding);
   }
@@ -178,6 +221,10 @@ short Note::getFrontPadding()
 
 short Note::getBackPadding()
 {
+  if (self.padding != 0) {
+    return self.padding->second;
+  }
+
   Note* note_next = score->getNextNote(this);
   if (note_next!=0 && note_next->isVCV()) {
     if (note_next!=0) {
@@ -185,6 +232,15 @@ short Note::getBackPadding()
     }
   }
   return nak::ms_back_padding;
+}
+
+void Note::setPadding(short front, short back)
+{
+  if (self.padding != 0) {
+    delete self.padding;
+    self.padding = 0;
+  }
+  self.padding = new pair<short,short>(front, back);
 }
 
 string Note::getPron()
@@ -376,6 +432,8 @@ void Note::initializeNoteFrame()
   self.pron = "";
   self.base_pitch = 0x45;
   self.base_velocity = 100;
+  self.margin = 0;
+  self.padding = 0;
   self.prec = 0;
   self.ovrl = 0;
   self.cons = 0;

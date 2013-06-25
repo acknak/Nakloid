@@ -71,26 +71,11 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
     }
     // get Voice pron
     {
-      string tmp_alias = (v2[0]=="")?tmp_voice.path_wav.stem().string():v2[0];
-      tmp_voice.pron = tmp_voice.prefix = tmp_voice.suffix = "";
-      // get prefix
-      string::size_type pos_prefix = tmp_alias.find(" ");
-      if (tmp_alias.size()>1 && pos_prefix != string::npos) {
-        tmp_voice.prefix = tmp_alias.substr(0, pos_prefix+1);
-        tmp_alias.erase(0, pos_prefix+1);
-        if (tmp_voice.prefix!="- " && tmp_voice.prefix!="* ") {
-          tmp_voice.is_vcv = true;
-        }
-      }
-      // get suffix
-      if (tmp_alias.size() > 2) {
-        string tmp_suffix = tmp_alias.substr(tmp_alias.size()-2);
-        if (isalpha(tmp_suffix[0]) && isdigit(tmp_suffix[1])) {
-          tmp_voice.suffix = tmp_suffix;
-          tmp_alias.erase(tmp_alias.size()-2, 2);
-        }
-      }
-      tmp_voice.pron = tmp_alias;
+      tuple<string,string,string,bool> alias = nak::parseAlias((v2[0]=="")?tmp_voice.path_wav.stem().string():v2[0]);
+      tmp_voice.prefix = get<0>(alias);
+      tmp_voice.pron = get<1>(alias);
+      tmp_voice.suffix = get<2>(alias);
+      tmp_voice.is_vcv = get<3>(alias);
     }
     // set vowel_map
     if (!tmp_voice.is_vcv) {

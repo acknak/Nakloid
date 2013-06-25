@@ -21,6 +21,8 @@ typedef struct {
   unsigned char base_pitch;
   short base_velocity;
   std::list< std::pair<long,short> > velocity_points;
+  std::pair<short,short> *margin;
+  std::pair<short,short> *padding;
   short *prec;
   short *ovrl;
   short *cons;
@@ -51,8 +53,10 @@ class Note {
   void setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
   short getFrontMargin();
   short getBackMargin();
+  void setMargin(short front, short back);
   short getFrontPadding();
   short getBackPadding();
+  void setPadding(short front, short back);
   std::string getPron();
   void setPron(std::string pron);
   std::string getPrefix();

@@ -108,7 +108,15 @@ bool Nakloid::vocalization()
   double counter=0, percent=0;
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
     cout << "synthesize \"" << it_notes->getAlias() << "\" from " << it_notes->getPronStart() << "ms to " << it_notes->getPronEnd() << "ms" << endl;
+    /*
+    cout << it_notes->getPronStart() << ","  << it_notes->getPronEnd() << ","
+      << it_notes->getOvrl() << "," << it_notes->getPrec() << "," << it_notes->getCons() << endl;
 
+    cout << it_notes->getPronStart() << ","  << it_notes->getPronStart()+it_notes->getFrontMargin() << "," 
+      << it_notes->getPronStart()+it_notes->getFrontMargin()+it_notes->getFrontPadding() << ","
+      << it_notes->getPronEnd()-it_notes->getBackPadding()-it_notes->getBackMargin() << ","
+      << it_notes->getPronEnd()-it_notes->getBackMargin() << "," << it_notes->getPronEnd() << endl;
+    */
     if (voice_db->getVoice(it_notes->getAlias()) == 0) {
       continue;
     }

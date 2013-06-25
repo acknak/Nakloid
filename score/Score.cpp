@@ -41,27 +41,41 @@ void Score::saveScore(string path_nak)
     boost::property_tree::wptree pt_note, pt_vel_points;
     pt_note.put(L"id", it_notes->getId());
     {
-      wchar_t *wcs = new wchar_t[it_notes->getPron().length() + 1];
-	    mbstowcs(wcs, it_notes->getPron().c_str(), it_notes->getPron().length() + 1);
+      wchar_t *wcs = new wchar_t[it_notes->getAlias().length() + 1];
+	    mbstowcs(wcs, it_notes->getAlias().c_str(), it_notes->getAlias().length() + 1);
 	    wstring tmp = wcs;
 	    delete [] wcs;
-      pt_note.put(L"pron", tmp);
+      pt_note.put(L"alias", tmp);
     }
+    pt_note.put(L"vcv", it_notes->isVCV());
     pt_note.put(L"start", it_notes->getStart());
     pt_note.put(L"end", it_notes->getEnd());
+    {
+      wstringstream tmp_margin;
+      tmp_margin << it_notes->getFrontMargin() << L"," << it_notes->getBackMargin();
+      pt_note.put(L"margin", tmp_margin.str());
+    }
+    {
+      wstringstream tmp_padding;
+      tmp_padding << it_notes->getFrontPadding() << L"," << it_notes->getBackPadding();
+      pt_note.put(L"padding", tmp_padding.str());
+    }
     pt_note.put(L"prec", it_notes->getPrec());
     pt_note.put(L"ovrl", it_notes->getOvrl());
+    pt_note.put(L"cons", it_notes->getCons());
     pt_note.put(L"vel", it_notes->getBaseVelocity());
     pt_note.put(L"pitch", it_notes->getBasePitch());
-    list< pair<long, short> > vel_points = it_notes->getVelocityPoints();
-    for (list< pair<long, short> >::iterator it_vel_points=vel_points.begin(); it_vel_points!=vel_points.end(); ++it_vel_points) {
-      boost::property_tree::wptree pt_vel_point;
-      wstringstream tmp_vel_point;
-      tmp_vel_point << it_vel_points->first << L"," << it_vel_points->second;
-      pt_vel_point.put(L"", tmp_vel_point.str());
-      pt_vel_points.push_back(make_pair(L"", pt_vel_point));
+    {
+      list< pair<long, short> > vel_points = it_notes->getVelocityPoints();
+      for (list< pair<long, short> >::iterator it_vel_points=vel_points.begin(); it_vel_points!=vel_points.end(); ++it_vel_points) {
+        boost::property_tree::wptree pt_vel_point;
+        wstringstream tmp_vel_point;
+        tmp_vel_point << it_vel_points->first << L"," << it_vel_points->second;
+        pt_vel_point.put(L"", tmp_vel_point.str());
+        pt_vel_points.push_back(make_pair(L"", pt_vel_point));
+      }
+      pt_note.add_child(L"vel_points", pt_vel_points);
     }
-    pt_note.add_child(L"vel_points", pt_vel_points);
     pt_notes.push_back(make_pair(L"", pt_note));
   }
   pt.add_child(L"Score.notes", pt_notes);
