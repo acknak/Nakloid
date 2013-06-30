@@ -1,9 +1,9 @@
 #ifndef SmfHandler_h
 #define SmfHandler_h
 
+#include <fstream>
 #include <map>
 #include <string>
-#include <fstream>
 
 enum MidiMsg{
   MIDI_MSG_NOTE_ON,
@@ -23,7 +23,6 @@ enum MidiMsg{
   MIDI_MSG_UNKNOWN
 };
 
-// Reference Object
 class SmfHandler {
  public:
   SmfHandler();
@@ -31,9 +30,9 @@ class SmfHandler {
 
   virtual void smfInfo(short numTrack, short timebase){};
   virtual void trackChange(short track){};
-  virtual void eventMidi(long deltatime, unsigned char msg, unsigned char* data){};
-  virtual void eventSysEx(long deltatime, long datasize, unsigned char* data){};
-  virtual void eventMeta(long deltatime, unsigned char type, long datasize, unsigned char* data){};
+  virtual void eventMidi(long deltatime, unsigned char msg, const unsigned char* const data){};
+  virtual void eventSysEx(long deltatime, long datasize, const unsigned char* const data){};
+  virtual void eventMeta(long deltatime, unsigned char type, long datasize, const unsigned char* const data){};
 
   static MidiMsg charToMidiMsg(unsigned char midi_msg);
   static std::string midiMsgToString(MidiMsg midi_msg);

@@ -1,35 +1,34 @@
 #ifndef ScoreNAK_h
 #define ScoreNAK_h
 
-#include <list>
 #include <cmath>
-#include <tuple>
+#include <list>
 #include <string>
-#include <cstdlib>
+#include <tuple>
+#include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include "Note.h"
-#include "../Utilities.h"
 #include "../parser/SmfParser.h"
 #include "../parser/SmfHandler.h"
+#include "../Utilities.h"
 
-// Reference Object
 class ScoreNAK : public Score {
  public:
-  ScoreNAK(std::string input_nak, std::string path_song, std::string path_singer);
+  ScoreNAK(const std::wstring& input_nak, const std::wstring& path_song, const std::wstring& path_singer);
   virtual ~ScoreNAK();
 
-  void load(std::string path_nak);
+  void load(const std::wstring& path_nak);
+
+ protected:
+  Note *note_parse;
+  long id_parse;
 
  private:
   ScoreNAK(const ScoreNAK& other);
   ScoreNAK& operator=(const ScoreNAK& other);
-
-  Note *note_parse;
-  long id_parse;
 };
 
 #endif

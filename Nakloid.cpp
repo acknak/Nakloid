@@ -66,7 +66,7 @@ bool Nakloid::loadScore(nak::ScoreMode mode)
     score->reloadPitches();
 
   // load prefix map
-  if (nak::path_prefix_map != "") {
+  if (!nak::path_prefix_map.empty()) {
     score->loadModifierMap(nak::path_prefix_map);
     cout << "use modifier map..." << endl;
   }
@@ -107,26 +107,30 @@ bool Nakloid::vocalization()
   UnitWaveformOverlapper *overlapper = new UnitWaveformOverlapper(format, score->getPitches());
   double counter=0, percent=0;
   for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
-    cout << "synthesize \"" << it_notes->getAlias() << "\" from " << it_notes->getPronStart() << "ms to " << it_notes->getPronEnd() << "ms" << endl;
+    wcout << L"synthesize \"" << it_notes->getAliasString() << L"\" from " << it_notes->getPronStart() << L"ms to " << it_notes->getPronEnd() << L"ms" << endl;
     /*
-    cout << it_notes->getPronStart() << ","  << it_notes->getPronEnd() << ","
-      << it_notes->getOvrl() << "," << it_notes->getPrec() << "," << it_notes->getCons() << endl;
-
-    cout << it_notes->getPronStart() << ","  << it_notes->getPronStart()+it_notes->getFrontMargin() << "," 
-      << it_notes->getPronStart()+it_notes->getFrontMargin()+it_notes->getFrontPadding() << ","
-      << it_notes->getPronEnd()-it_notes->getBackPadding()-it_notes->getBackMargin() << ","
-      << it_notes->getPronEnd()-it_notes->getBackMargin() << "," << it_notes->getPronEnd() << endl;
+    cout << "ovrl: " << it_notes->getOvrl() << ", prec: " << it_notes->getPrec() << ", cons: " << it_notes->getCons() << endl
+      << "pron start: " << it_notes->getPronStart() << ", front margin: "  << it_notes->getPronStart()+it_notes->getFrontMargin()
+      << ", front padding: " << it_notes->getPronStart()+it_notes->getFrontMargin()+it_notes->getFrontPadding() << endl
+      << "back padding: " << it_notes->getPronEnd()-it_notes->getBackPadding()-it_notes->getBackMargin()
+      << ", back margin: " << it_notes->getPronEnd()-it_notes->getBackMargin() << ", pron end: " << it_notes->getPronEnd() << endl;
     */
-    if (voice_db->getVoice(it_notes->getAlias()) == 0) {
+    if (voice_db->getVoice(it_notes->getAliasString()) == 0) {
       continue;
     }
-    overlapper->overlapping(voice_db->getVoice(it_notes->getAlias())->getUwc(), it_notes->getPronStart(), it_notes->getPronEnd(), it_notes->getVelocities());
+    overlapper->overlapping(voice_db->getVoice(it_notes->getAliasString())->getUwc(), it_notes->getPronStart(), it_notes->getPronEnd(), it_notes->getVelocities());
 
     // show progress
     if (++counter/score->notes.size()>percent+0.1 && (percent=floor(counter/score->notes.size()*10)/10.0)<1.0)
       cout << endl << percent*100 << "%..." << endl << endl;
   }
   cout << endl;
+  if (nak::is_normalize) {
+    overlapper->outputNormalization();
+  }
+  if (nak::compressor) {
+    overlapper->outputCompressing();
+  }
   overlapper->outputWav(score->getSongPath(), margin);
   delete overlapper;
 
@@ -140,17 +144,17 @@ bool Nakloid::vocalization()
 /*
  * accessor
  */
-WavFormat Nakloid::getFormat()
+const WavFormat& Nakloid::getFormat() const
 {
   return format;
 }
 
-void Nakloid::setFormat(WavFormat format)
+void Nakloid::setFormat(const WavFormat& format)
 {
   this->format = format;
 }
 
-Score* Nakloid::getScore()
+Score* Nakloid::getScore() const
 {
   return score;
 }
@@ -160,7 +164,7 @@ void Nakloid::setMargin(long margin)
   this->margin = margin;
 }
 
-long Nakloid::getMargin()
+long Nakloid::getMargin() const
 {
   return this->margin;
 }
@@ -170,18 +174,25 @@ long Nakloid::getMargin()
  */
 int main()
 {
-  setlocale(LC_CTYPE, "");
+  // set locale
+	ios_base::sync_with_stdio(false);
+	locale default_loc("");
+	locale::global(default_loc);
+	locale ctype_default(locale::classic(), default_loc, locale::ctype);
+	wcout.imbue(ctype_default);
+	wcerr.imbue(ctype_default);
+	wcin.imbue(ctype_default);
 
-  if (!nak::parse("Nakloid.ini")) {
+  if (!nak::parse(L"Nakloid.ini")) {
     cin.sync();
     cout << "can't open Nakloid.ini" << endl;
     cin.get();
     return 1;
   }
 
-  if (!nak::path_log.empty()) {
-    freopen(nak::path_log.c_str(), "w", stdout);
-    freopen(nak::path_log.c_str(), "w", stderr);
+  if (!nak::print_log) {
+    freopen("", "r", stdout);
+    freopen("", "r", stderr);
   }
 
   Nakloid *nakloid = new Nakloid(nak::score_mode);
@@ -195,7 +206,7 @@ int main()
 
   delete nakloid;
 
-  if (nak::path_log.empty()) {
+  if (nak::print_log) {
     cin.sync();
     cout << "Press Enter/Return to continue..." << endl;
     cin.get();

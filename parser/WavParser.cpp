@@ -4,55 +4,16 @@ using namespace std;
 
 WavParser::WavParser(){}
 
-WavParser::WavParser(string input)
-{
-  setInput(input);
-}
+WavParser::WavParser(const wstring& input):input(input){}
 
-WavParser::WavParser(string input, int target_track)
+WavParser::WavParser(const wstring& input, int target_track):input(input)
 {
-  setInput(input);
   addTargetTrack(target_track);
 }
 
 WavParser::~WavParser(){}
 
-string WavParser::getInput()
-{
-  return input;
-}
-
-void WavParser::setInput(string input)
-{
-  this->input = input;
-}
-
-void WavParser::setTargetTracks(set<int> target_tracks)
-{
-  this->target_tracks = target_tracks;
-}
-
-void WavParser::addTargetTrack(int target_track)
-{
-  this->target_tracks.insert(target_track);
-}
-
-set<int> WavParser::getTargetTracks()
-{
-  return target_tracks;
-}
-
-WavFormat WavParser::getFormat()
-{
-  return format;
-}
-
-list<WavData> WavParser::getDataChunks()
-{
-  return data_chunks;
-}
-
-bool WavParser::isWavFile()
+bool WavParser::isWavFile() const
 {
   if (input.empty()) {
     cerr << "[WavParser::isWavFile] input is NULL" << endl;
@@ -61,14 +22,14 @@ bool WavParser::isWavFile()
 
   ifstream ifs(input.c_str(), ios::in | ios::binary);
   if (!ifs) {
-    cerr << "[WavParser::isWavFile] file '" << input << "' cannot open" << endl;
+    wcerr << L"[WavParser::isWavFile] file '" << input << L"' cannot open" << endl;
     return false;
   }
 
   char tag[4];
   ifs.read((char*)&tag, sizeof(char)*4);
   if (!WavFormat::isRiffTag(tag)) {
-    cerr << "[WavParser::isWavFile] file '" << input << "' is not RIFF format";
+    wcerr << L"[WavParser::isWavFile] file '" << input << L"' is not RIFF format";
     return false;
   }
 
@@ -76,7 +37,7 @@ bool WavParser::isWavFile()
 
   ifs.read((char*)&tag, sizeof(char)*4);
   if (!WavFormat::isWaveTag(tag)) {
-      cerr << "[WavParser::isWavFile] file '" << input << "' is not WAV" << endl;
+      wcerr << L"[WavParser::isWavFile] file '" << input << L"' is not WAV" << endl;
     return false;
   }
 
@@ -85,7 +46,7 @@ bool WavParser::isWavFile()
   short format;
   ifs.read((char*)&format, sizeof(short));
   if (format != 1){
-    cerr << "[WavParser::isWavFile] file '" << input << "' is not LinearPCM" << endl;
+    wcerr << L"[WavParser::isWavFile] file '" << input << L"' is not LinearPCM" << endl;
     return false;
   }
 
@@ -134,7 +95,7 @@ bool WavParser::parse()
       // data chunk
       short* data = new short[chunk_size/sizeof(short)];
 
-      for (int j=0; j<chunk_size/sizeof(short); j++)
+      for (size_t j=0; j<chunk_size/sizeof(short); j++)
         ifs.read((char*)&data[j], sizeof(short));
 
       WavData wav_data;
@@ -157,38 +118,7 @@ bool WavParser::parse()
   return true;
 }
 
-void WavParser::normalize()
-{
-  if (data_chunks.empty())
-    return;
-
-  for (list<WavData>::iterator it=data_chunks.begin(); it!=data_chunks.end(); ++it) {
-    long max = numeric_limits<short>::min();
-    long min = numeric_limits<short>::max();
-    long length = it->getSize();
-    double avg = 0.0, rate = 1.0;
-    vector<short> fore_data(it->getWavData());
-    vector<short> aft_data(fore_data.size(), 0);
-
-    for (int i=0; i<length; i++) {
-      short tmp_data = fore_data[i];
-      if (tmp_data > max)
-        max = tmp_data;
-      if (tmp_data < min)
-        min = tmp_data;
-      avg = avg/(i+1)*i + ((double)tmp_data/(i+1));
-    }
-    if (avg-min < max-avg)
-      rate = (numeric_limits<short>::max()*0.5) / (max-avg);
-    else
-      rate = (numeric_limits<short>::min()*0.5) / (avg-min);
-    for (int i=0; i<length; i++)
-      aft_data[i] = (fore_data[i]-avg) * rate;
-    it->setData(&aft_data[0], aft_data.size());
-  }
-}
-
-void WavParser::setWavFileFormat(ofstream *ofs, WavFormat format, long wav_size) {
+void WavParser::setWavFileFormat(boost::filesystem::ofstream* const ofs, const WavFormat& format, long wav_size) {
   ofs->write((char*)WavFormat::riff, sizeof(char)*4);
   ofs->write((char*)&wav_size, sizeof(long));
   ofs->write((char*)WavFormat::wave, sizeof(char)*4);
@@ -202,10 +132,10 @@ void WavParser::setWavFileFormat(ofstream *ofs, WavFormat format, long wav_size)
   ofs->write((char*)&(format.wBitsPerSamples), sizeof(short));
 }
 
-void WavParser::setWavFile(ofstream *ofs, WavFormat format, const vector<double>* data) {
+void WavParser::setWavFile(boost::filesystem::ofstream* const ofs, const WavFormat& format, const vector<double>* data) {
   vector<short> output_data(data->size(), 0);
 
-  dbl2sht(data, &output_data);
+  dbl2sht(*data, &output_data);
   long data_chunk_size = output_data.size() * sizeof(short);
   long wav_size = data_chunk_size + format.chunkSize + 12;
 
@@ -216,34 +146,72 @@ void WavParser::setWavFile(ofstream *ofs, WavFormat format, const vector<double>
   ofs->write((char*)&output_data[0], data_chunk_size);
 }
 
-void WavParser::sht2dbl(const vector<short>* from, vector<double>* to)
+void WavParser::sht2dbl(const vector<short>& from, vector<double>* to)
 {
-  if (from->size() != to->size()) {
+  if (from.size() != to->size()) {
     cerr << "[WavParser::sht2dbl] 'from' size different from 'to' size" << endl;
     return;
   }
-  sht2dbl(from->begin(), to);
+  sht2dbl(from.begin(), to);
 }
 
 void WavParser::sht2dbl(const vector<short>::const_iterator from, vector<double>* to)
 {
-  for (int i=0; i<to->size(); i++) {
+  for (size_t i=0; i<to->size(); i++) {
     to->at(i) = *(from+i) / 32768.0;
   }
 }
 
-void WavParser::dbl2sht(const vector<double>* from, vector<short>* to)
+void WavParser::dbl2sht(const vector<double>& from, vector<short>* to)
 {
-  if (from->size() != to->size()) {
+  if (from.size() != to->size()) {
     cerr << "[WavParser::dbl2sht] 'from' size different from 'to' size" << endl;
     return;
   }
-  dbl2sht(from->begin(), to);
+  dbl2sht(from.begin(), to);
 }
 
 void WavParser::dbl2sht(const vector<double>::const_iterator from, vector<short>* to)
 {
-  for (int i=0; i<to->size(); i++) {
+  for (size_t i=0; i<to->size(); i++) {
     to->at(i) = *(from+i) * 32767;
   }
+}
+
+/*
+ * accessor
+ */
+const wstring& WavParser::getInput() const
+{
+  return input;
+}
+
+void WavParser::setInput(const wstring& input)
+{
+  this->input = input;
+}
+
+void WavParser::setTargetTracks(const set<int>& target_tracks)
+{
+  this->target_tracks = target_tracks;
+}
+
+void WavParser::addTargetTrack(int target_track)
+{
+  this->target_tracks.insert(target_track);
+}
+
+const set<int>& WavParser::getTargetTracks() const
+{
+  return target_tracks;
+}
+
+const WavFormat& WavParser::getFormat() const
+{
+  return format;
+}
+
+const vector<WavData>& WavParser::getDataChunks() const
+{
+  return data_chunks;
 }

@@ -1,37 +1,36 @@
 #ifndef SmfParser_h
 #define SmfParser_h
 
-#include <vector>
-#include <string>
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <vector>
 #include "SmfHandler.h"
 
-// Reference Object
 class SmfParser {
  public:
   SmfParser();
-  explicit SmfParser(std::string filename);
-  explicit SmfParser(SmfHandler* handler);
-  SmfParser(std::string filename, SmfHandler* handler);
-  ~SmfParser();
+  explicit SmfParser(const std::wstring& filename);
+  explicit SmfParser(SmfHandler* const handler);
+  SmfParser(const std::wstring& filename, SmfHandler* const handler);
+  virtual ~SmfParser();
 
-  bool isSmfFile();
+  bool isSmfFile() const;
   bool parse();
 
   // accessor
-  std::string getInput();
-  void setInput(std::string filename);
-  std::vector<SmfHandler*> getSmfHandler();
-  void setSmfHandler(std::vector<SmfHandler*> handlers);
-  void addSmfHandler(SmfHandler* handler);
+  const std::wstring& getInput() const;
+  void setInput(const std::wstring& filename);
+  const std::vector<SmfHandler*>& getSmfHandler() const;
+  void setSmfHandler(const std::vector<SmfHandler*>& handlers);
+  void addSmfHandler(SmfHandler* const handler);
 
  private:
   SmfParser(const SmfParser& other);
   SmfParser& operator=(const SmfParser& other);
 
-  std::string input;
+  std::wstring input;
   std::vector<SmfHandler*> handlers;
   static unsigned const char mthd[]; //smf header
   static unsigned const char mtrk[]; //data chunk header

@@ -2,9 +2,8 @@
 #define UnitWaveform_h
 
 #include <vector>
-
-#include "../parser/WavFormat.h"
 #include "../parser/WavData.h"
+#include "../parser/WavFormat.h"
 
 namespace uw {
   class UnitWaveformFormat : public WavFormat {
@@ -18,10 +17,9 @@ namespace uw {
     UnitWaveformFormat& operator=(const UnitWaveformFormat& other){
       WavFormat::operator=(other);wLobeSize=other.wLobeSize;dwRepeatStart=other.dwRepeatStart;wF0=other.wF0;return *this;
     }
-
-    static const long const_chunk_size = 30; //16(linearPCM)+14(extension)
-    static const unsigned short UnitWaveformFormatTag = 0xFFFF;
-    static const short wAdditionalSize = 10; //short(2byte)+long(4byte)+float(4byte)
+    const static long const_chunk_size = 30; //16(linearPCM)+14(extension)
+    const static unsigned short UnitWaveformFormatTag = 0xFFFF;
+    const static short wAdditionalSize = 10; //short(2byte)+long(4byte)+float(4byte)
     short wLobeSize;
     long dwRepeatStart;
     float wF0;

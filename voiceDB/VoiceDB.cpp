@@ -2,9 +2,9 @@
 
 using namespace std;
 
-VoiceDB::VoiceDB():path_singer("") {}
+VoiceDB::VoiceDB():path_singer(L"") {}
 
-VoiceDB::VoiceDB(string path_singer)
+VoiceDB::VoiceDB(const wstring& path_singer)
 {
   setSingerPath(path_singer);
 }
@@ -18,9 +18,9 @@ bool VoiceDB::initVoiceMap()
 
   if (fs::is_directory(path)) {
     BOOST_FOREACH(const fs::path& p, std::make_pair(fs::recursive_directory_iterator(path), fs::recursive_directory_iterator())) {
-      if (p.leaf().string() == "oto.ini") {
-        cout << "loading " << p.string() << endl;
-        initVoiceMap(p.string());
+      if (p.leaf().wstring() == L"oto.ini") {
+        wcout << L"loading " << p.wstring() << endl;
+        initVoiceMap(p.wstring());
       }
     }
     if (voice_map.size() > 0)
@@ -31,19 +31,19 @@ bool VoiceDB::initVoiceMap()
   return false;
 }
 
-bool VoiceDB::initVoiceMap(string path_oto_ini)
+bool VoiceDB::initVoiceMap(const wstring& path_oto_ini)
 {
-  ifstream ifs(path_oto_ini.c_str());
+  boost::filesystem::wifstream ifs(path_oto_ini);
   boost::filesystem::path path_ini(path_oto_ini);
-  string buf, wav_ext=".wav";
-  while(ifs && getline(ifs, buf)) {
+  wstring buf, wav_ext=L".wav";
+  while (ifs && getline(ifs, buf)) {
     // read oto.ini
     Voice tmp_voice(this);
-    vector<string> v1, v2;
+    vector<wstring> v1, v2;
     boost::algorithm::split(v1, buf, boost::is_any_of("="));
     boost::algorithm::split(v2, v1[1], boost::is_any_of(","));
     short tmp;
-    tmp_voice.setWavPath(path_ini.parent_path().string()+"/"+v1[0]);
+    tmp_voice.setWavPath((path_ini.parent_path()/v1[0]).wstring());
     tmp_voice.offs = (((tmp=boost::lexical_cast<double>(v2[1]))>0))?tmp:0;
     tmp_voice.cons = (((tmp=boost::lexical_cast<double>(v2[2]))>0))?tmp:0;
     tmp_voice.blnk = boost::lexical_cast<double>(v2[3]);
@@ -70,18 +70,13 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
       tmp_voice.blnk = -tmp_voice.cons;
     }
     // get Voice pron
-    {
-      tuple<string,string,string,bool> alias = nak::parseAlias((v2[0]=="")?tmp_voice.path_wav.stem().string():v2[0]);
-      tmp_voice.prefix = get<0>(alias);
-      tmp_voice.pron = get<1>(alias);
-      tmp_voice.suffix = get<2>(alias);
-      tmp_voice.is_vcv = get<3>(alias);
-    }
+    tmp_voice.setAlias((v2[0]==L"")?tmp_voice.path_wav.stem().wstring():v2[0]);
+    tmp_voice.is_vcv = (tmp_voice.alias.prefix!=L"- " && tmp_voice.alias.prefix!=L"* " && !tmp_voice.alias.prefix.empty());
     // set vowel_map
     if (!tmp_voice.is_vcv) {
-      map<string, string>::const_iterator it = nak::getVow2PronIt(tmp_voice.pron);
-      if (it!=nak::vow2pron.end()) {
-        WavParser wav_parser(tmp_voice.path_wav.string());
+      map<wstring, wstring>::const_iterator it = nak::getVow2PronIt(tmp_voice.getPron());
+      if (it!=nak::vow2pron.end() && (tmp_voice.alias.prefix==L"- "||tmp_voice.alias.prefix.empty())) {
+        WavParser wav_parser(tmp_voice.path_wav.wstring());
         wav_parser.addTargetTrack(0);
         if (wav_parser.parse()) {
           vector<double> tmp_wav = (*(wav_parser.getDataChunks().begin())).getData();
@@ -89,7 +84,7 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
           vector<double>::iterator it_tmp_wav_min = it_tmp_wav_cons;
           short win_size = wav_parser.getFormat().dwSamplesPerSec / tmp_voice.getFrq();
           double tmp_min_rms = -1.0;
-          for (int i=0; i<win_size*2; i++) {
+          for (size_t i=0; i<win_size*2; i++) {
             vector<double> tmp_wav(it_tmp_wav_cons+i-win_size, it_tmp_wav_cons+i+win_size);
             double tmp_rms = nak::getRMS(tmp_wav);
             if (tmp_rms<tmp_min_rms || tmp_min_rms<0) {
@@ -97,44 +92,48 @@ bool VoiceDB::initVoiceMap(string path_oto_ini)
               it_tmp_wav_min = it_tmp_wav_cons+i;
             }
           }
-          vowel_map[nak::pron2vow[it->second]+tmp_voice.suffix].assign(it_tmp_wav_min-win_size, it_tmp_wav_min+win_size);
+          vowel_map[nak::pron2vow[it->second]+tmp_voice.alias.suffix].assign(it_tmp_wav_min-win_size, it_tmp_wav_min+win_size);
         }
       }
     }
-    voice_map[tmp_voice.prefix+tmp_voice.pron+tmp_voice.suffix] = tmp_voice;
+    Voice test(tmp_voice);
+    voice_map[tmp_voice.getAliasString()] = tmp_voice;
   }
   return true;
 }
 
-const Voice* VoiceDB::getVoice(string alias)
+/*
+ * accessor
+ */
+const Voice* VoiceDB::getVoice(const wstring& alias) const
 {
   if (!isAlias(alias))
     return 0;
 
-  return &voice_map[alias];
+  return &(voice_map.at(alias));
 }
 
-bool VoiceDB::isAlias(string alias)
+bool VoiceDB::isAlias(const wstring& alias) const
 {
-  return !((voice_map.empty()&&!initVoiceMap()) || voice_map.count(alias)==0);
+  return !(voice_map.empty() || voice_map.count(alias)==0);
 }
 
-bool VoiceDB::isVowel(string alias)
+bool VoiceDB::isVowel(const wstring& subject) const
 {
-  return vowel_map.count(alias)>0;
+  return vowel_map.count(subject)>0;
 }
 
-vector<double> VoiceDB::getVowel(string alias)
+const vector<double>& VoiceDB::getVowel(const wstring& subject) const
 {
-  return vowel_map[alias];
+  return vowel_map.at(subject);
 }
 
-void VoiceDB::setSingerPath(string path_singer)
+void VoiceDB::setSingerPath(const wstring& path_singer)
 {
   this->path_singer = path_singer;
 }
 
-string VoiceDB::getSingerPath()
+const wstring& VoiceDB::getSingerPath() const
 {
   return this->path_singer;
 }

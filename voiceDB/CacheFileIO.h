@@ -1,20 +1,19 @@
 #ifndef CacheFileIO_h
 #define CacheFileIO_h
 
-#include <string>
-#include <vector>
-#include <fstream>
 #include <iostream>
 #include <iterator>
-
-#include "../PSOLA/UnitWaveform.h"
-#include "../parser/WavParser.h"
+#include <string>
+#include <vector>
+#include <boost/filesystem/fstream.hpp>
 #include "../parser/WavFormat.h"
+#include "../parser/WavParser.h"
+#include "../PSOLA/UnitWaveform.h"
 
 namespace uw {
-  bool isUwcFile(std::string filename);
-  uw::UnitWaveformContainer load(std::string filename);
-  bool save(std::string filename, uw::UnitWaveformContainer *uwc);
+  bool isUwcFile(const std::wstring& filename);
+  uw::UnitWaveformContainer load(const std::wstring& filename);
+  bool save(const std::wstring& filename, const uw::UnitWaveformContainer& uwc);
 };
 
 #endif

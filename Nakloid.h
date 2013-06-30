@@ -1,29 +1,28 @@
 #ifndef Nakloid_h
 #define Nakloid_h
 
-#include <map>
-#include <list>
+#include <algorithm>
 #include <cstdio>
+#include <iostream>
+#include <list>
+#include <locale>
+#include <map>
 #include <string>
 #include <vector>
-#include <fstream>
-#include <iostream>
-#include <algorithm>
 #include <boost/utility.hpp>
 #include "Arranger.h"
+#include "parser/WavData.h"
+#include "parser/WavFormat.h"
+#include "parser/WavParser.h"
+#include "PSOLA/UnitWaveformOverlapper.h"
+#include "score/Score.h"
+#include "score/ScoreNAK.h"
+#include "score/ScoreSMF.h"
+#include "score/ScoreUST.h"
 #include "Utilities.h"
 #include "voiceDB/Voice.h"
 #include "voiceDB/VoiceDB.h"
-#include "parser/WavFormat.h"
-#include "parser/WavData.h"
-#include "PSOLA/UnitWaveformOverlapper.h"
-#include "parser/WavParser.h"
-#include "score/Score.h"
-#include "score/ScoreNAK.h"
-#include "score/ScoreUST.h"
-#include "score/ScoreSMF.h"
 
-// Reference Object
 class Nakloid {
  public:
   Nakloid();
@@ -35,20 +34,21 @@ class Nakloid {
   bool vocalization();
 
   // accessor
-  Score* getScore();
-  WavFormat getFormat();
-  void setFormat(WavFormat format);
+  Score* getScore() const;
+  const WavFormat& getFormat() const;
+  void setFormat(const WavFormat& format);
   void setMargin(long margin);
-  long getMargin();
+  long getMargin() const;
 
- private:
-  Nakloid(const Nakloid& other);
-  Nakloid& operator=(const Nakloid& other);
-
+ protected:
   Score *score;
   VoiceDB *voice_db;
   WavFormat format;
   long margin;
+
+ private:
+  Nakloid(const Nakloid& other);
+  Nakloid& operator=(const Nakloid& other);
 };
 
 #endif

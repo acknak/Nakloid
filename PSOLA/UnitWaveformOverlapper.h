@@ -1,47 +1,47 @@
 #ifndef UnitWaveformOverlapper_h
 #define UnitWaveformOverlapper_h
 
-#include <list>
-#include <cmath>
-#include <vector>
-#include <string>
-#include <limits>
-#include <fstream>
-#include <iostream>
 #include <algorithm>
-
+#include <cmath>
+#include <iostream>
+#include <limits>
+#include <list>
+#include <string>
+#include <vector>
+#include <boost/filesystem/fstream.hpp>
 #include "UnitWaveform.h"
 #include "../Utilities.h"
-#include "../parser/WavFormat.h"
 #include "../parser/WavData.h"
+#include "../parser/WavFormat.h"
 #include "../parser/WavParser.h"
 
 // Refference Object
 class UnitWaveformOverlapper {
  public:
-  UnitWaveformOverlapper(WavFormat format, std::list<float> pitches);
-  UnitWaveformOverlapper(WavFormat format, std::vector<float> pitches);
+  UnitWaveformOverlapper(const WavFormat& format, const std::vector<float>& pitches);
   virtual ~UnitWaveformOverlapper();
 
-  bool overlapping(const uw::UnitWaveformContainer* uwc, long pron_start, long pron_end, std::vector<short> velocities);
-  void outputWav(std::string output);
-  void outputWav(std::string output, long ms_margin);
+  bool overlapping(const uw::UnitWaveformContainer* const uwc, long pron_start, long pron_end, const std::vector<short>& velocities);
+  void outputNormalization();
+  void outputCompressing();
+  void outputWav(const std::wstring& output) const;
+  void outputWav(const std::wstring& output, long ms_margin);
 
   // accessor
-  WavFormat getWavFormat();
-  std::list<long> getPitchmarksList();
-  std::vector<long> getPitchmarksVector();
+  const WavFormat& getWavFormat() const;
+  const std::vector<long>& getPitchmarks() const;
 
- private:
-  UnitWaveformOverlapper(const UnitWaveformOverlapper& other);
-  UnitWaveformOverlapper& operator=(const UnitWaveformOverlapper& other);
-
-  std::vector<long>::iterator pos2it(long pos);
+ protected:
+  std::vector<long>::const_iterator pos2it(long pos) const;
 
   long ms_margin;
   WavFormat format;
   std::vector<long> pitchmarks;
   std::vector<double> output_wav;
+
+ private:
+  UnitWaveformOverlapper(const UnitWaveformOverlapper& other);
+  UnitWaveformOverlapper& operator=(const UnitWaveformOverlapper& other);
 };
 
 #endif

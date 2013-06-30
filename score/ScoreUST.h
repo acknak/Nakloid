@@ -3,28 +3,29 @@
 
 #include <list>
 #include <string>
-#include <vector>
 #include <utility>
-#include <boost/lexical_cast.hpp>
+#include <vector>
 #include <boost/algorithm/string.hpp>
-#include "Score.h"
+#include <boost/filesystem/fstream.hpp>
+#include <boost/lexical_cast.hpp>
 #include "Note.h"
-#include "../parser/SmfParser.h"
+#include "Score.h"
 #include "../parser/SmfHandler.h"
+#include "../parser/SmfParser.h"
 
-// Reference Object
 class ScoreUST : public Score {
  public:
-  ScoreUST(std::string input_ust, std::string path_song, std::string path_singer);
+  ScoreUST(const std::wstring& input_ust, const std::wstring& path_song, const std::wstring& path_singer);
   virtual ~ScoreUST();
 
-  void load(std::string input_ust);
+  void load(const std::wstring& input_ust);
+
+ protected:
+  long id_parse;
 
  private:
   ScoreUST(const ScoreUST& other);
   ScoreUST& operator=(const ScoreUST& other);
-
-  long id_parse;
 };
 
 #endif

@@ -1,52 +1,62 @@
-﻿#ifndef Utilities_h
+#ifndef Utilities_h
 #define Utilities_h
 
-#include <map>
-#include <list>
-#include <cmath>
-#include <tuple>
-#include <string>
-#include <vector>
-#include <iostream>
 #include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <list>
+#include <map>
+#include <string>
+#include <tuple>
+#include <vector>
 #include <boost/assign.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-
+#include <boost/property_tree/ptree.hpp>
 #include "./parser/WavFormat.h"
 
 namespace nak {
   enum ScoreMode {
     score_mode_nak, score_mode_ust, score_mode_smf
   };
-  enum PitchesMode{
+  enum PitchesMode {
     pitches_mode_pit, pitches_mode_lf0, pitches_mode_none
+  };
+  class VoiceAlias {
+   public:
+    VoiceAlias():prefix(L""),pron(L""),suffix(L""){}
+    explicit VoiceAlias(const std::wstring& alias);
+    VoiceAlias(const std::wstring& prefix, const std::wstring& pron, const std::wstring& suffix):prefix(prefix),pron(pron),suffix(suffix){}
+    bool checkVCV();
+    std::wstring prefix;
+    std::wstring pron;
+    std::wstring suffix;
   };
 
   // Input
-  extern std::string path_singer;
-  extern std::string path_prefix_map;
+  extern std::wstring path_singer;
+  extern std::wstring path_prefix_map;
 
   extern enum ScoreMode score_mode;
-  extern std::string path_nak;
-  extern std::string path_ust;
-  extern std::string path_smf;
+  extern std::wstring path_nak;
+  extern std::wstring path_ust;
+  extern std::wstring path_smf;
   extern short track;
-  extern std::string path_lyrics;
+  extern std::wstring path_lyrics;
 
   extern enum PitchesMode pitches_mode;
-  extern std::string path_pitches;
+  extern std::wstring path_pitches;
   extern unsigned char pitch_frame_length;
 
   // Output
   extern long margin;
-  extern std::string path_song;
-  extern std::string path_output_nak;
-  extern std::string path_output_pit;
+  extern std::wstring path_song;
+  extern std::wstring path_output_nak;
+  extern std::wstring path_output_pit;
 
   // Nakloid
   extern bool cache;
-  extern std::string path_log;
+  extern bool print_log;
   extern bool auto_vowel_combining;
   extern double vowel_combining_volume;
 
@@ -86,33 +96,32 @@ namespace nak {
   extern bool finefluctuation;
 
   // internal parameters
-  extern std::map<std::string, std::string> vow2pron;
-  extern std::map<std::string, std::string> pron2vow;
+  extern std::map<std::wstring, std::wstring> vow2pron;
+  extern std::map<std::wstring, std::wstring> pron2vow;
 
   // Nakloid.ini parser
-  extern bool parse(std::string path_ini);
+  extern bool parse(const std::wstring& path_ini);
 
   // tools
   extern long ms2pos(long ms, WavFormat format);
   extern long pos2ms(long pos, WavFormat format);
   extern long tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
 
-  extern std::vector<double> normalize(std::vector<double>wav, double target_rms);
-  extern std::vector<double> normalize(std::vector<double>wav, double target_mean, double target_var);
-  extern std::vector<double> normalize(std::vector<double>wav, short target_max, short target_min);
-  extern double getRMS(std::vector<double> wav);
-  extern double getMean(std::vector<double> wav);
-  extern double getVar(std::vector<double> wav, double mean);
+  extern std::vector<double> normalize(const std::vector<double>& wav, double target_rms);
+  extern std::vector<double> normalize(const std::vector<double>& wav, double target_mean, double target_var);
+  extern std::vector<double> normalize(const std::vector<double>& wav, short target_max, short target_min);
+  extern double getRMS(const std::vector<double>& wav);
+  extern double getMean(const std::vector<double>& wav);
+  extern double getVar(const std::vector<double>& wav, double mean);
   extern std::pair<bool, double> val2dB(double wav_value);
-  extern double dB2val(std::pair<bool, double> dB);
+  extern double dB2val(const std::pair<bool, double>& dB);
 
   extern std::vector<double> getHann(long len);
   extern std::vector<double> getTri(long len);
   extern std::vector<double> getLanczos(long len, unsigned char lobe);
   extern double sinc(double x);
 
-  extern std::map<std::string, std::string>::const_iterator getVow2PronIt(std::string pron);
-  extern std::tuple<std::string, std::string, std::string, bool> parseAlias(std::string alias);
+  extern std::map<std::wstring, std::wstring>::const_iterator getVow2PronIt(const std::wstring& pron);
 }
 
 #endif

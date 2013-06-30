@@ -4,32 +4,29 @@
 #include <list>
 #include <string>
 #include <boost/algorithm/string.hpp>
-#include "Score.h"
+#include <boost/filesystem/fstream.hpp>
 #include "Note.h"
-#include "../parser/SmfParser.h"
+#include "Score.h"
 #include "../parser/SmfHandler.h"
+#include "../parser/SmfParser.h"
 
-// Reference Object
 class ScoreSMF : public Score, public SmfHandler {
  public:
-  ScoreSMF(std::string input_smf, short track, std::string path_lyrics, std::string path_song, std::string path_singer);
+  ScoreSMF(const std::wstring& input_smf, short track, const std::wstring& path_lyrics, const std::wstring& path_song, const std::wstring& path_singer);
   virtual ~ScoreSMF();
 
-  bool load(std::string input_smf, short track, std::string path_lyrics);
+  bool load(const std::wstring& input_smf, short track, const std::wstring& path_lyrics);
 
-  // extension method
+  // inherit from SmfParser 
   void smfInfo(short, short);
   void trackChange(short);
-  void eventMidi(long, unsigned char, unsigned char*);
-  void eventSysEx(long, long, unsigned char*);
-  void eventMeta(long, unsigned char, long, unsigned char*);
+  void eventMidi(long, unsigned char, const unsigned char* const);
+  void eventSysEx(long, long, const unsigned char* const);
+  void eventMeta(long, unsigned char, long, const unsigned char* const);
 
- private:
-  ScoreSMF(const ScoreSMF& other);
-  ScoreSMF& operator=(const ScoreSMF& other);
-
-  std::string singer;
-  std::string path_song;
+ protected:
+  std::wstring singer;
+  std::wstring path_song;
   unsigned short timebase;
   unsigned long tempo;
   std::vector<float> pitches;
@@ -38,6 +35,10 @@ class ScoreSMF : public Score, public SmfHandler {
   unsigned long time_parse;
   Note *note_parse;
   unsigned long id_parse;
+
+ private:
+  ScoreSMF(const ScoreSMF& other);
+  ScoreSMF& operator=(const ScoreSMF& other);
 };
 
 #endif

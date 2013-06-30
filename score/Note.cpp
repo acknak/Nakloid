@@ -2,16 +2,11 @@
 
 using namespace std;
 
-Note::Note(Score *score, long id)
-  :score(score),id(id)
-{
-  initializeNoteFrame();
-}
+Note::Note(Score *score, long id):score(score),id(id),self(){}
 
 Note::Note(Score *score, long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short base_velocity)
-  :score(score),id(id)
+  :score(score),id(id),self()
 {
-  initializeNoteFrame();
   this->setStart(deltatime, timebase, tempo);
   this->setBasePitch(base_pitch);
   self.base_velocity = base_velocity;
@@ -85,9 +80,9 @@ bool Note::operator==(const Note& other) const
   is_eq &= (id == other.id);
   is_eq &= (self.start == other.self.start);
   is_eq &= (self.end == other.self.end);
-  is_eq &= (self.pron == other.self.pron);
-  is_eq &= (self.prefix == other.self.prefix);
-  is_eq &= (self.suffix == other.self.suffix);
+  is_eq &= (self.alias.prefix == other.self.alias.prefix);
+  is_eq &= (self.alias.pron == other.self.alias.pron);
+  is_eq &= (self.alias.suffix == other.self.alias.suffix);
   is_eq &= (self.base_pitch == other.self.base_pitch);
   is_eq &= (self.base_velocity == other.self.base_velocity);
   is_eq &= (self.velocity_points == other.self.velocity_points);
@@ -109,17 +104,20 @@ bool Note::operator!=(const Note& other) const
     return !(*this == other);
 }
 
-long Note::getId()
+/*
+ * accessor
+ */
+long Note::getId() const
 {
   return id;
 }
 
-long Note::getStart()
+long Note::getStart() const
 {
   return self.start;
 }
 
-long Note::getPronStart()
+long Note::getPronStart() const
 {
   return self.start - getPrec();
 }
@@ -134,12 +132,12 @@ void Note::setStart(unsigned long deltatime, unsigned short timebase, unsigned l
   setStart(nak::tick2ms(deltatime, timebase, tempo));
 }
 
-long Note::getEnd()
+long Note::getEnd() const
 {
   return self.end;
 }
 
-long Note::getPronEnd()
+long Note::getPronEnd() const
 {
   if (getPronStart() > self.end) {
     cerr << "[Note::getPronEnd] pron_start > pron_end" << endl;
@@ -170,7 +168,7 @@ short Note::getFrontMargin()
   }
 
   if (isVCV()) {
-    if (note_prev->getPronEnd()-note_prev->getBackMargin()-nak::ms_back_padding > getPronStart()) {
+    if (note_prev->getPronEnd()-note_prev->getBackMargin() > getPronStart()+getOvrl()) {
       return note_prev->getPronEnd()-note_prev->getBackMargin()-nak::ms_back_padding-getPronStart();
     }
   }
@@ -213,10 +211,14 @@ short Note::getFrontPadding()
     return self.padding->first;
   }
 
-  if (isVCV() && getOvrl()>getFrontMargin()+nak::ms_back_padding) {
-    return getOvrl() - (getFrontMargin()+nak::ms_back_padding);
+  if (isVCV()) {
+    if (getOvrl()-getFrontMargin() > nak::ms_back_padding) {
+      return getOvrl() - getFrontMargin();
+    } else {
+      return nak::ms_back_padding;
+    }
   }
-  return nak::ms_back_padding;
+  return nak::ms_front_padding;
 }
 
 short Note::getBackPadding()
@@ -243,48 +245,63 @@ void Note::setPadding(short front, short back)
   self.padding = new pair<short,short>(front, back);
 }
 
-string Note::getPron()
+const wstring& Note::getPron() const
 {
-  return self.pron;
+  return self.alias.pron;
 }
 
-void Note::setPron(string pron)
+void Note::setPron(const wstring& pron)
 {
-  this->self.pron = pron;
-  this->self.is_vcv = (pron.find(" ")!=string::npos && (pron[0]!='*'&&pron[0]!='-'));
+  this->self.alias.pron = pron;
 }
 
-string Note::getPrefix()
+const wstring& Note::getPrefix() const
 {
-  return self.prefix;
+  return self.alias.prefix;
 }
 
-void Note::setPrefix(string prefix)
+void Note::setPrefix(const wstring& prefix)
 {
-  this->self.prefix = prefix;
+  this->self.alias.prefix = prefix;
 }
 
-string Note::getSuffix()
+const wstring& Note::getSuffix() const
 {
-  return self.suffix;
+  return self.alias.suffix;
 }
 
-void Note::setSuffix(string suffix)
+void Note::setSuffix(const wstring& suffix)
 {
-  this->self.suffix = suffix;
+  this->self.alias.suffix = suffix;
 }
 
-string Note::getAlias()
+nak::VoiceAlias Note::getAlias() const
 {
-  return self.prefix+self.pron+self.suffix;
+  return self.alias;
 }
 
-unsigned char Note::getBasePitch()
+wstring Note::getAliasString() const
+{
+  return self.alias.prefix+self.alias.pron+self.alias.suffix;
+}
+
+void Note::setAlias(nak::VoiceAlias voice_alias)
+{
+  self.alias = voice_alias;
+}
+
+void Note::setAlias(const std::wstring& alias)
+{
+  nak::VoiceAlias voice_alias(alias);
+  self.alias = voice_alias;
+}
+
+unsigned char Note::getBasePitch() const
 {
   return self.base_pitch;
 }
 
-double Note::getBasePitchHz()
+float Note::getBasePitchHz() const
 {
   return 440.0 * pow(2.0,(self.base_pitch-(int)0x45)/12.0);
 }
@@ -294,7 +311,7 @@ void Note::setBasePitch(unsigned char base_pitch)
   this->self.base_pitch = base_pitch;
 }
 
-short Note::getBaseVelocity()
+short Note::getBaseVelocity() const
 {
   return self.base_velocity;
 }
@@ -307,6 +324,11 @@ void Note::setBaseVelocity(short base_velocity)
 void Note::addVelocityPoint(long ms, short vel)
 {
   self.velocity_points.push_back(make_pair(ms, vel));
+}
+
+void Note::setVelocityPoints(const list< pair<long,short> >& velocity_points)
+{
+  self.velocity_points = velocity_points;
 }
 
 list< pair<long,short> > Note::getVelocityPoints()
@@ -327,7 +349,7 @@ list< pair<long,short> > Note::getVelocityPoints()
   return tmp_velocities;
 }
 
-short Note::getVelocityPointNum()
+short Note::getVelocityPointNum() const
 {
   return self.velocity_points.size();
 }
@@ -348,17 +370,16 @@ vector<short> Note::getVelocities()
 
   // vels to velocities
   for (map<long,short>::iterator it=++tmp_vels.begin(); it!=tmp_vels.end(); ++it) {
-    for (int i=0; i<it->first-boost::prior(it)->first; i++) {
+    for (size_t i=0; i<it->first-boost::prior(it)->first; i++) {
       velocities[i+boost::prior(it)->first] =
-        (1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second)
-        *self.base_velocity/100.0;
+        (1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second)*(self.base_velocity/100.0);
     }
   }
 
   return velocities;
 }
 
-bool Note::isPrec()
+bool Note::isPrec() const
 {
   return self.prec!=0;
 }
@@ -377,7 +398,7 @@ void Note::setPrec(short prec)
   self.prec = new short (prec);
 }
 
-bool Note::isOvrl()
+bool Note::isOvrl() const
 {
   return self.ovrl!=0;
 }
@@ -396,7 +417,7 @@ void Note::setOvrl(short ovrl)
   self.ovrl = new short (ovrl);
 }
 
-bool Note::isCons()
+bool Note::isCons() const
 {
   return self.cons!=0;
 }
@@ -423,19 +444,4 @@ bool Note::isVCV() const
 void Note::isVCV(bool is_vcv)
 {
   self.is_vcv = is_vcv;
-}
-
-void Note::initializeNoteFrame()
-{
-  self.start = 0;
-  self.end = 0;
-  self.pron = "";
-  self.base_pitch = 0x45;
-  self.base_velocity = 100;
-  self.margin = 0;
-  self.padding = 0;
-  self.prec = 0;
-  self.ovrl = 0;
-  self.cons = 0;
-  self.is_vcv = false;
 }

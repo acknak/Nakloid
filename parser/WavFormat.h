@@ -18,13 +18,13 @@ class WavFormat {
   unsigned short wBitsPerSamples;
 
   void setDefaultValues();
-  static bool isTag(char* tag);
-  static bool isRiffTag(char* tag);
-  static bool isWaveTag(char* tag);
-  static bool isFmtTag(char* tag);
-  static bool isFactTag(char* tag);
-  static bool isDataTag(char* tag);
-  static bool isListTag(char* tag);
+  static bool isTag(const char* const tag);
+  static bool isRiffTag(const char* const tag);
+  static bool isWaveTag(const char* const tag);
+  static bool isFmtTag(const char* const tag);
+  static bool isFactTag(const char* const tag);
+  static bool isDataTag(const char* const tag);
+  static bool isListTag(const char* const tag);
 
   static const char riff[]; //riff header
   static const char wave[]; //wave header

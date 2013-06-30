@@ -10,23 +10,19 @@ SmfParser::SmfParser(){}
 
 SmfParser::~SmfParser(){}
 
-SmfParser::SmfParser(string filename)
-{
-  setInput(filename);
-}
+SmfParser::SmfParser(const wstring& filename):input(filename){}
 
-SmfParser::SmfParser(SmfHandler* handler)
+SmfParser::SmfParser(SmfHandler* const handler)
 {
   addSmfHandler(handler);
 }
 
-SmfParser::SmfParser(string filename, SmfHandler* handler)
+SmfParser::SmfParser(const wstring& filename, SmfHandler* const handler):input(filename)
 {
-  setInput(filename);
   addSmfHandler(handler);
 }
 
-bool SmfParser::isSmfFile()
+bool SmfParser::isSmfFile() const
 {
   if (input.empty()) {
     cerr << "[SmfParser::isSmfFile] input is NULL" << endl;
@@ -35,15 +31,15 @@ bool SmfParser::isSmfFile()
 
   ifstream ifs(input.c_str(), ios::in | ios::binary);
   if (!ifs) {
-    cerr << "[SmfParser::isSmfFile] file '" << input << "' cannot open" << endl;
+    wcerr << L"[SmfParser::isSmfFile] file '" << input << L"' cannot open" << endl;
     return false;
   }
 
   unsigned char data;
-  for (int i=0; i<10; i++) {
+  for (size_t i=0; i<10; i++) {
     ifs.read((char*)&data, sizeof(char));
     if (data != mthd[i]) {
-      cerr << "[SmfParser::isSmfFile] file '" << input << "' is not SMF(format 1)" << endl;
+      wcerr << L"[SmfParser::isSmfFile] file '" << input << L"' is not SMF(format 1)" << endl;
       return false;
     } 
   }
@@ -81,12 +77,12 @@ bool SmfParser::parse()
 
   // parse data chunk
   cout << "num_track:" << num_track << endl;
-  for (int i=0; i<num_track; i++) {
+  for (size_t i=0; i<num_track; i++) {
     for (it=handlers.begin(); it!=handlers.end(); it++)
       (*it)->trackChange(i);
 
     // get chunk head
-    for (int j=0; j<4; j++) {
+    for (size_t j=0; j<4; j++) {
       ifs.read((char*)&data, sizeof(char));
       if (data != mtrk[j]) {
         cerr << "[SmfParser::parse] " << i << "th MTrk cannot find" << endl;
@@ -96,7 +92,7 @@ bool SmfParser::parse()
 
     // get chunk data size
     long datasize = 0;
-    for (int j=0; j<4; j++) {
+    for (size_t j=0; j<4; j++) {
       ifs.read((char*)&data, sizeof(char));
       datasize <<= 8;
       datasize += (long)data;
@@ -105,7 +101,7 @@ bool SmfParser::parse()
 
     // get chunk data
     unsigned char status = 0;
-    for (long j=0; j<datasize; j++) {
+    for (size_t j=0; j<datasize; j++) {
       // get deltatime
       long deltatime = 0;
       do {
@@ -182,23 +178,31 @@ bool SmfParser::parse()
   return true;
 }
 
-string SmfParser::getInput()
+/*
+ * accessor
+ */
+const wstring& SmfParser::getInput() const
 {
   return input;
 }
 
-void SmfParser::setInput(string filename)
+void SmfParser::setInput(const wstring& filename)
 {
   input = filename;
 }
 
-void SmfParser::setSmfHandler(vector<SmfHandler*> handlers)
+const vector<SmfHandler*>& SmfParser::getSmfHandler() const
 {
-  handlers.clear();
+  return handlers;
+}
+
+void SmfParser::setSmfHandler(const vector<SmfHandler*>& handlers)
+{
+  this->handlers.clear();
   this->handlers = handlers;
 }
 
-void SmfParser::addSmfHandler(SmfHandler* handler)
+void SmfParser::addSmfHandler(SmfHandler* const handler)
 {
   handlers.push_back(handler);
 }

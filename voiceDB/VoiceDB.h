@@ -1,46 +1,45 @@
 #ifndef VoiceDB_h
 #define VoiceDB_h
 
-#include <map>
-#include <tuple>
 #include <cctype>
+#include <map>
 #include <string>
-#include <fstream>
-#include <boost/foreach.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
+#include <tuple>
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 #include "Voice.h"
 #include "../parser/WavParser.h"
 #include "../PSOLA/PitchMarker.h"
 #include "../PSOLA/UnitWaveformMaker.h"
 class Voice;
 
-// Reference Object
 class VoiceDB {
  public:
   VoiceDB();
-  VoiceDB(std::string path_singer);
+  VoiceDB(const std::wstring& path_singer);
   virtual ~VoiceDB();
 
   bool initVoiceMap();
-  bool initVoiceMap(std::string path_oto_ini);
-  const Voice* getVoice(std::string alias);
-  bool isAlias(std::string alias);
-  bool isVowel(std::string pron);
-  std::vector<double> getVowel(std::string alias);
+  bool initVoiceMap(const std::wstring& path_oto_ini);
 
   // accessor
-  void setSingerPath(std::string path_singer);
-  std::string getSingerPath();
+  const Voice* getVoice(const std::wstring& alias) const;
+  bool isAlias(const std::wstring& alias) const;
+  bool isVowel(const std::wstring& subject) const;
+  const std::vector<double>& getVowel(const std::wstring& subject) const;
+  void setSingerPath(const std::wstring& path_singer);
+  const std::wstring& getSingerPath() const;
+
+ protected:
+  std::wstring path_singer;
+  std::map<std::wstring, Voice> voice_map;
+  std::map<std::wstring, std::vector<double>> vowel_map;
 
  private:
   VoiceDB(const VoiceDB& other);
   VoiceDB& operator=(const VoiceDB& other);
-
-  std::string path_singer;
-  std::map<std::string, Voice> voice_map;
-  std::map<std::string, std::vector<double>> vowel_map;
 };
 
 #endif

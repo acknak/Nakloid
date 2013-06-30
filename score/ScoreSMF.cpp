@@ -2,7 +2,7 @@
 
 using namespace std;
 
-ScoreSMF::ScoreSMF(string input_smf, short track, string path_lyrics, string path_song, string path_singer)
+ScoreSMF::ScoreSMF(const wstring& input_smf, short track, const wstring& path_lyrics, const wstring& path_song, const wstring& path_singer)
   :Score(input_smf, path_song, path_singer),timebase(0),tempo(0),track(0),is_parse(false),time_parse(0),id_parse(0)
 {
   load(input_smf, track, path_lyrics);
@@ -10,26 +10,26 @@ ScoreSMF::ScoreSMF(string input_smf, short track, string path_lyrics, string pat
 
 ScoreSMF::~ScoreSMF() {}
 
-bool ScoreSMF::load(string input, short track, string path_lyrics)
+bool ScoreSMF::load(const wstring& input, short track, const wstring& path_lyrics)
 {
   cout << "----- start score(smf) loading -----" << endl;
 
   // load lyrics txt
-  list<string> prons;
-  ifstream ifs(path_lyrics.c_str());
-  string buf_str;
+  list<wstring> prons;
+  boost::filesystem::wifstream ifs(path_lyrics);
+  wstring buf_str;
 
   if (!ifs) {
     cerr << "[ScoreSMF::load] can't load lyrics file" << endl;
     return false;
   }
   while (getline(ifs, buf_str)) {
-    if (buf_str == "")
+    if (buf_str.empty())
       continue;
-    if (*(buf_str.end()-1) == ',')
+    if (*(buf_str.end()-1) == L',')
       buf_str.erase(buf_str.end()-1,buf_str.end());
-    vector<string> buf_vector;
-    boost::algorithm::split(buf_vector, buf_str, boost::is_any_of(","));
+    vector<wstring> buf_vector;
+    boost::algorithm::split(buf_vector, buf_str, boost::is_any_of(L","));
     prons.insert(prons.end(), buf_vector.begin(), buf_vector.end());
   }
 
@@ -44,7 +44,7 @@ bool ScoreSMF::load(string input, short track, string path_lyrics)
     ifstream ifs;
     ifs.open(input.c_str(), ios::in|ios::binary);
     if (!ifs) {
-      cerr << "[Score::loadSmf] " << input << " cannot open\n";
+      wcerr << L"[Score::loadSmf] " << input << L" cannot open\n";
       return false;
     }
     Note *note = 0;
@@ -55,15 +55,15 @@ bool ScoreSMF::load(string input, short track, string path_lyrics)
   }
 
   if (notes.size() == 0) {
-    cerr << "[Score::loadSmf] cannot read notes" << endl;
+    wcerr << L"[Score::loadSmf] cannot read notes" << endl;
     return false;
   }
 
   // assign notes to pron
   list<Note>::iterator it_notes = notes.begin();
-  list<string>::iterator it_prons = prons.begin();
+  list<wstring>::iterator it_prons = prons.begin();
   for (; it_notes!=notes.end()&&it_prons!=prons.end(); ++it_notes,++it_prons) {
-    string::size_type pos_prefix = it_prons->find(" ");
+    string::size_type pos_prefix = it_prons->find(L" ");
     if (pos_prefix != string::npos) {
       it_notes->setPrefix(it_prons->substr(0, pos_prefix+1));
       it_notes->setPron(it_prons->substr(pos_prefix+1));
@@ -95,7 +95,7 @@ void ScoreSMF::trackChange(short track)
   is_parse = (this->track == track);
 }
 
-void ScoreSMF::eventMidi(long deltatime, unsigned char msg, unsigned char* data)
+void ScoreSMF::eventMidi(long deltatime, unsigned char msg, const unsigned char* const data)
 {
   if (!is_parse)
     return;
@@ -134,12 +134,12 @@ void ScoreSMF::eventMidi(long deltatime, unsigned char msg, unsigned char* data)
   }
 }
 
-void ScoreSMF::eventSysEx(long deltatime, long datasize, unsigned char* data){
+void ScoreSMF::eventSysEx(long deltatime, long datasize, const unsigned char* const data){
   if (is_parse)
     time_parse += deltatime;
 }
 
-void ScoreSMF::eventMeta(long deltatime, unsigned char type, long datasize, unsigned char* data)
+void ScoreSMF::eventMeta(long deltatime, unsigned char type, long datasize, const unsigned char* const data)
 {
   if (is_parse)
     time_parse += deltatime;

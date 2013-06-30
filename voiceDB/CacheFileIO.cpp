@@ -3,9 +3,9 @@
 using namespace std;
 using namespace uw;
 
-bool uw::isUwcFile(string filename)
+bool uw::isUwcFile(const wstring& filename)
 {
-  ifstream ifs(filename.c_str(), ios_base::binary);
+  boost::filesystem::ifstream ifs(filename, ios_base::binary);
 
   // check RIFF tag
   {
@@ -45,13 +45,13 @@ bool uw::isUwcFile(string filename)
   return true;
 }
 
-UnitWaveformContainer uw::load(string filename)
+UnitWaveformContainer uw::load(const wstring& filename)
 {
   UnitWaveformContainer uwc;
   if (!uw::isUwcFile(filename)) {
     return uwc;
   } else {
-    ifstream ifs(filename.c_str(), ios_base::binary);
+    boost::filesystem::ifstream ifs(filename, ios_base::binary);
     // fmt chunk
     ifs.seekg(20, ios_base::beg);
     ifs.read((char*)&uwc.format.wFormatTag, sizeof(short));
@@ -65,7 +65,7 @@ UnitWaveformContainer uw::load(string filename)
     ifs.read((char*)&uwc.format.dwRepeatStart, sizeof(long));
     ifs.read((char*)&uwc.format.wF0, sizeof(float));
 
-    while(!ifs.eof()) {
+    while (!ifs.eof()) {
       UnitWaveform tmp_unit_waveform;
       char tag[4];
       long chunkSize;
@@ -106,23 +106,23 @@ UnitWaveformContainer uw::load(string filename)
   return uwc;
 }
 
-bool uw::save(string filename, UnitWaveformContainer *uwc)
+bool uw::save(const wstring& filename, const UnitWaveformContainer& uwc)
 {
   short wAdditionalSize = UnitWaveformFormat::wAdditionalSize;
   long size_all = wAdditionalSize + sizeof(short);
-  ofstream ofs(filename.c_str(), ios_base::trunc|ios_base::binary);
-  WavParser::setWavFileFormat(&ofs, uwc->format, size_all);
+  boost::filesystem::ofstream ofs(filename, ios_base::trunc|ios_base::binary);
+  WavParser::setWavFileFormat(&ofs, uwc.format, size_all);
 
   ofs.write((char*)&(wAdditionalSize), sizeof(short));
-  ofs.write((char*)&(uwc->format.wLobeSize), sizeof(short));
-  ofs.write((char*)&(uwc->format.dwRepeatStart), sizeof(long));
-  ofs.write((char*)&(uwc->format.wF0), sizeof(float));
+  ofs.write((char*)&(uwc.format.wLobeSize), sizeof(short));
+  ofs.write((char*)&(uwc.format.dwRepeatStart), sizeof(long));
+  ofs.write((char*)&(uwc.format.wF0), sizeof(float));
 
   // fact chunk & data chunk
-  vector<UnitWaveform> unit_waveforms = uwc->unit_waveforms;
-  for(vector<UnitWaveform>::iterator it=uwc->unit_waveforms.begin(); it!=uwc->unit_waveforms.end(); ++it) {
+  vector<UnitWaveform> unit_waveforms = uwc.unit_waveforms;
+  for (vector<UnitWaveform>::const_iterator it=uwc.unit_waveforms.begin(); it!=uwc.unit_waveforms.end(); ++it) {
     vector<short> data_short(it->data.getSize(), 0);
-    WavParser::dbl2sht(it->data.getDataIterator(), &data_short);
+    WavParser::dbl2sht(it->data.getData().begin(), &data_short);
     long dataChunkSize = it->data.getSize()*sizeof(short);
     ofs.write((char*)WavFormat::fact, sizeof(char)*4);
     ofs.write((char*)&it->fact.chunkSize, sizeof(long));

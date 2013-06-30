@@ -2,22 +2,21 @@
 
 using namespace std;
 
-ScoreNAK::ScoreNAK(string input_NAK, string path_song, string path_singer)
+ScoreNAK::ScoreNAK(const wstring& input_NAK, const wstring& path_song, const wstring& path_singer)
   :Score(input_NAK, path_song, path_singer)
 {
   load(input_NAK);
 }
 
-ScoreNAK::~ScoreNAK()
-{
-}
+ScoreNAK::~ScoreNAK(){}
 
-void ScoreNAK::load(string path_nak)
+void ScoreNAK::load(const wstring& path_nak)
 {
   cout << "----- start score(NAK) loading -----" << endl;
 
+  boost::filesystem::path boost_path_nak(path_nak);
   boost::property_tree::wptree pt, pt_notes;
-  boost::property_tree::read_json(path_nak, pt);
+  boost::property_tree::read_json(boost_path_nak.string(), pt);
   BOOST_FOREACH (const boost::property_tree::wptree::value_type& child_notes, pt.get_child(L"Score.notes")) {
     Note *tmp_note;
     const boost::property_tree::wptree& pt_note = child_notes.second;
@@ -25,15 +24,8 @@ void ScoreNAK::load(string path_nak)
       tmp_note = new Note(this, id.get());
     else
       continue;
-    if (boost::optional<wstring> alias_w = pt_note.get_optional<wstring>(L"alias")) {
-	    char *mbs = new char[alias_w.get().length() * MB_CUR_MAX + 1];
-	    wcstombs(mbs, alias_w.get().c_str(), alias_w.get().length() * MB_CUR_MAX + 1);
-      tuple<string,string,string,bool> alias = nak::parseAlias(mbs);
-	    delete [] mbs;
-      tmp_note->setPrefix(get<0>(alias));
-      tmp_note->setPron(get<1>(alias));
-      tmp_note->setSuffix(get<2>(alias));
-    }
+    if (boost::optional<wstring> alias = pt_note.get_optional<wstring>(L"alias"))
+      tmp_note->setAlias(alias.get());
     if (boost::optional<bool> is_vcv = pt_note.get_optional<bool>(L"vcv"))
       tmp_note->isVCV(is_vcv);
     if (boost::optional<long> start = pt_note.get_optional<long>(L"start"))

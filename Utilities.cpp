@@ -5,29 +5,29 @@ using namespace nak;
 
 namespace nak {
   // Input
-  string path_singer;
-  string path_prefix_map;
+  wstring path_singer;
+  wstring path_prefix_map;
 
   enum ScoreMode score_mode;
-  string path_nak;
-  string path_ust;
-  string path_smf;
+  wstring path_nak;
+  wstring path_ust;
+  wstring path_smf;
   short track;
-  string path_lyrics;
+  wstring path_lyrics;
 
   enum PitchesMode pitches_mode;
-  string path_pitches;
+  wstring path_pitches;
   unsigned char pitch_frame_length;
 
   // Output
-  string path_song;
-  string path_output_nak;
-  string path_output_pit;
+  wstring path_song;
+  wstring path_output_nak;
+  wstring path_output_pit;
 
   // Nakloid
   long margin;
   bool cache;
-  string path_log;
+  bool print_log;
   bool auto_vowel_combining;
   double vowel_combining_volume;
 
@@ -67,33 +67,34 @@ namespace nak {
   bool finefluctuation;
 
   // internal parameters
-  map<string, string> vow2pron = boost::assign::map_list_of
-    ("a", "あ")("i", "い")("u", "う")("e", "え")("o", "お")("n", "ん")("i", "ゐ")("e", "ゑ");
-  map<string, string> pron2vow = boost::assign::map_list_of
-    ("あ", "a")("い", "i")("う", "u")("え", "e")("お", "o")
-    ("ぁ", "a")("ぃ", "i")("ぅ", "u")("ぇ", "e")("ぉ", "o")
-    ("か", "a")("き", "i")("く", "u")("け", "e")("こ", "o")
-    ("が", "a")("ぎ", "i")("ぐ", "u")("げ", "e")("ご", "o")
-    ("さ", "a")("し", "i")("す", "u")("せ", "e")("そ", "o")
-    ("ざ", "a")("じ", "i")("ず", "u")("ぜ", "e")("ぞ", "o")
-    ("た", "a")("ち", "i")("つ", "u")("て", "e")("と", "o")
-    ("だ", "a")("ぢ", "i")("づ", "u")("で", "e")("ど", "o")
-    ("な", "a")("に", "i")("ぬ", "u")("ね", "e")("の", "o")
-    ("は", "a")("ひ", "i")("ふ", "u")("へ", "e")("ほ", "o")
-    ("ば", "a")("び", "i")("ぶ", "u")("べ", "e")("ぼ", "o")
-    ("ぱ", "a")("ぴ", "i")("ぷ", "u")("ぺ", "e")("ぽ", "o")
-    ("ま", "a")("み", "i")("む", "u")("め", "e")("も", "o")
-    ("や", "a")("ゆ", "u")("よ", "o")("ゃ", "a")("ゅ", "u")("ょ", "o")
-    ("ら", "a")("り", "i")("る", "u")("れ", "e")("ろ", "o")
-    ("わ", "a")("を", "o")("ん", "n")("ゐ", "i")("ゑ", "e");
+  map<wstring, wstring> vow2pron = boost::assign::map_list_of
+    (L"a", L"あ")(L"i", L"い")(L"u", L"う")(L"e", L"え")(L"o", L"お")(L"n", L"ん");
+  map<wstring, wstring> pron2vow = boost::assign::map_list_of
+    (L"あ", L"a")(L"い", L"i")(L"う", L"u")(L"え", L"e")(L"お", L"o")
+    (L"ぁ", L"a")(L"ぃ", L"i")(L"ぅ", L"u")(L"ぇ", L"e")(L"ぉ", L"o")
+    (L"か", L"a")(L"き", L"i")(L"く", L"u")(L"け", L"e")(L"こ", L"o")
+    (L"が", L"a")(L"ぎ", L"i")(L"ぐ", L"u")(L"げ", L"e")(L"ご", L"o")
+    (L"さ", L"a")(L"し", L"i")(L"す", L"u")(L"せ", L"e")(L"そ", L"o")
+    (L"ざ", L"a")(L"じ", L"i")(L"ず", L"u")(L"ぜ", L"e")(L"ぞ", L"o")
+    (L"た", L"a")(L"ち", L"i")(L"つ", L"u")(L"て", L"e")(L"と", L"o")
+    (L"だ", L"a")(L"ぢ", L"i")(L"づ", L"u")(L"で", L"e")(L"ど", L"o")
+    (L"な", L"a")(L"に", L"i")(L"ぬ", L"u")(L"ね", L"e")(L"の", L"o")
+    (L"は", L"a")(L"ひ", L"i")(L"ふ", L"u")(L"へ", L"e")(L"ほ", L"o")
+    (L"ば", L"a")(L"び", L"i")(L"ぶ", L"u")(L"べ", L"e")(L"ぼ", L"o")
+    (L"ぱ", L"a")(L"ぴ", L"i")(L"ぷ", L"u")(L"ぺ", L"e")(L"ぽ", L"o")
+    (L"ま", L"a")(L"み", L"i")(L"む", L"u")(L"め", L"e")(L"も", L"o")
+    (L"や", L"a")(L"ゆ", L"u")(L"よ", L"o")(L"ゃ", L"a")(L"ゅ", L"u")(L"ょ", L"o")
+    (L"ら", L"a")(L"り", L"i")(L"る", L"u")(L"れ", L"e")(L"ろ", L"o")
+    (L"わ", L"a")(L"を", L"o")(L"ん", L"n")(L"ゐ", L"i")(L"ゑ", L"e");
 }
 
 // parser
-bool nak::parse(string path_ini)
+bool nak::parse(const wstring& path_ini)
 {
-  boost::property_tree::ptree ptree;
+  boost::property_tree::wptree ptree;
   try {
-    boost::property_tree::ini_parser::read_ini(path_ini, ptree);
+    boost::filesystem::path fs_path_ini(path_ini);
+    boost::property_tree::ini_parser::read_ini(fs_path_ini.string(), ptree);
   } catch (boost::property_tree::ini_parser::ini_parser_error &e) {
     cerr << e.message() << endl
       << "[nak::parse] can't parse Nakloid.ini" << endl;
@@ -103,82 +104,86 @@ bool nak::parse(string path_ini)
   }
 
   // Input
-  path_singer = ptree.get<string>("Input.path_singer", "");
-  path_prefix_map = ptree.get<string>("Input.path_prefix_map", "");
+  path_singer = ptree.get<wstring>(L"Input.path_singer", L"");
+  path_prefix_map = ptree.get<wstring>(L"Input.path_prefix_map", L"");
 
-  string tmp_score = ptree.get<string>("Input.score_mode", "nak");
-  if (tmp_score == "nak") {
-    score_mode = score_mode_nak;
-    path_nak = ptree.get<string>("Input.path_nak", "score.nak");
-  } else if (tmp_score == "ust") {
-    score_mode = score_mode_ust;
-    path_ust = ptree.get<string>("Input.path_ust", "score.ust");
-  } else if (tmp_score == "smf") {
-    score_mode = score_mode_smf;
-    track = ptree.get<short>("Input.track", 1);
-    path_smf = ptree.get<string>("Input.path_smf", "score.mid");
-    path_lyrics = ptree.get<string>("Input.path_lyrics", "lyrics.txt");
-  } else {
-    cerr << "[nak::parse] can't recognize score_mode" << endl;
-    return false;
+  {
+    wstring tmp_score = ptree.get<wstring>(L"Input.score_mode", L"nak");
+    if (tmp_score == L"nak") {
+      score_mode = score_mode_nak;
+      path_nak = ptree.get<wstring>(L"Input.path_nak", L"score.nak");
+    } else if (tmp_score == L"ust") {
+      score_mode = score_mode_ust;
+      path_ust = ptree.get<wstring>(L"Input.path_ust", L"score.ust");
+    } else if (tmp_score == L"smf") {
+      score_mode = score_mode_smf;
+      track = ptree.get<short>(L"Input.track", 1);
+      path_smf = ptree.get<wstring>(L"Input.path_smf", L"score.mid");
+      path_lyrics = ptree.get<wstring>(L"Input.path_lyrics", L"lyrics.txt");
+    } else {
+      cerr << "[nak::parse] can't recognize score_mode" << endl;
+      return false;
+    }
   }
-  string tmp_pitches = ptree.get<string>("Input.pitches_mode", "");
-  if (tmp_pitches == "pit") {
-    pitches_mode = pitches_mode_pit;
-  } else if (tmp_pitches == "lf0") {
-    pitches_mode = pitches_mode_lf0;
-  } else {
-    pitches_mode = pitches_mode_none;
+  {
+    wstring tmp_pitches = ptree.get<wstring>(L"Input.pitches_mode", L"");
+    if (tmp_pitches == L"pit") {
+      pitches_mode = pitches_mode_pit;
+    } else if (tmp_pitches == L"lf0") {
+      pitches_mode = pitches_mode_lf0;
+    } else {
+      pitches_mode = pitches_mode_none;
+    }
   }
-  path_pitches = ptree.get<string>("Input.path_pitches", "");
-  pitch_frame_length = ptree.get<unsigned char>("Input.pitch_frame_length", 1);
+  path_pitches = ptree.get<wstring>(L"Input.path_pitches", L"");
+  pitch_frame_length = ptree.get<unsigned char>(L"Input.pitch_frame_length", 1);
 
   // Output
-  margin = ptree.get<long>("Output.margin", 0);
-  path_song = ptree.get<string>("Output.path_song", "");
-  path_output_nak = ptree.get<string>("Output.path_output_nak", "");
-  path_output_pit = ptree.get<string>("Output.path_output_pit", "");
+  margin = ptree.get<long>(L"Output.margin", 0);
+  path_song = ptree.get<wstring>(L"Output.path_song", L"");
+  path_output_nak = ptree.get<wstring>(L"Output.path_output_nak", L"");
+  path_output_pit = ptree.get<wstring>(L"Output.path_output_pit", L"");
 
   // Nakloid
-  cache = ptree.get<bool>("Nakloid.cache", false);
-  path_log = ptree.get<string>("Nakloid.path_log", "");
-  auto_vowel_combining = ptree.get<bool>("Nakloid.auto_vowel_combining", false);
-  vowel_combining_volume = ptree.get<double>("Nakloid.vowel_combining_volume", 1.0);
+  cache = ptree.get<bool>(L"Nakloid.cache", false);
+  print_log = ptree.get<bool>(L"Nakloid.print_log", "");
+  auto_vowel_combining = ptree.get<bool>(L"Nakloid.auto_vowel_combining", false);
+  vowel_combining_volume = ptree.get<double>(L"Nakloid.vowel_combining_volume", 1.0);
 
   // PitchMarker
-  pitch_margin = ptree.get<short>("PitchMarker.pitch_margin", 10);
+  pitch_margin = ptree.get<short>(L"PitchMarker.pitch_margin", 10);
 
   // UnitWaveformMaker
-  target_rms = ptree.get<double>("UnitWaveformMaker.target_rms", 0.05);
-  unit_waveform_lobe = ptree.get<unsigned char>("UnitWaveformMaker.unit_waveform_lobe", 3);
-  is_normalize = ptree.get<bool>("UnitWaveformMaker.normalize", false);
+  target_rms = ptree.get<double>(L"UnitWaveformMaker.target_rms", 0.05);
+  unit_waveform_lobe = ptree.get<unsigned char>(L"UnitWaveformMaker.unit_waveform_lobe", 3);
+  is_normalize = ptree.get<bool>(L"UnitWaveformMaker.normalize", false);
 
   // UnitWaveformOverlapper
-  fade_stretch = ptree.get<double>("UnitWaveformOverlapper.fade_stretch", 1.0);
-  interpolation = ptree.get<bool>("UnitWaveformOverlapper.interpolation", false);
-  max_volume = ptree.get<double>("UnitWaveformOverlapper.max_volume", 0.9);
-  compressor = ptree.get<bool>("UnitWaveformOverlapper.compressor", false);
-  threshold = ptree.get<double>("UnitWaveformOverlapper.threshold", -18.0);
-  ratio = ptree.get<double>("UnitWaveformOverlapper.threshold_y", 2.5);
+  fade_stretch = ptree.get<double>(L"UnitWaveformOverlapper.fade_stretch", 1.0);
+  interpolation = ptree.get<bool>(L"UnitWaveformOverlapper.interpolation", false);
+  max_volume = ptree.get<double>(L"UnitWaveformOverlapper.max_volume", 0.9);
+  compressor = ptree.get<bool>(L"UnitWaveformOverlapper.compressor", false);
+  threshold = ptree.get<double>(L"UnitWaveformOverlapper.threshold", -18.0);
+  ratio = ptree.get<double>(L"UnitWaveformOverlapper.threshold_y", 2.5);
 
   // Note
-  ms_front_padding = ptree.get<short>("Note.ms_front_padding", 5);
-  ms_back_padding = ptree.get<short>("Note.ms_back_padding", 35);
+  ms_front_padding = ptree.get<short>(L"Note.ms_front_padding", 5);
+  ms_back_padding = ptree.get<short>(L"Note.ms_back_padding", 35);
 
   // PitchArranger
-  vibrato = ptree.get<bool>("PitchArranger.vibrato", false);
-  overshoot = ptree.get<bool>("PitchArranger.overshoot", false);
-  preparation = ptree.get<bool>("PitchArranger.preparation", false);
-  completion = ptree.get<bool>("PitchArranger.completion", true);
-  finefluctuation = ptree.get<bool>("PitchArranger.finefluctuation", false);
-  ms_overshoot = ptree.get<short>("PitchArranger.ms_overshoot", 50);
-  pitch_overshoot = ptree.get<double>("PitchArranger.pitch_overshoot", 3.0);
-  ms_preparation = ptree.get<short>("PitchArranger.ms_preparation", 50);
-  pitch_preparation = ptree.get<double>("PitchArranger.pitch_preparation", 3.0);
-  ms_vibrato_offset = ptree.get<short>("PitchArranger.ms_vibrato_offset", 400);
-  ms_vibrato_width = ptree.get<short>("PitchArranger.ms_vibrato_width", 200);
-  pitch_vibrato = ptree.get<double>("PitchArranger.pitch_vibrato", 3.0);
-  finefluctuation_deviation = ptree.get<double>("PitchArranger.finefluctuation_deviation", 0.5);
+  vibrato = ptree.get<bool>(L"PitchArranger.vibrato", false);
+  overshoot = ptree.get<bool>(L"PitchArranger.overshoot", false);
+  preparation = ptree.get<bool>(L"PitchArranger.preparation", false);
+  completion = ptree.get<bool>(L"PitchArranger.completion", true);
+  finefluctuation = ptree.get<bool>(L"PitchArranger.finefluctuation", false);
+  ms_overshoot = ptree.get<short>(L"PitchArranger.ms_overshoot", 50);
+  pitch_overshoot = ptree.get<double>(L"PitchArranger.pitch_overshoot", 3.0);
+  ms_preparation = ptree.get<short>(L"PitchArranger.ms_preparation", 50);
+  pitch_preparation = ptree.get<double>(L"PitchArranger.pitch_preparation", 3.0);
+  ms_vibrato_offset = ptree.get<short>(L"PitchArranger.ms_vibrato_offset", 400);
+  ms_vibrato_width = ptree.get<short>(L"PitchArranger.ms_vibrato_width", 200);
+  pitch_vibrato = ptree.get<double>(L"PitchArranger.pitch_vibrato", 3.0);
+  finefluctuation_deviation = ptree.get<double>(L"PitchArranger.finefluctuation_deviation", 0.5);
 
   return true;
 }
@@ -198,60 +203,63 @@ long nak::tick2ms(unsigned long tick, unsigned short timebase, unsigned long tem
   return (long)(((double)tick) / timebase * (tempo/1000.0));
 }
 
-vector<double> nak::normalize(vector<double> wav, double target_rms)
+vector<double> nak::normalize(const vector<double>& wav, double target_rms)
 {
-  double scale = target_rms / getRMS(wav);
-  for (int i=0; i<wav.size(); i++)
-    wav[i] *= scale;
-  return wav;
+  vector<double> tmp_wav = wav;
+  double scale = target_rms / getRMS(tmp_wav);
+  for (size_t i=0; i<tmp_wav.size(); i++)
+    tmp_wav[i] *= scale;
+  return tmp_wav;
 }
 
-vector<double> nak::normalize(vector<double> wav, double target_mean, double target_var)
+vector<double> nak::normalize(const vector<double>& wav, double target_mean, double target_var)
 {
-  double wav_mean = getMean(wav);
-  double wav_var = getVar(wav, wav_mean);
-  for (int i=0; i<wav.size(); i++)
-    wav[i] = (wav[i]+(target_mean-wav_mean)) * (target_var/wav_var);
-  return wav;
+  vector<double> tmp_wav = wav;
+  double wav_mean = getMean(tmp_wav);
+  double wav_var = getVar(tmp_wav, wav_mean);
+  for (size_t i=0; i<tmp_wav.size(); i++)
+    tmp_wav[i] = (tmp_wav[i]+(target_mean-wav_mean)) * (target_var/wav_var);
+  return tmp_wav;
 }
 
-vector<double> nak::normalize(vector<double> wav, short target_max, short target_min)
+vector<double> nak::normalize(const vector<double>& wav, short target_max, short target_min)
 {
-  double wav_max = *max_element(wav.begin(), wav.end());
-  double wav_min = *min_element(wav.begin(), wav.end());
+  vector<double> tmp_wav = wav;
+  double wav_max = *max_element(tmp_wav.begin(), tmp_wav.end());
+  double wav_min = *min_element(tmp_wav.begin(), tmp_wav.end());
 
-  for (int i=0; i<wav.size(); i++)
-    wav[i] -= ((wav_max+wav_min)/2.0);
+  for (size_t i=0; i<tmp_wav.size(); i++)
+    tmp_wav[i] -= ((wav_max+wav_min)/2.0);
 
-  for (int i=0; i<wav.size(); i++)
-    wav[i] *= ((double)target_max-target_min) / (wav_max-wav_min);
+  for (size_t i=0; i<tmp_wav.size(); i++)
+    tmp_wav[i] *= ((double)target_max-target_min) / (wav_max-wav_min);
 
-  for (int i=0; i<wav.size(); i++)
-    wav[i] += (target_max+target_min)/2.0;
+  for (size_t i=0; i<tmp_wav.size(); i++)
+    tmp_wav[i] += (target_max+target_min)/2.0;
 
-  return wav;
+  return tmp_wav;
 }
 
-double nak::getRMS(vector<double> wav)
+double nak::getRMS(const vector<double>& wav)
 {
   double rms = 0.0;
-  for (int i=0; i<wav.size(); i++)
+  for (size_t i=0; i<wav.size(); i++)
     rms += pow((double)wav[i], 2) / wav.size();
   return sqrt(rms);
 }
 
-double nak::getMean(vector<double> wav)
+double nak::getMean(const vector<double>& wav)
 {
   double mean = 0.0;
-  for (int i=0; i<wav.size(); i++)
+  for (size_t i=0; i<wav.size(); i++)
     mean += wav[i] / (double)wav.size();
   return mean;
 }
 
-double nak::getVar(vector<double> wav, double mean)
+double nak::getVar(const vector<double>& wav, double mean)
 {
   double var = 0.0;
-  for (int i=0; i<wav.size(); i++)
+  for (size_t i=0; i<wav.size(); i++)
     var += pow(wav[i]-mean, 2) / wav.size();
   return sqrt(var);
 }
@@ -268,7 +276,7 @@ pair<bool, double> nak::val2dB(double wav_value)
   return make_pair(wav_value>0, log10(abs(wav_value))*20);
 }
 
-double nak::dB2val(pair<bool, double> dB)
+double nak::dB2val(const pair<bool, double>& dB)
 {
   if (dB.second > 0)
     return 0.0;
@@ -278,7 +286,7 @@ double nak::dB2val(pair<bool, double> dB)
 vector<double> nak::getTri(long len)
 {
   vector<double> filter(len, 0);
-  for (int i=0; i<filter.size(); ++i) {
+  for (size_t i=0; i<filter.size(); ++i) {
     double x = (i+1.0) / (filter.size()+1.0);
     filter[i] = 1.0 - 2*fabs(x-0.5);
   }
@@ -288,7 +296,7 @@ vector<double> nak::getTri(long len)
 vector<double> nak::getHann(long len)
 {
   vector<double> filter(len, 0);
-  for (int i=0; i<filter.size(); ++i) {
+  for (size_t i=0; i<filter.size(); ++i) {
     double x = (i+1.0) / (filter.size()+1.0);
     filter[i] = 0.5 - (0.5 * cos(2*M_PI*x));
   }
@@ -300,7 +308,7 @@ vector<double> nak::getLanczos(long len, unsigned char lobe)
   vector<double> fore_filter(len/2, 0);
   vector<double> aft_filter(len/2, 0);
 
-  for (int i=0; i<fore_filter.size(); i++) {
+  for (size_t i=0; i<fore_filter.size(); i++) {
     double x = (i+1.0) * lobe / aft_filter.size();
     aft_filter[i] = sinc(x) * sinc(x/lobe);
   }
@@ -318,9 +326,9 @@ double nak::sinc(double x)
   return sin(M_PI*x)/(M_PI*x);
 }
 
-map<string, string>::const_iterator nak::getVow2PronIt(string pron)
+map<wstring, wstring>::const_iterator nak::getVow2PronIt(const wstring& pron)
 {
-  map<string, string>::const_iterator it = nak::vow2pron.begin();
+  map<wstring, wstring>::const_iterator it = nak::vow2pron.begin();
   do {
     if (it->second == pron) {
       break;
@@ -329,29 +337,29 @@ map<string, string>::const_iterator nak::getVow2PronIt(string pron)
   return it;
 }
 
-tuple<string, string, string, bool> nak::parseAlias(string alias)
+nak::VoiceAlias::VoiceAlias(const wstring &alias)
 {
-  string prefix, pron=alias, suffix;
+  pron = alias;
   bool is_vcv = false;
 
   // get prefix
-  string::size_type pos_prefix = pron.find(" ");
-  if (pron.size()>1 && pos_prefix != string::npos) {
+  wstring::size_type pos_prefix = pron.find(L" ");
+  if (pron.size()>1 && pos_prefix != wstring::npos) {
     prefix = pron.substr(0, pos_prefix+1);
     pron.erase(0, pos_prefix+1);
-    if (prefix!="- " && prefix!="* ") {
-      is_vcv = true;
-    }
   }
 
   // get suffix
   if (pron.size() > 2) {
-    string tmp_suffix = pron.substr(pron.size()-2);
-    if (isalpha(tmp_suffix[0]) && isdigit(tmp_suffix[1])) {
+    wstring tmp_suffix = pron.substr(pron.size()-2);
+    if (iswascii(tmp_suffix[0]) && iswalpha(tmp_suffix[0]) && iswdigit(tmp_suffix[1])) {
       suffix = tmp_suffix;
       pron.erase(pron.size()-2, 2);
     }
   }
+}
 
-  return tuple<string,string,string,bool>(prefix, pron, suffix, is_vcv);
+bool nak::VoiceAlias::checkVCV()
+{
+  return (prefix.find(L" ")!=wstring::npos && (prefix[0]!=L'*'&&prefix[0]!=L'-'));
 }

@@ -1,13 +1,11 @@
 #ifndef UnitWaveformMaker_h
 #define UnitWaveformMaker_h
 
-#include <list>
-#include <cmath>
-#include <vector>
-#include <numeric>
-#include <fstream>
-#include <iostream>
 #include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <numeric>
+#include <vector>
 
 #include "UnitWaveform.h"
 #include "../Utilities.h"
@@ -19,22 +17,18 @@ class UnitWaveformMaker {
   UnitWaveformMaker();
   virtual ~UnitWaveformMaker();
 
-  bool makeUnitWaveform(std::vector<double> voice, bool is_vcv);
-  bool makeUnitWaveform(std::vector<double> voice, short pitch, bool is_vcv);
+  bool makeUnitWaveform(const std::vector<double>& voice, bool is_vcv);
+  bool makeUnitWaveform(const std::vector<double>& voice, short pitch, bool is_vcv);
 
   // accessor
-  std::vector<uw::UnitWaveform> getUnitWaveform();
-  std::vector<long> getPitchMarkVector();
-  std::list<long> getPitchMarkList();
-  void setPitchMarks(std::vector<long> pitch_marks);
-  void setPitchMarks(std::vector<long> pitch_marks, long ms_rep_start, unsigned long fs);
-  void setPitchMarks(std::vector<long> pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs);
-  long UnitWaveformMaker::getFadeStartSub();
+  const std::vector<uw::UnitWaveform>& getUnitWaveform() const;
+  const std::vector<long>& getPitchMarks() const;
+  void setPitchMarks(const std::vector<long>& pitch_marks);
+  void setPitchMarks(const std::vector<long>& pitch_marks, long ms_rep_start, unsigned long fs);
+  void setPitchMarks(const std::vector<long>& pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs);
+  long UnitWaveformMaker::getFadeStartSub() const;
 
- private:
-  UnitWaveformMaker(const UnitWaveformMaker& other);
-  UnitWaveformMaker& operator=(const UnitWaveformMaker& other);
-
+ protected:
   uw::UnitWaveform makeUnitWaveform(short point, short pitch);
   uw::UnitWaveform makeUnitWaveform(short point, short pitch, double scale);
 
@@ -44,6 +38,10 @@ class UnitWaveformMaker {
   unsigned char lobe;
   long sub_rep_start;
   long sub_ovrl;
+
+ private:
+  UnitWaveformMaker(const UnitWaveformMaker& other);
+  UnitWaveformMaker& operator=(const UnitWaveformMaker& other);
 };
 
 #endif

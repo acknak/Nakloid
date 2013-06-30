@@ -3,17 +3,15 @@
 using namespace std;
 using namespace uw;
 
-Voice::Voice():voice_db(0),path_wav(""),pron(""),prefix(""),suffix(""),is_vcv(false),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0){}
+Voice::Voice():voice_db(0),path_wav(L""),alias(),is_vcv(false),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0){}
 
-Voice::Voice(VoiceDB* voice_db):voice_db(voice_db),path_wav(""),pron(""),prefix(""),suffix(""),is_vcv(false),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0){}
+Voice::Voice(VoiceDB* const voice_db):voice_db(voice_db),path_wav(L""),alias(),is_vcv(false),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0){}
 
-Voice::Voice(const Voice& other):voice_db(0),path_wav(""),pron(""),prefix(""),suffix(""),is_vcv(false),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0)
+Voice::Voice(const Voice& other):voice_db(0),path_wav(L""),alias(),is_vcv(false),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0)
 {
   voice_db = other.voice_db;
   path_wav = other.path_wav;
-  pron = other.pron;
-  prefix = other.prefix;
-  suffix = other.suffix;
+  alias = other.alias;
   is_vcv = other.is_vcv;
   offs = other.offs;
   cons = other.cons;
@@ -26,7 +24,7 @@ Voice::Voice(const Voice& other):voice_db(0),path_wav(""),pron(""),prefix(""),su
   }
 
   if (other.hasUwc()) {
-    setUwc(other.getUwc());
+    setUwc(*other.getUwc());
   }
 }
 
@@ -43,9 +41,7 @@ Voice& Voice::operator=(const Voice& other)
   if (this != &other) {
     voice_db = other.voice_db;
     path_wav = other.path_wav;
-    pron = other.pron;
-    prefix = other.prefix;
-    suffix = other.suffix;
+    alias = other.alias;
     is_vcv = other.is_vcv;
     offs = other.offs;
     cons = other.cons;
@@ -56,7 +52,7 @@ Voice& Voice::operator=(const Voice& other)
       setFrq(other.getFrq());
     }
     if (other.hasUwc()) {
-      setUwc(other.getUwc());
+      setUwc(*other.getUwc());
     }
   }
   return *this;
@@ -67,9 +63,9 @@ bool Voice::operator==(const Voice& other) const
   bool is_eq = true;
 
   is_eq &= (path_wav == other.path_wav);
-  is_eq &= (pron == other.pron);
-  is_eq &= (prefix == other.prefix);
-  is_eq &= (suffix == other.suffix);
+  is_eq &= (alias.pron == other.alias.pron);
+  is_eq &= (alias.prefix == other.alias.prefix);
+  is_eq &= (alias.suffix == other.alias.suffix);
   is_eq &= (is_vcv == other.is_vcv);
   is_eq &= (offs == other.offs);
   is_eq &= (cons == other.cons);
@@ -97,7 +93,41 @@ bool Voice::operator!=(const Voice& other) const
   return !(*this == other);
 }
 
-void Voice::setWavPath(string path_wav)
+/*
+ * accessor
+ */
+const nak::VoiceAlias& Voice::getAlias() const
+{
+  return alias;
+}
+
+wstring Voice::getAliasString() const
+{
+  return alias.prefix+alias.pron+alias.suffix;
+}
+
+const wstring& Voice::getPrefix() const
+{
+  return alias.prefix;
+}
+
+const wstring& Voice::getPron() const
+{
+  return alias.pron;
+}
+
+const wstring& Voice::getSuffix() const
+{
+  return alias.suffix;
+}
+
+void Voice::setAlias(const std::wstring &alias)
+{
+  nak::VoiceAlias voice_alias(alias);
+  this->alias = voice_alias;
+}
+
+void Voice::setWavPath(const wstring &path_wav)
 {
   this->path_wav = path_wav;
 }
@@ -107,19 +137,21 @@ bool Voice::hasFrq() const
   return frq > 0;
 }
 
-double Voice::getFrq() const
+float Voice::getFrq() const
 {
   if (frq > 0.0) {
     return frq;
   }
 
-  ifstream ifs_frq(((path_wav.parent_path()/path_wav.stem()).string()+"_wav.frq").c_str(), ios::binary);
+  boost::filesystem::ifstream ifs_frq((path_wav.parent_path()/path_wav.stem()).wstring()+L"_wav.frq", ios::binary);
   if (ifs_frq.fail()) {
     return 260.0;
   }
-
+  double tmp_frq = 0.0;
   ifs_frq.seekg(sizeof(char)*12, ios_base::beg);
-  ifs_frq.read((char*)&(this->frq), sizeof(double));
+  ifs_frq.read((char*)&tmp_frq, sizeof(double));
+  this->frq = tmp_frq;
+
   return this->frq;
 }
 
@@ -140,14 +172,14 @@ const UnitWaveformContainer* Voice::getUwc() const
   }
 
   this->uwc = new UnitWaveformContainer;
-  string alias = prefix+pron+suffix;
-  boost::filesystem::path path_uwc(path_wav.parent_path().string()+"/"+boost::algorithm::replace_all_copy(alias, "*", "_")+".uwc");
+  wstring alias_string = getAliasString();
+  boost::filesystem::path path_uwc((path_wav.parent_path()/boost::algorithm::replace_all_copy(alias_string, L"*", L"_")).wstring()+L".uwc");
 
-  cout << "load voice \"" << alias << "\" from ";
+  wcout << L"load voice \"" << alias_string << L"\" from ";
 
-  if (nak::cache && uw::isUwcFile(path_uwc.string())) {
+  if (nak::cache && uw::isUwcFile(path_uwc.wstring())) {
     cout << "cache" << endl;
-    *uwc = uw::load(path_uwc.string());
+    *uwc = uw::load(path_uwc.wstring());
     return uwc;
   }
 
@@ -156,7 +188,7 @@ const UnitWaveformContainer* Voice::getUwc() const
   long wav_fs = 0;
   {
     cout << "wav data" << endl;
-    WavParser wav_parser(path_wav.string());
+    WavParser wav_parser(path_wav.wstring());
     wav_parser.addTargetTrack(0);
     if (!wav_parser.parse()) {
       return 0;
@@ -170,12 +202,14 @@ const UnitWaveformContainer* Voice::getUwc() const
   {
     PitchMarker *marker = new PitchMarker();
     marker->setInputWav(wav_data, offs, ovrl, prec, blnk, wav_fs);
-    if (nak::pron2vow.count(pron.substr(pron.size()-2))>0 && voice_db->isVowel(nak::pron2vow[pron.substr(pron.size()-2)]+suffix)) {
+    wstring pron_subject = nak::pron2vow[alias.pron.substr(alias.pron.size()-1)] + alias.suffix;
+    if (nak::pron2vow.count(alias.pron.substr(alias.pron.size()-1))>0 && voice_db->isVowel(pron_subject)) {
       short win_size = wav_fs / getFrq() * 2;
-      vector<double> aft_vowel_wav = voice_db->getVowel(nak::pron2vow[pron.substr(pron.size()-2)]+suffix);
+      vector<double> aft_vowel_wav = voice_db->getVowel(pron_subject);
       trimVector(&aft_vowel_wav, win_size);
-      if (is_vcv && voice_db->isVowel(prefix.substr(0,prefix.size()-1)+suffix)) {
-        vector<double> fore_vowel_wav = voice_db->getVowel(prefix.substr(0,prefix.size()-1)+suffix);
+      pron_subject = alias.prefix.substr(0,alias.prefix.size()-1) + alias.suffix;
+      if (is_vcv && voice_db->isVowel(pron_subject)) {
+        vector<double> fore_vowel_wav = voice_db->getVowel(pron_subject);
         trimVector(&fore_vowel_wav, win_size);
         marker->mark(fore_vowel_wav, aft_vowel_wav);
       } else {
@@ -205,21 +239,24 @@ const UnitWaveformContainer* Voice::getUwc() const
     uwc->format.setDefaultValues();
     uwc->format.wFormatTag = UnitWaveformFormat::UnitWaveformFormatTag;
     uwc->format.dwSamplesPerSec = wav_fs;
-    uw::save(path_uwc.string(), uwc);
+    uw::save(path_uwc.wstring(), *uwc);
   }
 
   return this->uwc;
 }
 
-void Voice::setUwc(const UnitWaveformContainer *uwc)
+void Voice::setUwc(const UnitWaveformContainer& uwc)
 {
   if (this->uwc != 0) {
     delete this->uwc;
     this->uwc = 0;
   }
-  *(this->uwc) = *uwc;
+  *(this->uwc) = uwc;
 }
 
+/*
+ * protected
+ */
 template <class Vector>
 Vector* Voice::trimVector(Vector* target_vector, long target_length) const
 {

@@ -1,22 +1,22 @@
 #ifndef Arranger_h
 #define Arranger_h
 
-#include <list>
 #include <cmath>
+#include <list>
 #include <vector>
 #include <boost/random.hpp>
-#include "Utilities.h"
-#include "voiceDB/voice.h"
-#include "voiceDB/voiceDB.h"
+#include "parser/WavFormat.h"
 #include "score/Note.h"
 #include "score/Score.h"
-#include "parser/WavFormat.h"
+#include "voiceDB/voice.h"
+#include "voiceDB/voiceDB.h"
+#include "Utilities.h"
 
 class Arranger {
  public:
   static void arrange(VoiceDB* voice_db, Score* score);
 
- private:
+ protected:
   static VoiceDB* voice_db;
   static Score* score;
 
