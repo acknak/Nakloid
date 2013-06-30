@@ -32,6 +32,20 @@ void ScoreNAK::load(const wstring& path_nak)
       tmp_note->setStart(start.get());
     if (boost::optional<long> end = pt_note.get_optional<long>(L"end"))
       tmp_note->setEnd(end.get());
+    if (boost::optional<wstring> margin = pt_note.get_optional<wstring>(L"margin")) {
+      vector<wstring> v;
+      boost::algorithm::split(v, margin.get(), boost::is_any_of(L","));
+      if (v.size() == 2) {
+        tmp_note->setMargin(boost::lexical_cast<short>(v[0]), boost::lexical_cast<short>(v[1]));
+      }
+    }
+    if (boost::optional<wstring> padding = pt_note.get_optional<wstring>(L"padding")) {
+      vector<wstring> v;
+      boost::algorithm::split(v, padding.get(), boost::is_any_of(","));
+      if (v.size() == 2) {
+        tmp_note->setPadding(boost::lexical_cast<short>(v[0]), boost::lexical_cast<short>(v[1]));
+      }
+    }
     if (boost::optional<short> prec = pt_note.get_optional<short>(L"prec"))
       tmp_note->setPrec(prec.get());
     if (boost::optional<short> ovrl = pt_note.get_optional<short>(L"ovrl"))
