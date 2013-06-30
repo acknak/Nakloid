@@ -263,7 +263,7 @@ Vector* Voice::trimVector(Vector* target_vector, long target_length) const
   if (target_vector->size() > target_length) {
     short space = target_vector->size() - target_length;
     target_vector->erase(target_vector->begin(), target_vector->begin()+space/2);
-    target_vector->erase(target_vector->end()-(space-(space/2)));
+    target_vector->erase(target_vector->end()-(space-(space/2)),target_vector->end());
   } else if (target_vector->size() < target_length) {
     short space = target_length - target_vector->size();
     target_vector->insert(target_vector->begin(), space/2, 0);
