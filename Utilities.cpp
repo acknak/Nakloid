@@ -97,7 +97,7 @@ bool nak::parse(const wstring& path_ini)
     boost::filesystem::path fs_path_ini(path_ini);
     boost::property_tree::ini_parser::read_ini(fs_path_ini.string(), ptree);
   } catch (boost::property_tree::ini_parser::ini_parser_error &e) {
-    cerr << e.message() << endl
+    cerr << "[Nakloid.ini line " << e.line() << "] " << e.message() << endl
       << "[nak::parse] can't parse Nakloid.ini" << endl;
     return false;
   } catch (...) {
