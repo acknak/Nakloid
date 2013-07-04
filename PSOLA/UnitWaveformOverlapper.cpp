@@ -125,12 +125,9 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
 void UnitWaveformOverlapper::outputNormalization()
 {
   cout << "normalize..." << endl << endl;
-  double tmp_max_volume = max(*max_element(output_wav.begin(), output_wav.end()),*min_element(output_wav.begin(), output_wav.end())*-1);
-  if (tmp_max_volume > nak::max_volume) {
-    double tmp_scale = nak::max_volume / tmp_max_volume;
-    for (size_t i=0; i<output_wav.size(); i++) {
-      output_wav[i] *= tmp_scale;
-    }
+  double tmp_scale = nak::max_volume / max(*max_element(output_wav.begin(), output_wav.end()),-*min_element(output_wav.begin(), output_wav.end()));
+  for (size_t i=0; i<output_wav.size(); i++) {
+    output_wav[i] *= tmp_scale;
   }
 }
 
