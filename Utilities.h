@@ -66,11 +66,12 @@ namespace nak {
   // UnitWaveformMaker
   extern double target_rms;
   extern unsigned char unit_waveform_lobe;
-  extern bool is_normalize;
+  extern bool uwc_normalize;
 
   // UnitWaveformOverlapper
   extern double fade_stretch;
   extern bool interpolation;
+  extern bool wav_normalize;
   extern double max_volume;
   extern bool compressor;
   extern double threshold;

@@ -125,7 +125,7 @@ bool Nakloid::vocalization()
       cout << endl << percent*100 << "%..." << endl << endl;
   }
   cout << endl;
-  if (nak::is_normalize) {
+  if (nak::wav_normalize) {
     overlapper->outputNormalization();
   }
   if (nak::compressor) {

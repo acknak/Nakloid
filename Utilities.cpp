@@ -37,11 +37,12 @@ namespace nak {
   // UnitWaveformMaker
   double target_rms;
   unsigned char unit_waveform_lobe;
-  bool is_normalize;
+  bool uwc_normalize;
 
   // UnitWaveformOverlapper
   double fade_stretch;
   bool interpolation;
+  bool wav_normalize;
   double max_volume;
   bool compressor;
   double threshold;
@@ -156,11 +157,12 @@ bool nak::parse(const wstring& path_ini)
   // UnitWaveformMaker
   target_rms = ptree.get<double>(L"UnitWaveformMaker.target_rms", 0.05);
   unit_waveform_lobe = ptree.get<unsigned char>(L"UnitWaveformMaker.unit_waveform_lobe", 3);
-  is_normalize = ptree.get<bool>(L"UnitWaveformMaker.normalize", false);
+  uwc_normalize = ptree.get<bool>(L"UnitWaveformMaker.normalize", false);
 
   // UnitWaveformOverlapper
   fade_stretch = ptree.get<double>(L"UnitWaveformOverlapper.fade_stretch", 1.0);
   interpolation = ptree.get<bool>(L"UnitWaveformOverlapper.interpolation", false);
+  wav_normalize = ptree.get<bool>(L"UnitWaveformOverlapper.normalize", false);
   max_volume = ptree.get<double>(L"UnitWaveformOverlapper.max_volume", 0.9);
   compressor = ptree.get<bool>(L"UnitWaveformOverlapper.compressor", false);
   threshold = ptree.get<double>(L"UnitWaveformOverlapper.threshold", -18.0);

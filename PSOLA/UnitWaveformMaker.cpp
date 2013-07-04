@@ -28,8 +28,11 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
   // make unit waveforms
   long sub_fade_start = getFadeStartSub();
   {
-    double fade_scale = nak::target_rms/nak::getRMS(makeUnitWaveform(sub_fade_start, pitch).data.getData());
-    double ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeUnitWaveform(0, pitch).data.getData()):1;
+    double fade_scale=1.0, ovrl_scale=1.0;
+    if (nak::uwc_normalize) {
+      fade_scale = nak::target_rms/nak::getRMS(makeUnitWaveform(sub_fade_start, pitch).data.getData());
+      ovrl_scale = (is_vcv&&sub_ovrl>0)?nak::target_rms/nak::getRMS(makeUnitWaveform(0, pitch).data.getData()):1;
+    }
     unit_waveforms.reserve(pitch_marks.size());
     for (size_t i=0; i<pitch_marks.size(); i++) {
       double scale = 1.0;
