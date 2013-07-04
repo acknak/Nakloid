@@ -119,7 +119,8 @@ long Note::getStart() const
 
 long Note::getPronStart() const
 {
-  return self.start - getPrec();
+  long pron_start = self.start - getPrec();
+  return (pron_start>0)?pron_start:0;
 }
 
 void Note::setStart(long ms_start)
