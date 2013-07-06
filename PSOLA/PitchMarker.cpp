@@ -23,38 +23,49 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
   pitchmarks.clear();
   pitchmarks.reserve((it_input_wav_blnk-it_input_wav_offs)/win_size);
 
-  vector<double>::const_iterator it_mark_start;
-  vector<double>::const_reverse_iterator rit_mark_start;
-  vector<double> xcorr_win(win_size*2, 0.0);
-
-  // pitch marking
+  vector<double>::const_iterator it_cons_start, it_cons_end, it_base_start, it_base_end;
   {
-    // fore vowel & consonant
-    it_mark_start = max_element(it_input_wav_offs+(win_size/2), it_input_wav_offs+(win_size/2*3));
-    xcorr(fore_vowel_wav.begin(), fore_vowel_wav.end(), it_mark_start, xcorr_win.begin());
-    it_mark_start += max_element(xcorr_win.begin(), xcorr_win.end()) - xcorr_win.begin() - (win_size/2);
-    vector<double>::const_iterator it_input_wav_end = input_wav.end();
-
-    vector<vector<double>::const_iterator> tmp_pitchmarks_fore_vowel =
-      mark(fore_vowel_wav.begin(), fore_vowel_wav.end(),
-      it_mark_start, it_input_wav_ovrl, it_input_wav_end, false);
-    for (size_t i=0; i<tmp_pitchmarks_fore_vowel.size(); i++) {
-      pitchmarks.push_back(tmp_pitchmarks_fore_vowel[i] - input_wav.begin());
+    vector<double>::const_iterator it_mark_start;
+    {
+      // find start point
+      vector<double> xcorr_win(win_size*2, 0.0);
+      it_mark_start = max_element(it_input_wav_offs+(win_size/2), it_input_wav_offs+(win_size/2*3));
+      xcorr(it_mark_start, xcorr_win.begin(), fore_vowel_wav.begin(), fore_vowel_wav.end());
+      it_mark_start += max_element(xcorr_win.begin(), xcorr_win.end()) - xcorr_win.begin() - (win_size/2);
     }
-
-    vector<vector<double>::const_iterator> tmp_pitchmarks_consonant =
-      mark(*(tmp_pitchmarks_fore_vowel.end()-3), tmp_pitchmarks_fore_vowel.back(),
-      tmp_pitchmarks_fore_vowel.back(), it_input_wav_prec, it_input_wav_end, true);
-    for (size_t i=0; i<tmp_pitchmarks_consonant.size(); i++) {
-      pitchmarks.push_back(tmp_pitchmarks_consonant[i] - input_wav.begin());
+    // fore vowel pitch mark
+    vector<vector<double>::const_iterator> tmp_pitchmarks =
+      markWithVowel(it_mark_start, it_input_wav_ovrl, fore_vowel_wav.begin(), fore_vowel_wav.end());
+    for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
+      pitchmarks.push_back(tmp_pitchmarks[i] - input_wav.begin());
     }
-
-    // aft vowel
-    vector<vector<double>::const_iterator> tmp_pitchmarks_aft_vowel =
-      mark(aft_vowel_wav.begin(), aft_vowel_wav.end(),
-      tmp_pitchmarks_consonant.back(), it_input_wav_blnk, it_input_wav_end, false);
-    for (size_t i=0; i<tmp_pitchmarks_aft_vowel.size(); i++) {
-      pitchmarks.push_back(tmp_pitchmarks_aft_vowel[i] - input_wav.begin());
+    it_base_start = *(tmp_pitchmarks.end()-3);
+    it_base_end = *(tmp_pitchmarks.end()-1);
+    it_cons_start = it_base_end;
+  }
+  {
+    vector<double>::const_reverse_iterator rit_mark_start, rit_input_wav_offs(it_input_wav_blnk), rit_input_wav_prec(it_input_wav_prec);
+    {
+      // find start point
+      vector<double> xcorr_win(win_size*2, 0.0);
+      rit_mark_start = max_element(rit_input_wav_offs+(win_size/2), rit_input_wav_offs+(win_size/2*3));
+      xcorr(rit_mark_start, xcorr_win.begin(), aft_vowel_wav.rbegin(), aft_vowel_wav.rend());
+      rit_mark_start += max_element(xcorr_win.begin(), xcorr_win.end()) - xcorr_win.begin() - (win_size/2);
+    }
+    // aft vowel pitch mark
+    vector<vector<double>::const_reverse_iterator> tmp_pitchmarks =
+      markWithVowel(rit_input_wav_offs, rit_input_wav_prec, aft_vowel_wav.rbegin(), aft_vowel_wav.rend());
+    for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
+      pitchmarks.push_back(input_wav.rend() - tmp_pitchmarks[i]);
+    }
+    it_cons_end = tmp_pitchmarks.back().base();
+  }
+  {
+    // consonant pitch mark
+    vector<vector<double>::const_iterator> tmp_pitchmarks =
+      markWithSelf(it_cons_start, it_cons_end, it_base_start, it_base_end);
+    for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
+      pitchmarks.push_back(tmp_pitchmarks[i] - input_wav.begin());
     }
   }
 
@@ -79,34 +90,33 @@ bool PitchMarker::mark(const vector<double>& vowel_wav)
   pitchmarks.clear();
   pitchmarks.reserve((it_input_wav_blnk-it_input_wav_offs)/win_size);
 
-  vector<double>::const_reverse_iterator rit_input_wav_offs(it_input_wav_blnk);
-  vector<double>::const_reverse_iterator rit_input_wav_prec(it_input_wav_prec);
-  vector<double>::const_reverse_iterator rit_input_wav_blnk(it_input_wav_offs);
-  vector<double>::const_reverse_iterator rit_mark_start;
-
-  // find start point
+  vector<double>::const_reverse_iterator rit_input_wav_offs(it_input_wav_blnk), rit_input_wav_blnk(it_input_wav_offs), rit_base_start, rit_base_end;
   {
-    rit_mark_start = max_element(rit_input_wav_offs+(win_size/2), rit_input_wav_offs+(win_size/2*3));
-    vector<double> xcorr_win(win_size*2, 0.0);
-    xcorr(vowel_wav.rbegin(), vowel_wav.rend(), rit_mark_start, xcorr_win.begin());
-    long dist = max_element(xcorr_win.begin(), xcorr_win.end())-xcorr_win.begin();
-    rit_mark_start += dist - (win_size/2);
-  }
-
-  // pitch marking
-  {
-    vector<double>::const_reverse_iterator rit_input_wav_end = input_wav.rend();
-    vector<vector<double>::const_reverse_iterator> tmp_pitchmarks_vowel =
-      mark(vowel_wav.rbegin(), vowel_wav.rend(),
-      rit_mark_start, rit_input_wav_prec, rit_input_wav_end, false);
-    for (size_t i=0; i<tmp_pitchmarks_vowel.size(); i++) {
-      pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks_vowel[i]);
+    vector<double>::const_reverse_iterator rit_mark_start;
+    {
+      // find start point
+      rit_mark_start = max_element(rit_input_wav_offs+(win_size/2), rit_input_wav_offs+(win_size/2*3));
+      vector<double> xcorr_win(win_size*2, 0.0);
+      xcorr(rit_mark_start, xcorr_win.begin(), vowel_wav.rbegin(), vowel_wav.rend());
+      long dist = max_element(xcorr_win.begin(), xcorr_win.end())-xcorr_win.begin();
+      rit_mark_start += dist - (win_size/2);
     }
-    vector<vector<double>::const_reverse_iterator> tmp_pitchmarks_consonant =
-      mark(*(tmp_pitchmarks_vowel.end()-3), tmp_pitchmarks_vowel.back(),
-      tmp_pitchmarks_vowel.back(), rit_input_wav_blnk, rit_input_wav_end, true);
-    for (size_t i=0; i<tmp_pitchmarks_consonant.size(); i++) {
-      pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks_consonant[i]);
+    // vowel pitch mark
+    vector<vector<double>::const_reverse_iterator> tmp_pitchmarks =
+      markWithVowel(rit_mark_start, rit_input_wav_blnk, vowel_wav.rbegin(), vowel_wav.rend());
+    for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
+      pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
+    }
+    rit_base_start = *(tmp_pitchmarks.end()-3);
+    rit_base_end = *(tmp_pitchmarks.end()-1);
+  }
+  {
+    // consonant pitch mark
+    vector<double>::const_reverse_iterator rit_input_wav_blnk(it_input_wav_offs);
+    vector<vector<double>::const_reverse_iterator> tmp_pitchmarks =
+      markWithSelf(rit_base_end, rit_input_wav_blnk, rit_base_start, rit_base_end);
+    for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
+      pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
     }
   }
 
@@ -125,37 +135,66 @@ bool PitchMarker::mark(double hz, unsigned long fs)
 }
 
 template <class Iterator>
-vector<Iterator> PitchMarker::mark(Iterator it_vowel_begin, Iterator it_vowel_end,
-                                   Iterator it_target_begin, Iterator it_target_end, Iterator it_wav_end, bool autocorrelation) const
+vector<Iterator> PitchMarker::markWithVowel(Iterator it_input_begin, Iterator it_input_end,
+                                            Iterator it_vowel_begin, Iterator it_vowel_end) const
 {
-  short win_size = it_vowel_end-it_vowel_begin;
-  Iterator tmp_pitchmark = it_target_begin;
+  vector<Iterator> pitchmarks(1, it_input_begin);
+  if (it_vowel_begin>=it_vowel_end || it_input_begin>=it_input_end) {
+    return pitchmarks;
+  }
+
+  short win_size = it_vowel_end - it_vowel_begin;
+  Iterator tmp_pitchmark = it_input_begin;
   vector<double> xcorr_win(win_size*2, 0.0);
-  vector<Iterator> pitchmarks(1, it_target_begin);
-  pitchmarks.reserve((it_target_end-it_target_begin)/win_size);
+  pitchmarks.reserve((it_input_end-it_input_begin)/win_size);
+
+  long dist = win_size/2, pre_dist = dist;
+  while (tmp_pitchmark < it_input_end-(win_size/2*3)) {
+    xcorr(tmp_pitchmark+(win_size/2), xcorr_win.begin(), it_vowel_begin, it_vowel_end);
+    short margin_fore=win_size/4*3, margin_aft=win_size/4*7;
+    dist = max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft) - xcorr_win.begin() - (win_size/2);
+    if ((pre_dist<dist-nak::pitch_margin || pre_dist>dist+nak::pitch_margin) && pitchmarks.size()>2) {
+      return pitchmarks;
+    }
+    pre_dist = dist;
+    pitchmarks.push_back(tmp_pitchmark+=dist);
+  }
+
+  return pitchmarks;
+}
+
+template <class Iterator>
+vector<Iterator> PitchMarker::markWithSelf(Iterator it_input_begin, Iterator it_input_end,
+                                           Iterator it_base_begin, Iterator it_base_end) const
+{
+  vector<Iterator> pitchmarks(1, it_input_begin);
+  if (it_base_begin>=it_base_end || it_input_begin>=it_input_end) {
+    return pitchmarks;
+  }
+
+  short win_size = it_base_end - it_base_begin;
+  Iterator tmp_pitchmark = it_input_begin;
+  vector<double> xcorr_win(win_size*2, 0.0);
+  pitchmarks.reserve((it_input_end-it_input_begin)/win_size);
 
   long dist = win_size/2;
-  while (tmp_pitchmark<it_target_end && it_wav_end-tmp_pitchmark>win_size) {
-    if (autocorrelation && pitchmarks.size()>1) {
-      xcorr(pitchmarks.back()-(win_size/2), pitchmarks.back()+(win_size/2), tmp_pitchmark+(win_size/2), xcorr_win.begin());
-    } else {
-      xcorr(it_vowel_begin, it_vowel_end, tmp_pitchmark+(win_size/2), xcorr_win.begin());
-    }
-    short margin_left, margin_right;
+  while (tmp_pitchmark < it_input_end-(win_size/2*3)) {
+    xcorr(tmp_pitchmark+(win_size/2), xcorr_win.begin(), pitchmarks.back()-(win_size/2), pitchmarks.back()+(win_size/2));
+    short margin_fore, margin_aft;
     if (dist>win_size/2) {
-      margin_left = win_size-nak::pitch_margin;
-      margin_right = (dist*2)+nak::pitch_margin;
+      margin_fore = win_size-nak::pitch_margin;
+      margin_aft = (dist*2)+nak::pitch_margin;
     } else {
-      margin_left = (dist*2)-nak::pitch_margin;
-      margin_right = win_size+nak::pitch_margin;
+      margin_fore = (dist*2)-nak::pitch_margin;
+      margin_aft = win_size+nak::pitch_margin;
     }
-    if (margin_left <= (win_size/4*3)) {
-      margin_left = (win_size/4*3)+1;
+    if (margin_fore <= (win_size/4*3)) {
+      margin_fore = (win_size/4*3)+1;
     }
-    if (margin_right >= xcorr_win.size()) {
-      margin_right = xcorr_win.size()-1;
+    if (margin_aft >= (win_size/4*7)) {
+      margin_aft = (win_size/4*7)-1;
     }
-    dist = max_element(xcorr_win.begin()+margin_left, xcorr_win.begin()+margin_right) - xcorr_win.begin() - (win_size/2);
+    dist = max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft) - xcorr_win.begin() - (win_size/2);
     pitchmarks.push_back(tmp_pitchmark+=dist);
   }
 
@@ -197,10 +236,10 @@ const vector<long>& PitchMarker::getPitchMarks() const
  * protected
  */
 template <class Iterator>
-void PitchMarker::xcorr(const Iterator it_vowel_begin, const Iterator it_vowel_end,
-                        Iterator it_target_begin, vector<double>::iterator it_output) const
+void PitchMarker::xcorr(Iterator it_input_begin, vector<double>::iterator it_output,
+                        const Iterator it_base_begin, const Iterator it_base_end) const
 {
-  short win_size = it_vowel_end - it_vowel_begin;
+  short win_size = it_base_end - it_base_begin;
   int fftlen = win_size * 2;
   vector<double> filter = nak::getHann(win_size);
 
@@ -215,8 +254,8 @@ void PitchMarker::xcorr(const Iterator it_vowel_begin, const Iterator it_vowel_e
     in1[i][0] = in1[i][1] = in2[i][0] = in2[i][1] = 0;
   }
   for (size_t i=0; i<win_size; i++) {
-    in1[i][0] = *(it_vowel_begin+i) * filter[i];
-    in2[i+win_size][0] = *(it_target_begin-(win_size/2)+i) * filter[i];
+    in1[i][0] = *(it_base_begin+i) * filter[i];
+    in2[i+win_size][0] = *(it_input_begin-(win_size/2)+i) * filter[i];
   }
 
   fftw_plan p1 = fftw_plan_dft_1d(fftlen, in1, out1, FFTW_FORWARD, FFTW_ESTIMATE);

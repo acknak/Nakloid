@@ -23,9 +23,11 @@ class PitchMarker {
   bool mark(double hz, unsigned long fs);
 
   template <class Iterator>
-  std::vector<Iterator> mark(Iterator it_vowel_begin, Iterator it_vowel_end,
-                             Iterator it_target_begin, Iterator it_target_end,
-                             Iterator it_wav_end, bool autocorrelation) const;
+  std::vector<Iterator> markWithVowel(Iterator it_input_begin, Iterator it_input_end,
+                                      Iterator it_vowel_begin, Iterator it_vowel_end) const;
+  template <class Iterator>
+  std::vector<Iterator> markWithSelf(Iterator it_input_begin, Iterator it_input_end,
+                                     Iterator it_base_begin, Iterator it_base_end) const;
 
   // accessor
   void setInputWav(const std::vector<double>& input_wav);
@@ -34,8 +36,8 @@ class PitchMarker {
 
  protected:
   template <class Iterator>
-  void xcorr(Iterator it_vowel_begin, Iterator it_vowel_end,
-             Iterator it_target_begin, std::vector<double>::iterator it_output)const;
+  void xcorr(Iterator it_target_begin, std::vector<double>::iterator it_output,
+             Iterator it_vowel_begin, Iterator it_vowel_end) const;
 
   std::vector<double> input_wav;
   long pos_offs;
