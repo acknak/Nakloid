@@ -207,6 +207,30 @@ long nak::tick2ms(unsigned long tick, unsigned short timebase, unsigned long tem
   return (long)(((double)tick) / timebase * (tempo/1000.0));
 }
 
+pair<bool, double> nak::val2dB(double wav_value)
+{
+  if (wav_value >= 1.0)
+    wav_value = 32768.0/32767.0;
+  else if (wav_value<= -1.0)
+    wav_value = -32769.0/32768.0;
+  else if (wav_value == 0)
+    return make_pair(true, 1.0);
+
+  return make_pair(wav_value>0, log10(abs(wav_value))*20);
+}
+
+double nak::dB2val(const pair<bool, double>& dB)
+{
+  if (dB.second > 0)
+    return 0.0;
+  return pow(10, dB.second/20)*(dB.first?1:-1);
+}
+
+double nak::cent2rate(const double cent)
+{
+  return pow(2, cent/1200.0);
+}
+
 vector<double> nak::normalize(const vector<double>& wav, double target_rms)
 {
   vector<double> tmp_wav = wav;
@@ -266,25 +290,6 @@ double nak::getVar(const vector<double>& wav, double mean)
   for (size_t i=0; i<wav.size(); i++)
     var += pow(wav[i]-mean, 2) / wav.size();
   return sqrt(var);
-}
-
-pair<bool, double> nak::val2dB(double wav_value)
-{
-  if (wav_value >= 1.0)
-    wav_value = 32768.0/32767.0;
-  else if (wav_value<= -1.0)
-    wav_value = -32769.0/32768.0;
-  else if (wav_value == 0)
-    return make_pair(true, 1.0);
-
-  return make_pair(wav_value>0, log10(abs(wav_value))*20);
-}
-
-double nak::dB2val(const pair<bool, double>& dB)
-{
-  if (dB.second > 0)
-    return 0.0;
-  return pow(10, dB.second/20)*(dB.first?1:-1);
 }
 
 vector<double> nak::getTri(long len)

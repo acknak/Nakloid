@@ -89,23 +89,25 @@ void Arranger::loadParamsFromVoiceDB(list<Note>::iterator it_notes, const Voice*
 
 void Arranger::vibrato(vector<float>::iterator it_pitches_begin, vector<float>::iterator it_pitches_end)
 {
+  double tmp_fs = (nak::cent2rate(nak::pitch_vibrato)-1) * *it_pitches_begin;
   if ((it_pitches_end-it_pitches_begin) > nak::ms_vibrato_offset) {
     long vibrato_length = (it_pitches_end-it_pitches_begin) - nak::ms_vibrato_offset;
     for (size_t i=0; i<vibrato_length; i++)
-      *(it_pitches_begin+nak::ms_vibrato_offset+i) += sin(2*M_PI*i/nak::ms_vibrato_width) * nak::pitch_vibrato;
+      *(it_pitches_begin+nak::ms_vibrato_offset+i) += sin(2*M_PI*i/nak::ms_vibrato_width) * tmp_fs;
   }
 }
 
 void Arranger::overshoot(vector<float>::iterator it_pitches_begin, vector<float>::iterator it_pitches_end, float target_pitch)
 {
+  double tmp_fs = (nak::cent2rate(nak::pitch_overshoot)-1) * *it_pitches_begin;
   float diff = (*it_pitches_begin-target_pitch);
 
   if (it_pitches_end-it_pitches_begin > nak::ms_overshoot)
     for (size_t i=0; i<nak::ms_overshoot/2; i++) {
       *(it_pitches_begin+i) +=
-        -diff + ((diff+(nak::pitch_overshoot*((diff>0)?1:-1))) / (nak::ms_overshoot/2) * i);
+        -diff + ((diff+(tmp_fs*((diff>0)?1:-1))) / (nak::ms_overshoot/2) * i);
       *(it_pitches_begin+(nak::ms_overshoot/2)+i) +=
-        (nak::pitch_overshoot*((diff>0)?1:-1)) + ((nak::pitch_overshoot*((diff>0)?-1:1))/(nak::ms_overshoot/2) * i);
+        (tmp_fs*((diff>0)?1:-1)) + ((tmp_fs*((diff>0)?-1:1))/(nak::ms_overshoot/2) * i);
     }
   else
     for (size_t i=0; i<it_pitches_end-it_pitches_begin; i++)
@@ -114,6 +116,7 @@ void Arranger::overshoot(vector<float>::iterator it_pitches_begin, vector<float>
 
 void Arranger::preparation(vector<float>::iterator it_pitches_begin, vector<float>::iterator it_pitches_end, float target_pitch)
 {
+  double tmp_fs = (nak::cent2rate(nak::pitch_preparation)-1) * *it_pitches_begin;
   vector<float>::reverse_iterator rit_pitches_begin(it_pitches_end);
   vector<float>::reverse_iterator rit_pitches_end(it_pitches_begin);
   float diff = (*rit_pitches_begin-target_pitch) / 2;
@@ -121,9 +124,9 @@ void Arranger::preparation(vector<float>::iterator it_pitches_begin, vector<floa
   if (rit_pitches_end-rit_pitches_begin > nak::ms_preparation)
     for (size_t i=0; i<nak::ms_preparation/2; i++) {
       *(rit_pitches_begin+i) +=
-        -diff + ((diff+(nak::pitch_preparation*((diff>0)?1:-1))) / (nak::ms_preparation/2) * i);
+        -diff + ((diff+(tmp_fs*((diff>0)?1:-1))) / (nak::ms_preparation/2) * i);
       *(rit_pitches_begin+(nak::ms_preparation/2)+i) +=
-        (nak::pitch_preparation*((diff>0)?1:-1)) + ((nak::pitch_preparation*((diff>0)?-1:1))/(nak::ms_preparation/2) * i);
+        (tmp_fs*((diff>0)?1:-1)) + ((tmp_fs*((diff>0)?-1:1))/(nak::ms_preparation/2) * i);
     }
   else
     for (size_t i=0; i<rit_pitches_end-rit_pitches_begin; i++)

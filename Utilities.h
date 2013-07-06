@@ -108,6 +108,9 @@ namespace nak {
   extern long ms2pos(long ms, WavFormat format);
   extern long pos2ms(long pos, WavFormat format);
   extern long tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
+  extern std::pair<bool, double> val2dB(double wav_value);
+  extern double dB2val(const std::pair<bool, double>& dB);
+  extern double cent2rate(const double cent);
 
   extern std::vector<double> normalize(const std::vector<double>& wav, double target_rms);
   extern std::vector<double> normalize(const std::vector<double>& wav, double target_mean, double target_var);
@@ -115,8 +118,6 @@ namespace nak {
   extern double getRMS(const std::vector<double>& wav);
   extern double getMean(const std::vector<double>& wav);
   extern double getVar(const std::vector<double>& wav, double mean);
-  extern std::pair<bool, double> val2dB(double wav_value);
-  extern double dB2val(const std::pair<bool, double>& dB);
 
   extern std::vector<double> getHann(long len);
   extern std::vector<double> getTri(long len);
