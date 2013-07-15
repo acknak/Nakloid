@@ -120,6 +120,9 @@ long Note::getStart() const
 long Note::getPronStart() const
 {
   long pron_start = self.start - getPrec();
+  if (getOvrl() < 0) {
+    pron_start -= getOvrl();
+  }
   return (pron_start>0)?pron_start:0;
 }
 
@@ -170,7 +173,7 @@ short Note::getFrontMargin()
 
   if (isVCV()) {
     if (note_prev->getPronEnd()-note_prev->getBackMargin() > getPronStart()+getOvrl()) {
-      return note_prev->getPronEnd()-note_prev->getBackMargin()-nak::ms_back_padding-getPronStart();
+      return note_prev->getPronEnd() - note_prev->getBackMargin() - nak::ms_back_padding - getPronStart();
     }
   }
   return 0;

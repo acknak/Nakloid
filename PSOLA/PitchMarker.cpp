@@ -58,7 +58,7 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(input_wav.rend() - tmp_pitchmarks[i]);
     }
-    it_cons_end = tmp_pitchmarks.back().base();
+    it_cons_end = (*(tmp_pitchmarks.end()-3)).base();
   }
   {
     // consonant pitch mark
@@ -216,8 +216,14 @@ void PitchMarker::setInputWav(const vector<double>& input_wav, short ms_offs, sh
 {
   this->input_wav = input_wav;
   this->it_input_wav_offs = this->input_wav.begin() + (fs/1000.0*ms_offs);
-  this->it_input_wav_ovrl = this->it_input_wav_offs + (fs/1000.0*ms_ovrl);
-  this->it_input_wav_prec = this->it_input_wav_offs + (fs/1000.0*ms_prec);
+  this->it_input_wav_ovrl = this->it_input_wav_offs;
+  if (ms_ovrl > 0) {
+    this->it_input_wav_ovrl += fs / 1000.0 * ms_ovrl;
+  }
+  this->it_input_wav_prec = this->it_input_wav_offs;
+  if (ms_prec < 0) {
+    this->it_input_wav_prec += fs / 1000.0 * ms_prec;
+  }
 
   long pos_blnk = fs / 1000.0 * ms_blnk;
   if (pos_blnk > 0) {

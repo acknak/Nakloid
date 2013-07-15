@@ -51,15 +51,6 @@ bool VoiceDB::initVoiceMap(const wstring& path_oto_ini)
     tmp_voice.ovrl = boost::lexical_cast<double>(v2[5]);
     tmp_voice.is_vcv = false;
     // sanitize
-    if (tmp_voice.ovrl < 0) {
-      tmp_voice.ovrl *= -1;
-      tmp_voice.offs -= tmp_voice.ovrl;
-      tmp_voice.cons += tmp_voice.ovrl;
-      tmp_voice.prec += tmp_voice.ovrl;
-      if (tmp_voice.blnk < 0) {
-        tmp_voice.blnk -= tmp_voice.ovrl;
-      }
-    }
     if (tmp_voice.ovrl > tmp_voice.prec) {
       tmp_voice.prec = tmp_voice.ovrl;
     }
@@ -68,6 +59,16 @@ bool VoiceDB::initVoiceMap(const wstring& path_oto_ini)
     }
     if (tmp_voice.blnk<0 && tmp_voice.cons > -tmp_voice.blnk) {
       tmp_voice.blnk = -tmp_voice.cons;
+    }
+    if (tmp_voice.offs < 0) {
+      short tmp = -tmp_voice.offs;
+      tmp_voice.offs = 0;
+      tmp_voice.ovrl += tmp;
+      tmp_voice.cons += tmp;
+      tmp_voice.prec += tmp;
+      if (tmp_voice.blnk < 0) {
+        tmp_voice.blnk -= tmp;
+      }
     }
     // get Voice pron
     tmp_voice.setAlias((v2[0]==L"")?tmp_voice.path_wav.stem().wstring():v2[0]);
