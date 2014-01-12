@@ -23,6 +23,7 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
   pitchmarks.clear();
   pitchmarks.reserve((it_input_wav_blnk-it_input_wav_offs)/win_size);
 
+  long pos_fore_mark_end, pos_aft_mark_start;
   vector<double>::const_iterator it_cons_start, it_cons_end, it_base_start, it_base_end;
   {
     vector<double>::const_iterator it_mark_start;
@@ -42,6 +43,7 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     it_base_start = *(tmp_pitchmarks.end()-3);
     it_base_end = *(tmp_pitchmarks.end()-1);
     it_cons_start = it_base_end;
+    pos_fore_mark_end =pitchmarks.back();
   }
   {
     vector<double>::const_reverse_iterator rit_mark_start, rit_input_wav_offs(it_input_wav_blnk), rit_input_wav_prec(it_input_wav_prec);
@@ -59,14 +61,26 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
       pitchmarks.push_back(input_wav.rend() - tmp_pitchmarks[i]);
     }
     it_cons_end = (*(tmp_pitchmarks.end()-3)).base();
+    pos_aft_mark_start = pitchmarks.back();
   }
   {
     // consonant pitch mark
+    long pos_len = pos_aft_mark_start - pos_fore_mark_end;
+    if (pos_len > win_size/2) {
+      long pos_div = (pos_len%(win_size/2)) / (pos_len/(win_size/2));
+      long pos_rem = (pos_len%(win_size/2)) % (pos_len/(win_size/2));
+      long tmp_pos = 0;
+      while ((tmp_pos+=win_size/2+pos_div) < pos_len) {
+        pitchmarks.push_back(pos_fore_mark_end+(--pos_rem>=0?++tmp_pos:tmp_pos));
+      }
+    }
+    /*
     vector<vector<double>::const_iterator> tmp_pitchmarks =
       markWithSelf(it_cons_start, it_cons_end, it_base_start, it_base_end);
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(tmp_pitchmarks[i] - input_wav.begin());
     }
+    */
   }
 
   sort(pitchmarks.begin(), pitchmarks.end());
