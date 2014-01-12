@@ -110,10 +110,11 @@ bool Nakloid::vocalization()
     wcout << L"synthesize \"" << it_notes->getAliasString() << L"\" from " << it_notes->getPronStart() << L"ms to " << it_notes->getPronEnd() << L"ms" << endl;
     /*
     cout << "ovrl: " << it_notes->getOvrl() << ", prec: " << it_notes->getPrec() << ", cons: " << it_notes->getCons() << endl
-      << "pron start: " << it_notes->getPronStart() << ", front margin: "  << it_notes->getPronStart()+it_notes->getFrontMargin()
+      << "start: " << it_notes->getStart() << ", end: " << it_notes->getEnd() << endl
+      << "front margin: "  << it_notes->getPronStart()+it_notes->getFrontMargin()
       << ", front padding: " << it_notes->getPronStart()+it_notes->getFrontMargin()+it_notes->getFrontPadding() << endl
       << "back padding: " << it_notes->getPronEnd()-it_notes->getBackPadding()-it_notes->getBackMargin()
-      << ", back margin: " << it_notes->getPronEnd()-it_notes->getBackMargin() << ", pron end: " << it_notes->getPronEnd() << endl;
+      << ", back margin: " << it_notes->getPronEnd()-it_notes->getBackMargin() << endl;
     */
     if (voice_db->getVoice(it_notes->getAliasString()) == 0) {
       continue;

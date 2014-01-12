@@ -194,7 +194,7 @@ short Note::getBackMargin()
     if (getPronStart()+getCons()+nak::ms_back_padding < note_next->getPronStart()+note_next->getOvrl()) {
       return note_next->getPrec() - note_next->getOvrl();
     } else {
-      return getPronEnd() - (getPronStart()+getCons()+nak::ms_back_padding);
+      return nak::ms_back_padding;
     }
   }
   return 0;
