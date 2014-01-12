@@ -56,7 +56,7 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     }
     // aft vowel pitch mark
     vector<vector<double>::const_reverse_iterator> tmp_pitchmarks =
-      markWithVowel(rit_input_wav_offs, rit_input_wav_prec, aft_vowel_wav.rbegin(), aft_vowel_wav.rend());
+      markWithVowel(rit_mark_start, rit_input_wav_prec, aft_vowel_wav.rbegin(), aft_vowel_wav.rend());
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(input_wav.rend() - tmp_pitchmarks[i]);
     }
