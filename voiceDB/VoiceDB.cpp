@@ -97,7 +97,6 @@ bool VoiceDB::initVoiceMap(const wstring& path_oto_ini)
         }
       }
     }
-    Voice test(tmp_voice);
     voice_map[tmp_voice.getAliasString()] = tmp_voice;
   }
   return true;

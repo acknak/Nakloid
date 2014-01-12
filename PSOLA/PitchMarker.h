@@ -15,7 +15,8 @@
 // Refference Object
 class PitchMarker {
  public:
-  PitchMarker();
+  PitchMarker(const std::vector<double>& input_wav);
+  PitchMarker(const std::vector<double>& input_wav, short ms_offs, short ms_ovrl, short ms_prec, short ms_blnk, unsigned long fs);
   virtual ~PitchMarker();
 
   bool mark(const std::vector<double>& vowel_wav);
@@ -27,11 +28,10 @@ class PitchMarker {
                                       Iterator it_vowel_begin, Iterator it_vowel_end) const;
   template <class Iterator>
   std::vector<Iterator> markWithSelf(Iterator it_input_begin, Iterator it_input_end,
-                                     Iterator it_base_begin, Iterator it_base_end) const;
+                                     Iterator it_base_begin, Iterator it_base_end, bool breaker) const;
 
   // accessor
-  void setInputWav(const std::vector<double>& input_wav);
-  void setInputWav(const std::vector<double>& input_wav, short ms_offs, short ms_ovrl, short ms_prec, short ms_blnk, unsigned long fs);
+  void setInputWavParam(short ms_offs, short ms_ovrl, short ms_prec, short ms_blnk, unsigned long fs);
   const std::vector<long>& getPitchMarks() const;
 
  protected:

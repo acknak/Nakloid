@@ -62,6 +62,7 @@ namespace nak {
 
   // PitchMarker
   extern short pitch_margin;
+  extern double xcorr_threshold;
 
   // UnitWaveformMaker
   extern double target_rms;
@@ -83,6 +84,11 @@ namespace nak {
   extern short ms_back_padding;
 
   // PitchArranger
+  extern bool vibrato;
+  extern bool overshoot;
+  extern bool preparation;
+  extern bool completion;
+  extern bool finefluctuation;
   extern short ms_overshoot;
   extern double pitch_overshoot;
   extern short ms_preparation;
@@ -91,11 +97,6 @@ namespace nak {
   extern short ms_vibrato_width;
   extern double pitch_vibrato;
   extern double finefluctuation_deviation;
-  extern bool vibrato;
-  extern bool overshoot;
-  extern bool preparation;
-  extern bool completion;
-  extern bool finefluctuation;
 
   // internal parameters
   extern std::map<std::wstring, std::wstring> vow2pron;
