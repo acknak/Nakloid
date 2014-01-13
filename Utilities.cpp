@@ -155,7 +155,7 @@ bool nak::parse(const wstring& path_ini)
 
   // PitchMarker
   pitch_margin = ptree.get<short>(L"PitchMarker.pitch_margin", 10);
-  xcorr_threshold = ptree.get<short>(L"PitchMarker.xcorr_threshold", 0.95);
+  xcorr_threshold = ptree.get<double>(L"PitchMarker.xcorr_threshold", 0.95);
 
   // UnitWaveformMaker
   target_rms = ptree.get<double>(L"UnitWaveformMaker.target_rms", 0.05);
