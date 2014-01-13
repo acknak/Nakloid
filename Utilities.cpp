@@ -39,7 +39,6 @@ namespace nak {
   double target_rms;
   unsigned char unit_waveform_lobe;
   bool uwc_normalize;
-  double max_scale_ratio;
 
   // UnitWaveformOverlapper
   double fade_stretch;
@@ -161,7 +160,6 @@ bool nak::parse(const wstring& path_ini)
   target_rms = ptree.get<double>(L"UnitWaveformMaker.target_rms", 0.05);
   unit_waveform_lobe = ptree.get<unsigned char>(L"UnitWaveformMaker.unit_waveform_lobe", 3);
   uwc_normalize = ptree.get<bool>(L"UnitWaveformMaker.uwc_normalize", false);
-  max_scale_ratio = ptree.get<double>(L"UnitWaveformMaker.max_scale_ratio", 1.0);
 
   // UnitWaveformOverlapper
   fade_stretch = ptree.get<double>(L"UnitWaveformOverlapper.fade_stretch", 1.0);

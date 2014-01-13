@@ -68,7 +68,6 @@ namespace nak {
   extern double target_rms;
   extern unsigned char unit_waveform_lobe;
   extern bool uwc_normalize;
-  extern double max_scale_ratio;
 
   // UnitWaveformOverlapper
   extern double fade_stretch;
