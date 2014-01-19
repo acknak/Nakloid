@@ -80,20 +80,24 @@ bool VoiceDB::initVoiceMap(const wstring& path_oto_ini)
         WavParser wav_parser(tmp_voice.path_wav.wstring());
         wav_parser.addTargetTrack(0);
         if (wav_parser.parse()) {
+          short win_size = wav_parser.getFormat().dwSamplesPerSec / tmp_voice.getFrq();
+          double tmp_max_rms = -1.0;
+          vector<double> tmp_win = nak::getLanczos(win_size*2, nak::unit_waveform_lobe);
           vector<double> tmp_wav = (*(wav_parser.getDataChunks().begin())).getData();
           vector<double>::iterator it_tmp_wav_cons = tmp_wav.begin()+((tmp_voice.offs+tmp_voice.cons)/1000.0*wav_parser.getFormat().dwSamplesPerSec);
-          vector<double>::iterator it_tmp_wav_min = it_tmp_wav_cons;
-          short win_size = wav_parser.getFormat().dwSamplesPerSec / tmp_voice.getFrq();
-          double tmp_min_rms = -1.0;
+          vector<double>::iterator it_tmp_wav_max = it_tmp_wav_cons;
           for (size_t i=0; i<win_size*2; i++) {
             vector<double> tmp_wav(it_tmp_wav_cons+i-win_size, it_tmp_wav_cons+i+win_size);
+            for (size_t j=0; j<tmp_wav.size(); j++) {
+              tmp_wav[j] *= tmp_win[j];
+            }
             double tmp_rms = nak::getRMS(tmp_wav);
-            if (tmp_rms<tmp_min_rms || tmp_min_rms<0) {
-              tmp_min_rms = tmp_rms;
-              it_tmp_wav_min = it_tmp_wav_cons+i;
+            if (tmp_rms>tmp_max_rms) {
+              tmp_max_rms = tmp_rms;
+              it_tmp_wav_max = it_tmp_wav_cons+i;
             }
           }
-          vowel_map[nak::pron2vow[it->second]+tmp_voice.alias.suffix].assign(it_tmp_wav_min-win_size, it_tmp_wav_min+win_size);
+          vowel_map[nak::pron2vow[it->second]+tmp_voice.alias.suffix].assign(it_tmp_wav_max-win_size, it_tmp_wav_max+win_size);
         }
       }
     }
