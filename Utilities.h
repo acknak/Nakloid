@@ -72,6 +72,7 @@ namespace nak {
   // UnitWaveformOverlapper
   extern double fade_stretch;
   extern bool interpolation;
+  extern bool overlap_normalize;
   extern bool wav_normalize;
   extern double max_volume;
   extern bool compressor;
@@ -116,12 +117,14 @@ namespace nak {
   extern std::vector<double> normalize(const std::vector<double>& wav, double target_mean, double target_var);
   extern std::vector<double> normalize(const std::vector<double>& wav, short target_max, short target_min);
   extern double getRMS(const std::vector<double>& wav);
+  extern double getRMS(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to);
   extern double getMean(const std::vector<double>& wav);
-  extern double getVar(const std::vector<double>& wav, double mean);
+  extern double getMean(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to);
+  extern double getVar(const std::vector<double>& wav);
+  extern double getVar(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to);
 
-  extern std::vector<double> getHann(long len);
-  extern std::vector<double> getTri(long len);
-  extern std::vector<double> getLanczos(long len, unsigned char lobe);
+  extern std::vector<double> getWindow(long length, unsigned char lobe);
+  extern void multipleWindow(std::vector<double>::iterator from, const std::vector<double>::iterator to, unsigned char lobe);
   extern double sinc(double x);
 
   extern std::map<std::wstring, std::wstring>::const_iterator getVow2PronIt(const std::wstring& pron);

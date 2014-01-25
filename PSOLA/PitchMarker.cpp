@@ -273,7 +273,7 @@ void PitchMarker::xcorr(Iterator it_input_begin, vector<double>::iterator it_out
 {
   short win_size = it_base_end - it_base_begin;
   int fftlen = win_size * 2;
-  vector<double> filter = nak::getHann(win_size);
+  vector<double> filter = nak::getWindow(win_size, 1);
 
   fftw_complex *in1 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
   fftw_complex *in2 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));

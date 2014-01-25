@@ -43,6 +43,7 @@ namespace nak {
   // UnitWaveformOverlapper
   double fade_stretch;
   bool interpolation;
+  bool overlap_normalize;
   bool wav_normalize;
   double max_volume;
   bool compressor;
@@ -159,11 +160,12 @@ bool nak::parse(const wstring& path_ini)
   // UnitWaveformMaker
   target_rms = ptree.get<double>(L"UnitWaveformMaker.target_rms", 0.05);
   unit_waveform_lobe = ptree.get<unsigned char>(L"UnitWaveformMaker.unit_waveform_lobe", 3);
-  uwc_normalize = ptree.get<bool>(L"UnitWaveformMaker.uwc_normalize", false);
+  uwc_normalize = ptree.get<bool>(L"UnitWaveformMaker.uwc_normalize", true);
 
   // UnitWaveformOverlapper
   fade_stretch = ptree.get<double>(L"UnitWaveformOverlapper.fade_stretch", 1.0);
   interpolation = ptree.get<bool>(L"UnitWaveformOverlapper.interpolation", false);
+  overlap_normalize = ptree.get<bool>(L"UnitWaveformOverlapper.overlap_normalize", true);
   wav_normalize = ptree.get<bool>(L"UnitWaveformOverlapper.wav_normalize", false);
   max_volume = ptree.get<double>(L"UnitWaveformOverlapper.max_volume", 0.9);
   compressor = ptree.get<bool>(L"UnitWaveformOverlapper.compressor", false);
@@ -244,7 +246,7 @@ vector<double> nak::normalize(const vector<double>& wav, double target_mean, dou
 {
   vector<double> tmp_wav = wav;
   double wav_mean = getMean(tmp_wav);
-  double wav_var = getVar(tmp_wav, wav_mean);
+  double wav_var = getVar(tmp_wav);
   for (size_t i=0; i<tmp_wav.size(); i++)
     tmp_wav[i] = (tmp_wav[i]+(target_mean-wav_mean)) * (target_var/wav_var);
   return tmp_wav;
@@ -270,64 +272,78 @@ vector<double> nak::normalize(const vector<double>& wav, short target_max, short
 
 double nak::getRMS(const vector<double>& wav)
 {
+  return getRMS(wav.begin(), wav.end());
+}
+
+double nak::getRMS(const vector<double>::const_iterator from, const vector<double>::const_iterator to)
+{
   double rms = 0.0;
-  for (size_t i=0; i<wav.size(); i++)
-    rms += pow((double)wav[i], 2) / wav.size();
+  for (vector<double>::const_iterator it=from; it!=to; ++it) {
+    rms += pow((double)*it, 2) / (to-from);
+  }
   return sqrt(rms);
 }
 
 double nak::getMean(const vector<double>& wav)
 {
+  return getMean(wav.begin(), wav.end());
+}
+
+double nak::getMean(const vector<double>::const_iterator from, const vector<double>::const_iterator to)
+{
   double mean = 0.0;
-  for (size_t i=0; i<wav.size(); i++)
-    mean += wav[i] / (double)wav.size();
+  for (vector<double>::const_iterator it=from; it!=to; ++it) {
+    mean += *it / (double)(to-from);
+  }
   return mean;
 }
 
-double nak::getVar(const vector<double>& wav, double mean)
+double nak::getVar(const vector<double>& wav)
 {
+  return getVar(wav.begin(), wav.end());
+}
+
+double nak::getVar(const vector<double>::const_iterator from, const vector<double>::const_iterator to)
+{
+  double mean = getMean(from, to);
   double var = 0.0;
-  for (size_t i=0; i<wav.size(); i++)
-    var += pow(wav[i]-mean, 2) / wav.size();
+  for (vector<double>::const_iterator it=from; it!=to; ++it) {
+    var += pow(*it-mean, 2) / (to-from);
+  }
   return sqrt(var);
 }
 
-vector<double> nak::getTri(long len)
+vector<double> nak::getWindow(long len, unsigned char lobe)
 {
   vector<double> filter(len, 0);
-  for (size_t i=0; i<filter.size(); ++i) {
-    double x = (i+1.0) / (filter.size()+1.0);
-    filter[i] = 1.0 - 2*fabs(x-0.5);
+  if (lobe > 1) {
+    // Lanczos Window
+    long pos_half = filter.size() / 2;
+    if (len%2 > 0) {
+      filter[pos_half] = 1.0;
+      ++pos_half;
+    }
+    for (size_t i=0; i<filter.size()-pos_half; i++) {
+      double x = (i+1.0) * lobe / pos_half;
+      filter[pos_half+i] = sinc(x) * sinc(x/lobe);
+    }
+    reverse_copy(filter.begin()+pos_half, filter.end(), filter.begin());
+  } else {
+    // Hann Window
+    for (size_t i=0; i<filter.size(); ++i) {
+      double x = (i+1.0) / (filter.size()+1.0);
+      filter[i] = 0.5 - (0.5 * cos(2*M_PI*x));
+    }
   }
   return filter;
 }
 
-vector<double> nak::getHann(long len)
+void nak::multipleWindow(vector<double>::iterator from, vector<double>::iterator to, unsigned char lobe)
 {
-  vector<double> filter(len, 0);
-  for (size_t i=0; i<filter.size(); ++i) {
-    double x = (i+1.0) / (filter.size()+1.0);
-    filter[i] = 0.5 - (0.5 * cos(2*M_PI*x));
+  vector<double> filter = nak::getWindow(to-from, lobe);
+  for (vector<double>::iterator it=from; it!=to; ++it) {
+    *it *= filter[it-from];
   }
-  return filter;
-}
-
-vector<double> nak::getLanczos(long len, unsigned char lobe)
-{
-  vector<double> fore_filter(len/2, 0);
-  vector<double> aft_filter(len/2, 0);
-
-  for (size_t i=0; i<fore_filter.size(); i++) {
-    double x = (i+1.0) * lobe / aft_filter.size();
-    aft_filter[i] = sinc(x) * sinc(x/lobe);
-  }
-
-  reverse_copy(aft_filter.begin(), aft_filter.end(), fore_filter.begin());
-  if (len%2 > 0)
-    fore_filter.push_back(1.0);
-
-  fore_filter.insert(fore_filter.end(), aft_filter.begin(), aft_filter.end());
-  return fore_filter;
 }
 
 double nak::sinc(double x)

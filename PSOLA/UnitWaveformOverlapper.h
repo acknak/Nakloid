@@ -15,7 +15,6 @@
 #include "../parser/WavFormat.h"
 #include "../parser/WavParser.h"
 
-// Refference Object
 class UnitWaveformOverlapper {
  public:
   UnitWaveformOverlapper(const WavFormat& format, const std::vector<float>& pitches);
@@ -32,8 +31,27 @@ class UnitWaveformOverlapper {
   const std::vector<long>& getPitchmarks() const;
 
  protected:
-  std::vector<long>::const_iterator pos2it(long pos) const;
+  class PitchMarkObject {
+   public:
+    explicit PitchMarkObject(std::vector<long>::const_iterator it):it(it),scale(1.0){};
+    virtual ~PitchMarkObject(){};
 
+    class UnitWaveformSetting {
+     public:
+      UnitWaveformSetting(std::vector<uw::UnitWaveform>::const_iterator it,double scale,double rms):it(it),scale(scale),rms(rms){};
+      virtual ~UnitWaveformSetting(){};
+      std::vector<uw::UnitWaveform>::const_iterator it;
+      double scale;
+      double rms;
+    };
+    std::vector<long>::const_iterator it;
+    std::vector<UnitWaveformSetting> uwss;
+    double scale;
+    double getRmsAccumulate();
+  };
+
+  std::vector<long>::const_iterator pos2it(long pos) const;
+  std::vector<uw::UnitWaveform>::const_iterator binary_pos_search(std::vector<uw::UnitWaveform>::const_iterator from, std::vector<uw::UnitWaveform>::const_iterator to, const long pos_target) const;
   long ms_margin;
   WavFormat format;
   std::vector<long> pitchmarks;

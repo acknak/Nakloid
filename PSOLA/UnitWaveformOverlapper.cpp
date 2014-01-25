@@ -50,15 +50,20 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
     return false;
   }
 
-  long fade_start = (uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart-1)->fact.dwPosition;
-  long fade_last = uwc->unit_waveforms.back().fact.dwPosition;
-  vector<long>::const_iterator it_begin_pitchmarks = pos2it(nak::ms2pos(ms_start,format));
-  vector<long>::const_iterator it_end_pitchmarks = pos2it(nak::ms2pos(ms_end,format));
-  vector<long>::const_iterator it_pitchmarks = it_begin_pitchmarks;
+  long subset_wav_margin = 0;
+  vector<double> subset_wav;
+  vector<PitchMarkObject> pmos;
+  long fade_start=(uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart-1)->fact.dwPosition, fade_last=uwc->unit_waveforms.back().fact.dwPosition;
+  vector<long>::const_iterator it_begin_pitchmarks=pos2it(nak::ms2pos(ms_start,format)), it_end_pitchmarks=pos2it(nak::ms2pos(ms_end,format));
 
-  while (it_pitchmarks != it_end_pitchmarks) {
+  if (nak::overlap_normalize) {
+    // prepare subset
+    subset_wav_margin = uwc->unit_waveforms.front().fact.dwPitchLeft;
+    subset_wav.assign(nak::ms2pos(ms_end-ms_start,format)+subset_wav_margin+uwc->unit_waveforms.back().fact.dwPitchRight,0);
+  }
+  for (vector<long>::const_iterator it_pitchmarks=it_begin_pitchmarks;it_pitchmarks!=it_end_pitchmarks;++it_pitchmarks) {
+    PitchMarkObject pmo(it_pitchmarks);
     vector<UnitWaveform>::const_iterator it_unit_waveform = uwc->unit_waveforms.begin();
-    vector<double> tmp_waveform;
     {
       // choose unit waveform for overlap
       long dist = *it_pitchmarks - *it_begin_pitchmarks;
@@ -66,57 +71,69 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
         dist = ((dist-fade_start)/((short)nak::fade_stretch)%(fade_last-fade_start)
           +(uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart)->fact.dwPosition);
       }
-      while (++it_unit_waveform!=uwc->unit_waveforms.end() && (it_unit_waveform)->fact.dwPosition<dist);
-      --it_unit_waveform;
+      it_unit_waveform = binary_pos_search(it_unit_waveform, uwc->unit_waveforms.end(), dist);
 
+      PitchMarkObject::UnitWaveformSetting uws(it_unit_waveform, 1.0, nak::getRMS(it_unit_waveform->data.getData()));
+      pmo.uwss.push_back(uws);
       if (nak::interpolation) {
         long dist_fore=dist-it_unit_waveform->fact.dwPosition, dist_aft;
-        vector<double> waveform_fore=it_unit_waveform->data.getData(), waveform_aft;
+        vector<UnitWaveform>::const_iterator it_aft_unit_waveform;
         if (it_unit_waveform==--uwc->unit_waveforms.end()) {
-          dist_aft = (uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart)->fact.dwPosition - dist;
-          waveform_aft = (uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart)->data.getData();
+          it_aft_unit_waveform = uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart;
+          dist_aft = it_aft_unit_waveform->fact.dwPosition - dist;
         } else {
+          it_aft_unit_waveform = it_unit_waveform+1;
           dist_aft = (it_unit_waveform+1)->fact.dwPosition - dist;
-          waveform_aft = (it_unit_waveform+1)->data.getData();
         }
-
-        if (waveform_fore.size() > waveform_aft.size()) {
-          waveform_aft.insert(waveform_aft.begin(), (waveform_fore.size()-waveform_aft.size())/2, 0);
-          waveform_aft.insert(waveform_aft.end(), waveform_fore.size()-waveform_aft.size(), 0);
-        } else {
-          waveform_fore.insert(waveform_fore.begin(), (waveform_aft.size()-waveform_fore.size())/2, 0);
-          waveform_fore.insert(waveform_fore.end(), waveform_aft.size()-waveform_fore.size(), 0);
+        PitchMarkObject::UnitWaveformSetting uws(it_aft_unit_waveform,((double)dist_fore+dist_aft)/dist_aft,nak::getRMS(it_aft_unit_waveform->data.getData()));
+        pmo.uwss.push_back(uws);
+      }
+      if (nak::overlap_normalize) {
+        // prepare subset wav
+        for (vector<PitchMarkObject::UnitWaveformSetting>::iterator it_uwss=pmo.uwss.begin(); it_uwss!=pmo.uwss.end(); ++it_uwss) {
+          long tmp_width=it_uwss->it->fact.dwPitchLeft+it_uwss->it->fact.dwPitchRight+1, tmp_pos=*it_pitchmarks-*it_begin_pitchmarks;
+          double tmp_scale = it_uwss->scale / pmo.getRmsAccumulate();
+          vector<double> tmp_uwd = it_uwss->it->data.getData();
+          for (size_t i=0; i< tmp_width; i++) {
+            if (tmp_pos+i>=0 && tmp_pos+i<subset_wav.size()) {
+              subset_wav[tmp_pos+i] += tmp_uwd[i] * tmp_scale;
+            }
+          }
         }
-
-        tmp_waveform.assign(waveform_fore.size(), 0.0);
-        double scale_fore=dist_aft/((double)dist_fore+dist_aft), scale_aft=1.0-scale_fore;
-        for (size_t i=0; i<waveform_fore.size(); i++) {
-          tmp_waveform[i] = (waveform_fore[i]*scale_fore) + (waveform_aft[i]*scale_aft);
-        }
-      } else {
-        tmp_waveform = it_unit_waveform->data.getData();
       }
     }
-
-    // overlap
-    long win_start = *it_pitchmarks - it_unit_waveform->fact.dwPitchLeft;
-    long win_end = *it_pitchmarks + it_unit_waveform->fact.dwPitchRight;
-    if (win_start < 0) {
-      // left edge
-      tmp_waveform.erase(tmp_waveform.begin(), tmp_waveform.begin()-win_start);
-      win_start = 0;
+    pmos.push_back(pmo);
+  }
+  if (nak::overlap_normalize) {
+    // analyze subset
+    for (vector<PitchMarkObject>::iterator it_pmos=pmos.begin();it_pmos!=pmos.end();++it_pmos) {
+      double acc_scale=it_pmos->getRmsAccumulate(), theo_rms=0.0;
+      long tmp_width = it_pmos->uwss.front().it->fact.dwPitchLeft+it_pmos->uwss.front().it->fact.dwPitchRight+1;
+      for (vector<PitchMarkObject::UnitWaveformSetting>::iterator it_uwss=it_pmos->uwss.begin(); it_uwss!=it_pmos->uwss.end(); ++it_uwss) {
+        theo_rms += it_uwss->rms * it_uwss->scale / acc_scale;
+      }
+      vector<double> target_wav(subset_wav.begin()+(*it_pmos->it-*it_begin_pitchmarks), subset_wav.begin()+(*it_pmos->it-*it_begin_pitchmarks)+tmp_width);
+      nak::multipleWindow(target_wav.begin(), target_wav.end(), nak::unit_waveform_lobe);
+      it_pmos->scale = theo_rms / nak::getRMS(target_wav.begin(), target_wav.end());
     }
-    if (win_end >= pitchmarks.back()) {
-      // right edge
-      tmp_waveform.erase(tmp_waveform.end()-(win_end-pitchmarks.back()), tmp_waveform.end());
-      win_end = pitchmarks.back();
-    }
-    long ms_dist = nak::pos2ms(*it_pitchmarks-*it_begin_pitchmarks, format);
-    double scale = ((ms_dist<velocities.size())?velocities[ms_dist]:velocities.back())/100.0;
-    for (size_t i=0; i<win_end-win_start; i++)
-      output_wav[win_start+i] += tmp_waveform[i] * scale;
+    vector<double>().swap(subset_wav);
+  }
 
-    ++it_pitchmarks;
+  // overlap
+  for (vector<PitchMarkObject>::iterator it_pmos=pmos.begin(); it_pmos!=pmos.end(); ++it_pmos) {
+    double acc_scale = it_pmos->getRmsAccumulate();
+    for (vector<PitchMarkObject::UnitWaveformSetting>::iterator it_uwss=it_pmos->uwss.begin(); it_uwss!=it_pmos->uwss.end(); ++it_uwss) {
+      long tmp_pos=*(it_pmos->it)-it_uwss->it->fact.dwPitchLeft, sub_velocity=nak::pos2ms(*(it_pmos->it)-*it_begin_pitchmarks, format);
+      if (sub_velocity >= velocities.size()) {
+        sub_velocity = velocities.back();
+      }
+      vector<double> tmp_uwd = it_uwss->it->data.getData();
+      for (size_t i=0; i< tmp_uwd.size(); i++) {
+        if (tmp_pos+i>=0 && tmp_pos+i<output_wav.size() && velocities[sub_velocity]!=0) {
+          output_wav[tmp_pos+i] += tmp_uwd[i] * (it_uwss->scale/acc_scale) * (velocities[sub_velocity]/100.0) * it_pmos->scale;
+        }
+      }
+    }
   }
 
   return true;
@@ -182,4 +199,27 @@ vector<long>::const_iterator UnitWaveformOverlapper::pos2it(long pos) const
       return it;
   while (++it != pitchmarks.end());
   return pitchmarks.end();
+}
+
+vector<UnitWaveform>::const_iterator UnitWaveformOverlapper::binary_pos_search(vector<UnitWaveform>::const_iterator from, vector<UnitWaveform>::const_iterator to, const long pos_target) const
+{
+  if (to-from > 1) {
+    vector<UnitWaveform>::const_iterator it_half = (to-from) / 2 + from;
+    if (it_half->fact.dwPosition > pos_target) {
+      return binary_pos_search(from, it_half, pos_target);
+    } else if (it_half->fact.dwPosition < pos_target) {
+      return binary_pos_search(it_half, to, pos_target);
+    }
+    return it_half;
+  }
+  return from;
+}
+
+double UnitWaveformOverlapper::PitchMarkObject::getRmsAccumulate()
+{
+  double accumurate_scale = 0.0;
+  for (vector<UnitWaveformSetting>::const_iterator it_uwss=uwss.begin(); it_uwss!=uwss.end(); ++it_uwss) {
+    accumurate_scale += it_uwss->scale;
+  }
+  return accumurate_scale;
 }

@@ -150,7 +150,7 @@ UnitWaveform UnitWaveformMaker::makeUnitWaveform(short point, short pitch, doubl
   }
   long win_start = pitch_marks[point] - (pitch*lobe);
   long win_end = pitch_marks[point] + (pitch*lobe);
-  vector<double> filter = nak::getLanczos(pitch*lobe*2+1 ,lobe);
+  vector<double> filter = nak::getWindow(pitch*lobe*2+1, lobe);
   unit_waveform.fact.dwPitchLeft = unit_waveform.fact.dwPitchRight = pitch * lobe;
   unit_waveform.fact.dwPosition = pitch_marks[point] - pitch_marks[0];
 
