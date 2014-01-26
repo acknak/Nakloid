@@ -337,20 +337,7 @@ void Note::setVelocityPoints(const list< pair<long,short> >& velocity_points)
 
 list< pair<long,short> > Note::getVelocityPoints()
 {
-  if (self.velocity_points.size() > 0) {
-    return self.velocity_points;
-  }
-
-  // return default points
-  list < pair<long,short> > tmp_velocities;
-  short margin_front=getFrontMargin(), margin_back=getBackMargin(), padding_front=getFrontPadding(), padding_back=getBackPadding();
-  tmp_velocities.push_back(make_pair(0, 0));
-  tmp_velocities.push_back(make_pair(margin_front, 0));
-  tmp_velocities.push_back(make_pair(margin_front+padding_front, self.base_velocity));
-  tmp_velocities.push_back(make_pair(-margin_back-padding_back, self.base_velocity));
-  tmp_velocities.push_back(make_pair(-margin_back, 0));
-  tmp_velocities.push_back(make_pair(-1, 0));
-  return tmp_velocities;
+  return self.velocity_points;
 }
 
 short Note::getVelocityPointNum() const
@@ -361,23 +348,39 @@ short Note::getVelocityPointNum() const
 vector<short> Note::getVelocities()
 {
   long velocities_size = getPronEnd()-getPronStart();
-  vector<short> velocities(velocities_size, 0);
+  vector<short> velocities(velocities_size, 100);
   list< pair<long,short> > tmp_velocity_points = getVelocityPoints();
 
-  // sanitize
-  map<long,short> tmp_vels;
-  for (list< pair<long,short> >::iterator it=tmp_velocity_points.begin(); it!=tmp_velocity_points.end(); ++it) {
-    long tmp_ms = (it->first)<0?velocities_size+it->first:it->first;
-    if (tmp_ms < velocities_size && tmp_ms >= 0)
-      tmp_vels[tmp_ms] = it->second;
+  if (tmp_velocity_points.size() > 0) {
+    // sanitize
+    map<long,short> tmp_vels;
+    for (list< pair<long,short> >::iterator it=tmp_velocity_points.begin(); it!=tmp_velocity_points.end(); ++it) {
+      long tmp_ms = (it->first)<0?velocities_size+it->first:it->first;
+      if (tmp_ms < velocities_size && tmp_ms >= 0)
+        tmp_vels[tmp_ms] = it->second;
+    }
+    // vels to velocities
+    for (map<long,short>::iterator it=++tmp_vels.begin(); it!=tmp_vels.end(); ++it) {
+      for (size_t i=0; i<it->first-boost::prior(it)->first; i++) {
+        velocities[i+boost::prior(it)->first] =
+          (1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second)*(self.base_velocity/100.0);
+      }
+    }
   }
 
-  // vels to velocities
-  for (map<long,short>::iterator it=++tmp_vels.begin(); it!=tmp_vels.end(); ++it) {
-    for (size_t i=0; i<it->first-boost::prior(it)->first; i++) {
-      velocities[i+boost::prior(it)->first] =
-        (1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second)*(self.base_velocity/100.0);
-    }
+  // margin & padding
+  short margin_front=getFrontMargin(), margin_back=getBackMargin(), padding_front=getFrontPadding(), padding_back=getBackPadding();
+  for (size_t i=0; i<margin_front; i++) {
+    velocities[i] = 0;
+  }
+  for (size_t i=0; i<padding_front; i++) {
+    velocities[i+margin_front] *= i / (double)padding_front;
+  }
+  for (size_t i=0; i<padding_back; i++) {
+    velocities[velocities.size()-1-margin_back-i] *= i / (double)padding_back;
+  }
+  for (size_t i=0; i<margin_back; i++) {
+    velocities[velocities.size()-1-i] = 0;
   }
 
   return velocities;

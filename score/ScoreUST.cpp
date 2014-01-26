@@ -100,12 +100,13 @@ void ScoreUST::load(const wstring& input_ust)
       vector<short> env_sht_vector;
       boost::algorithm::split(env_str_vector, buf_vector[1], boost::is_any_of(","));
       if (env_str_vector.size() >= 7) {
-        for (size_t i=0; i<env_str_vector.size(); i++)
+        for (size_t i=0; i<env_str_vector.size(); i++) {
           try {
             env_sht_vector.push_back(boost::lexical_cast<double>(env_str_vector[i]));
           } catch (...) {
             env_sht_vector.push_back(0);
           }
+        }
         notes.back().addVelocityPoint(env_sht_vector[0], env_sht_vector[3]);
         notes.back().addVelocityPoint(env_sht_vector[0]+env_sht_vector[1], env_sht_vector[4]);
         if (env_str_vector.size() == 7) {
@@ -114,8 +115,9 @@ void ScoreUST::load(const wstring& input_ust)
         } else if (env_str_vector.size() >= 9) {
           notes.back().addVelocityPoint(-env_sht_vector[2]-env_sht_vector[8], env_sht_vector[5]);
           notes.back().addVelocityPoint(-env_sht_vector[8], env_sht_vector[6]);
-          if (env_str_vector.size() >= 11)
+          if (env_str_vector.size() >= 11) {
             notes.back().addVelocityPoint(env_sht_vector[0]+env_sht_vector[1]+env_sht_vector[9], env_sht_vector[10]);
+          }
         }
       }
     } else if (buf_vector[0]==L"Pitches" || buf_vector[0]==L"Piches") {
@@ -141,9 +143,11 @@ void ScoreUST::load(const wstring& input_ust)
   // get pitches
   if (!is_tempered) {
     long tmp_length = 0;
-    for (list<Note>::iterator it=notes.begin(); it!=notes.end(); ++it)
-      if (tmp_length < it->getPronEnd())
+    for (list<Note>::iterator it=notes.begin(); it!=notes.end(); ++it) {
+      if (tmp_length < it->getPronEnd()) {
         tmp_length = it->getPronEnd();
+      }
+    }
     pitches.assign(tmp_length, 0);
     vector<long> velocities(tmp_length, 0);
     list<Note>::iterator it_notes = notes.begin();
@@ -152,15 +156,18 @@ void ScoreUST::load(const wstring& input_ust)
       vector<short> note_velocities = it_notes->getVelocities();
       long note_start_ms = it_notes->getPronStart();
       long note_end_ms = it_notes->getPronEnd();
-      if (it_pitches->second.size() == 0)
+      if (it_pitches->second.size() == 0) {
         it_pitches->second.push_back(0);
+      }
       for (size_t i=0; i<it_pitches->second.size(); i++) {
         long tick_start_ms = note_start_ms + nak::tick2ms(i*5, 480, 1.0/it_pitches->first*60000000);
         long tick_end_ms = note_start_ms + nak::tick2ms((i+1)*5, 480, 1.0/it_pitches->first*60000000);
-        if (tick_end_ms > note_end_ms)
+        if (tick_end_ms > note_end_ms) {
           tick_end_ms = note_end_ms;
-        if (tick_end_ms-note_start_ms >= note_velocities.size())
+        }
+        if (tick_end_ms-note_start_ms >= note_velocities.size()) {
           tick_end_ms = note_start_ms + note_velocities.size() - 1;
+        }
         float tmp_pitch = it_notes->getBasePitchHz()*pow(2.0,it_pitches->second[i]/1200.0);
         if (i == it_pitches->second.size()-1) {
           for (size_t j=tick_end_ms; j<note_end_ms; j++) {
@@ -170,9 +177,9 @@ void ScoreUST::load(const wstring& input_ust)
         }
         for (size_t j=0; j<tick_end_ms-tick_start_ms; j++) {
           long tmp_ms=tick_start_ms+j, tmp_note_ms=tmp_ms-note_start_ms;
-          if (velocities[tmp_ms] == 0)
+          if (velocities[tmp_ms] == 0) {
             pitches[tmp_ms] = tmp_pitch;
-          else {
+          } else {
             pitches[tmp_ms] =
               (pitches[tmp_ms]/(velocities[tmp_ms]+note_velocities[tmp_note_ms])*velocities[tmp_ms])
               + (tmp_pitch/(velocities[tmp_ms]+note_velocities[tmp_note_ms])*note_velocities[tmp_note_ms]);
