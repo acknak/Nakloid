@@ -88,7 +88,23 @@ namespace nak {
     (L"ま", L"a")(L"み", L"i")(L"む", L"u")(L"め", L"e")(L"も", L"o")
     (L"や", L"a")(L"ゆ", L"u")(L"よ", L"o")(L"ゃ", L"a")(L"ゅ", L"u")(L"ょ", L"o")
     (L"ら", L"a")(L"り", L"i")(L"る", L"u")(L"れ", L"e")(L"ろ", L"o")
-    (L"わ", L"a")(L"を", L"o")(L"ん", L"n")(L"ゐ", L"i")(L"ゑ", L"e");
+    (L"わ", L"a")(L"を", L"o")(L"ん", L"n")(L"ゐ", L"i")(L"ゑ", L"e")
+    (L"ア", L"a")(L"イ", L"i")(L"ウ", L"u")(L"エ", L"e")(L"オ", L"o")(L"ヴ", L"u")
+    (L"ァ", L"a")(L"ィ", L"i")(L"ゥ", L"u")(L"ェ", L"e")(L"ォ", L"o")
+    (L"カ", L"a")(L"キ", L"i")(L"ク", L"u")(L"ケ", L"e")(L"コ", L"o")
+    (L"ガ", L"a")(L"ギ", L"i")(L"グ", L"u")(L"ゲ", L"e")(L"ゴ", L"o")
+    (L"サ", L"a")(L"シ", L"i")(L"ス", L"u")(L"セ", L"e")(L"ソ", L"o")
+    (L"ザ", L"a")(L"ジ", L"i")(L"ズ", L"u")(L"ゼ", L"e")(L"ゾ", L"o")
+    (L"タ", L"a")(L"チ", L"i")(L"ツ", L"u")(L"テ", L"e")(L"ト", L"o")
+    (L"ダ", L"a")(L"ヂ", L"i")(L"ヅ", L"u")(L"デ", L"e")(L"ド", L"o")
+    (L"ナ", L"a")(L"ニ", L"i")(L"ヌ", L"u")(L"ネ", L"e")(L"ノ", L"o")
+    (L"ハ", L"a")(L"ヒ", L"i")(L"フ", L"u")(L"ヘ", L"e")(L"ホ", L"o")
+    (L"バ", L"a")(L"ビ", L"i")(L"ブ", L"u")(L"ベ", L"e")(L"ボ", L"o")
+    (L"パ", L"a")(L"ピ", L"i")(L"プ", L"u")(L"ペ", L"e")(L"ポ", L"o")
+    (L"マ", L"a")(L"ミ", L"i")(L"ム", L"u")(L"メ", L"e")(L"モ", L"o")
+    (L"ヤ", L"a")(L"ユ", L"u")(L"ヨ", L"o")(L"ャ", L"a")(L"ュ", L"u")(L"ｮ", L"o")
+    (L"ラ", L"a")(L"リ", L"i")(L"ル", L"u")(L"レ", L"e")(L"ロ", L"o")
+    (L"ワ", L"a")(L"ヲ", L"o")(L"ン", L"n")(L"ヰ", L"i")(L"ヱ", L"e");
 }
 
 // parser
@@ -375,11 +391,12 @@ nak::VoiceAlias::VoiceAlias(const wstring &alias)
   }
 
   // get suffix
-  if (pron.size() > 2) {
-    wstring tmp_suffix = pron.substr(pron.size()-2);
-    if (iswascii(tmp_suffix[0]) && iswalpha(tmp_suffix[0]) && iswdigit(tmp_suffix[1])) {
-      suffix = tmp_suffix;
-      pron.erase(pron.size()-2, 2);
+  if (pron.size() > 1) {
+    for (size_t i=0; i<pron.size(); i++) {
+      if (pron2vow.count(pron.substr(pron.size()-1-i,1)) > 0) {
+        suffix = pron.substr(pron.size()-i);
+        pron.erase(pron.size()-i);
+      }
     }
   }
 }
