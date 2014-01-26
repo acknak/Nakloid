@@ -396,6 +396,7 @@ nak::VoiceAlias::VoiceAlias(const wstring &alias)
       if (pron2vow.count(pron.substr(pron.size()-1-i,1)) > 0) {
         suffix = pron.substr(pron.size()-i);
         pron.erase(pron.size()-i);
+        break;
       }
     }
   }
