@@ -64,37 +64,38 @@ void ScoreUST::load(const wstring& input_ust)
       continue;
     } else if (buf_vector[0]==L"VoiceDir" && path_singer.empty()) {
       boost::algorithm::replace_all(buf_vector[1], L"%", L"/");
-      if (buf_vector[1][0] != '/')
+      if (buf_vector[1][0] != '/') {
         buf_vector[1] = L"/" + buf_vector[1];
+      }
       setSingerPath(L".."+buf_vector[1]);
     } else if (buf_vector[0] == L"OutFile" && path_song.empty()) {
       boost::algorithm::replace_all(buf_vector[1], L"%", L"/");
-      if (buf_vector[1][0] != '/')
+      if (buf_vector[1][0] != '/') {
         buf_vector[1] = L"/" + buf_vector[1];
+      }
       setSongPath(L"."+buf_vector[1]);
     } else if (buf_vector[0] == L"Length") {
-      if (!buf_vector[1].empty() && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0)
+      if (!buf_vector[1].empty() && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0) {
         notes.back().setEnd(pos+=tmp, 480, 1.0/tempo*60000000);
-    } else if (buf_vector[0] == L"Lyric") {
-      string::size_type pos_prefix = buf_vector[1].find(L" ");
-      if (pos_prefix != string::npos) {
-        notes.back().setPrefix(buf_vector[1].substr(0, pos_prefix+1));
-        notes.back().setPron(buf_vector[1].substr(pos_prefix+1));
-      } else {
-        notes.back().setPron(buf_vector[1]);
       }
+    } else if (buf_vector[0] == L"Lyric") {
+      notes.back().setAlias(buf_vector[1]);
     } else if (buf_vector[0] == L"NoteNum") {
-      if (!buf_vector[1].empty() && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0)
+      if (!buf_vector[1].empty() && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0) {
         notes.back().setBasePitch(tmp);
+      }
     } else if (buf_vector[0] == L"PreUtterance") {
-      if (!buf_vector[1].empty())
+      if (!buf_vector[1].empty()) {
         notes.back().setPrec(boost::lexical_cast<double>(buf_vector[1]));
+      }
     } else if (buf_vector[0] == L"VoiceOverlap") {
-      if (!buf_vector[1].empty())
+      if (!buf_vector[1].empty()) {
         notes.back().setOvrl(boost::lexical_cast<double>(buf_vector[1]));
+      }
     } else if (buf_vector[0] == L"Intensity") {
-      if (!buf_vector[1].empty() && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0)
+      if (!buf_vector[1].empty() && (tmp=boost::lexical_cast<double>(buf_vector[1]))>0) {
         notes.back().setBaseVelocity(tmp);
+      }
     } else if (buf_vector[0] == L"Envelope") {
       vector<string> env_str_vector;
       vector<short> env_sht_vector;
