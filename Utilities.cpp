@@ -196,7 +196,6 @@ bool nak::parse(const wstring& path_ini)
   vibrato = ptree.get<bool>(L"PitchArranger.vibrato", false);
   overshoot = ptree.get<bool>(L"PitchArranger.overshoot", false);
   preparation = ptree.get<bool>(L"PitchArranger.preparation", false);
-  completion = ptree.get<bool>(L"PitchArranger.completion", true);
   finefluctuation = ptree.get<bool>(L"PitchArranger.finefluctuation", false);
   ms_overshoot = ptree.get<short>(L"PitchArranger.ms_overshoot", 50);
   pitch_overshoot = ptree.get<double>(L"PitchArranger.pitch_overshoot", 3.0);
@@ -208,6 +207,18 @@ bool nak::parse(const wstring& path_ini)
   finefluctuation_deviation = ptree.get<double>(L"PitchArranger.finefluctuation_deviation", 0.5);
 
   return true;
+}
+
+WavFormat nak::getDefaultFormat()
+{
+  WavFormat format;
+  format.wFormatTag = 1;
+  format.wChannels = 1;
+  format.dwSamplesPerSec = 44100;
+  format.dwAvgBytesPerSec = format.dwSamplesPerSec*2;
+  format.wBlockAlign = 2;
+  format.wBitsPerSamples = 16;
+  return format;
 }
 
 long nak::ms2pos(long ms, WavFormat format)
@@ -402,7 +413,12 @@ nak::VoiceAlias::VoiceAlias(const wstring &alias)
   }
 }
 
-bool nak::VoiceAlias::checkVCV()
+bool nak::VoiceAlias::checkVCV() const
 {
   return (prefix.find(L" ")!=wstring::npos && (prefix[0]!=L'*'&&prefix[0]!=L'-'));
+}
+
+wstring nak::VoiceAlias::getAliasString() const
+{
+  return prefix+pron+suffix;
 }

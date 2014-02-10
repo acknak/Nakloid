@@ -1,7 +1,6 @@
 #ifndef ScoreUST_h
 #define ScoreUST_h
 
-#include <list>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,10 +14,10 @@
 
 class ScoreUST : public Score {
  public:
-  ScoreUST(const std::wstring& input_ust, const std::wstring& path_song, const std::wstring& path_singer);
+  ScoreUST(const std::wstring &path_score, const VoiceDB *voice_db, const std::wstring &path_song);
   virtual ~ScoreUST();
 
-  void load(const std::wstring& input_ust);
+  void load();
 
  protected:
   long id_parse;

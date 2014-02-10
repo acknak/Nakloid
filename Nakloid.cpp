@@ -2,15 +2,9 @@
 
 using namespace std;
 
-Nakloid::Nakloid() : voice_db(0), score(0), margin(0)
+Nakloid::Nakloid() : voice_db(0), score(0)
 {
-  loadDefaultFormat();
-}
-
-Nakloid::Nakloid(nak::ScoreMode mode) : voice_db(0), score(0), margin(0)
-{
-  loadDefaultFormat();
-  loadScore(mode);
+  format = nak::getDefaultFormat();
 }
 
 Nakloid::~Nakloid()
@@ -25,88 +19,52 @@ Nakloid::~Nakloid()
   }
 }
 
-void Nakloid::loadDefaultFormat()
-{
-  format.wFormatTag = 1;
-  format.wChannels = 1;
-  format.dwSamplesPerSec = 44100;
-  format.dwAvgBytesPerSec = format.dwSamplesPerSec*2;
-  format.wBlockAlign = 2;
-  format.wBitsPerSamples = 16;
-}
-
-bool Nakloid::loadScore(nak::ScoreMode mode)
-{
-  if (score != 0) {
-    delete score;
-    score = 0;
-  }
-
-  // load score
-  switch(mode){
-  case nak::score_mode_nak:
-    score=new ScoreNAK(nak::path_nak, nak::path_song, nak::path_singer); break;
-  case nak::score_mode_ust:
-    score=new ScoreUST(nak::path_ust, nak::path_song, nak::path_singer); break;
-  case nak::score_mode_smf:
-    score=new ScoreSMF(nak::path_smf, nak::track, nak::path_lyrics, nak::path_song, nak::path_singer); break;
-  }
-  if (score == 0 || !score->isScoreLoaded()) {
-    cerr << "[Nakloid::loadScore] score hasn't loaded" << endl;
-    return false;
-  }
-  cout << endl;
-
-  // load pitches
-  if (nak::pitches_mode == nak::pitches_mode_pit)
-    score->loadPitchesFromPit(nak::path_pitches);
-  else if (nak::pitches_mode == nak::pitches_mode_lf0)
-    score->loadPitchesFromLf0(nak::path_pitches);
-  else
-    score->reloadPitches();
-
-  // load prefix map
-  if (!nak::path_prefix_map.empty()) {
-    score->loadModifierMap(nak::path_prefix_map);
-    cout << "use modifier map..." << endl;
-  }
-
-  return true;
-}
-
 bool Nakloid::vocalization()
 {
-  if (score == 0) {
-    cerr << "[Nakloid::vocalization] score hasn't loaded" << endl;
-    return false;
-  }
-
-  if (score->notes.empty()) {
-    cerr << "[Nakloid::vocalization] notes hasn't loaded" << endl;
-    return false;
-  }
-
+  cout << "----- load voice DB -----" << endl;
   if (voice_db != 0) {
     delete voice_db;
     voice_db = 0;
   }
-  voice_db = new VoiceDB(score->getSingerPath());
+  voice_db = new VoiceDB(nak::path_singer);
   if (voice_db==0 || !voice_db->initVoiceMap()) {
     cerr << "[Nakloid::vocalization] can't find voiceDB" << endl;
     return false;
   }
-  cout << endl;
 
-  cout << "----- start vocalization -----" << endl;
-  setMargin(nak::margin);
+  // load score
+  cout << endl << "----- load score -----" << endl;
+  switch(nak::score_mode){
+  case nak::score_mode_nak:
+    score=new ScoreNAK(nak::path_nak, voice_db, nak::path_song); break;
+  case nak::score_mode_ust:
+    score=new ScoreUST(nak::path_ust, voice_db, nak::path_song); break;
+  case nak::score_mode_smf:
+    score=new ScoreSMF(nak::path_smf, voice_db, nak::path_song, nak::track, nak::path_lyrics); break;
+  }
+  if (!nak::path_prefix_map.empty()) {
+    score->loadModifierMap(nak::path_prefix_map);
+    cout << "use modifier map..." << endl;
+  }
+  score->setMargin(nak::margin);
+  score->load();
+  score->loadPitches(nak::path_pitches, nak::pitches_mode);
+  if (score->getNotesBegin() == score->getNotesEnd()) {
+    cerr << "[Nakloid::vocalization] can't load notes" << endl;
+    return false;
+  }
+  if (score->getPitches().size() == 0) {
+    cerr << "[Nakloid::vocalization] can't load pitches" << endl;
+    return false;
+  }
+  
+  cout << endl << "----- start vocalization -----" << endl;
 
-  // set notes & arrange pitches
-  Arranger::arrange(voice_db, score);
-
-  // Singing Voice Synthesis
-  UnitWaveformOverlapper *overlapper = new UnitWaveformOverlapper(format, score->getPitches());
+  // synthesize singing voice 
+  UnitWaveformOverlapper *overlapper = new UnitWaveformOverlapper(format, score->getPitchMarks(format));
   double counter=0, percent=0;
-  for (list<Note>::iterator it_notes=score->notes.begin(); it_notes!=score->notes.end(); ++it_notes) {
+  long notes_size = score->getNotesEnd() - score->getNotesEnd();
+  for (vector<Note>::const_iterator it_notes=score->getNotesBegin(); it_notes!=score->getNotesEnd(); ++it_notes) {
     wcout << L"synthesize \"" << it_notes->getAliasString() << L"\" from " << it_notes->getPronStart() << L"ms to " << it_notes->getPronEnd() << L"ms" << endl;
     /*
     cout << "ovrl: " << it_notes->getOvrl() << ", prec: " << it_notes->getPrec() << ", cons: " << it_notes->getCons() << endl
@@ -119,10 +77,10 @@ bool Nakloid::vocalization()
     if (voice_db->getVoice(it_notes->getAliasString()) == 0) {
       continue;
     }
-    overlapper->overlapping(voice_db->getVoice(it_notes->getAliasString())->getUwc(), it_notes->getPronStart(), it_notes->getPronEnd(), it_notes->getVelocities());
+    overlapper->overlapping(voice_db->getVoice(it_notes->getAliasString())->getUwc(), make_pair(it_notes->getPronStart(), it_notes->getPronEnd()), it_notes->getFrontMargin(), it_notes->getVelocities());
 
     // show progress
-    if (++counter/score->notes.size()>percent+0.1 && (percent=floor(counter/score->notes.size()*10)/10.0)<1.0)
+    if (++counter/notes_size>percent+0.1 && (percent=floor(counter/notes_size*10)/10.0)<1.0)
       cout << endl << percent*100 << "%..." << endl << endl;
   }
   cout << endl;
@@ -132,11 +90,10 @@ bool Nakloid::vocalization()
   if (nak::compressor) {
     overlapper->outputCompressing();
   }
-  overlapper->outputWav(score->getSongPath(), margin);
+  overlapper->outputWav(score->getSongPath());
   delete overlapper;
 
-  cout << "----- vocalization finished -----" << endl;
-  cout << endl;
+  cout << "----- vocalization finished -----" << endl << endl;
 
   return true;
 }
@@ -158,16 +115,6 @@ void Nakloid::setFormat(const WavFormat& format)
 Score* Nakloid::getScore() const
 {
   return score;
-}
-
-void Nakloid::setMargin(long margin)
-{
-  this->margin = margin;
-}
-
-long Nakloid::getMargin() const
-{
-  return this->margin;
 }
 
 /*
@@ -196,7 +143,7 @@ int main()
     freopen("", "r", stderr);
   }
 
-  Nakloid *nakloid = new Nakloid(nak::score_mode);
+  Nakloid *nakloid = new Nakloid();
   nakloid->vocalization();
 
   if (!nak::path_output_nak.empty())

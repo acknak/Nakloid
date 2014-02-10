@@ -17,10 +17,10 @@
 
 class ScoreNAK : public Score {
  public:
-  ScoreNAK(const std::wstring& input_nak, const std::wstring& path_song, const std::wstring& path_singer);
+  ScoreNAK(const std::wstring &path_score, const VoiceDB *voice_db, const std::wstring &path_song);
   virtual ~ScoreNAK();
 
-  void load(const std::wstring& path_nak);
+  void load();
 
  protected:
   Note *note_parse;

@@ -27,7 +27,8 @@ namespace nak {
     VoiceAlias():prefix(L""),pron(L""),suffix(L""){}
     explicit VoiceAlias(const std::wstring& alias);
     VoiceAlias(const std::wstring& prefix, const std::wstring& pron, const std::wstring& suffix):prefix(prefix),pron(pron),suffix(suffix){}
-    bool checkVCV();
+    bool checkVCV() const;
+    std::wstring getAliasString() const;
     std::wstring prefix;
     std::wstring pron;
     std::wstring suffix;
@@ -87,7 +88,6 @@ namespace nak {
   extern bool vibrato;
   extern bool overshoot;
   extern bool preparation;
-  extern bool completion;
   extern bool finefluctuation;
   extern short ms_overshoot;
   extern double pitch_overshoot;
@@ -98,14 +98,11 @@ namespace nak {
   extern double pitch_vibrato;
   extern double finefluctuation_deviation;
 
-  // internal parameters
-  extern std::map<std::wstring, std::wstring> vow2pron;
-  extern std::map<std::wstring, std::wstring> pron2vow;
-
   // Nakloid.ini parser
   extern bool parse(const std::wstring& path_ini);
 
   // tools
+  extern WavFormat getDefaultFormat();
   extern long ms2pos(long ms, WavFormat format);
   extern long pos2ms(long pos, WavFormat format);
   extern long tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
@@ -128,6 +125,10 @@ namespace nak {
   extern double sinc(double x);
 
   extern std::map<std::wstring, std::wstring>::const_iterator getVow2PronIt(const std::wstring& pron);
+
+  // internal parameters
+  extern std::map<std::wstring, std::wstring> vow2pron;
+  extern std::map<std::wstring, std::wstring> pron2vow;
 }
 
 #endif

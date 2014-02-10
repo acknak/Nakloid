@@ -111,8 +111,9 @@ bool VoiceDB::initVoiceMap(const wstring& path_oto_ini)
  */
 const Voice* VoiceDB::getVoice(const wstring& alias) const
 {
-  if (!isAlias(alias))
+  if (!isAlias(alias)) {
     return 0;
+  }
 
   return &(voice_map.at(alias));
 }

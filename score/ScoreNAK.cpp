@@ -2,19 +2,18 @@
 
 using namespace std;
 
-ScoreNAK::ScoreNAK(const wstring& input_NAK, const wstring& path_song, const wstring& path_singer)
-  :Score(input_NAK, path_song, path_singer)
-{
-  load(input_NAK);
-}
+ScoreNAK::ScoreNAK(const wstring& path_score, const VoiceDB *voice_db, const wstring& path_song)
+  :Score(path_score, voice_db, path_song){}
 
 ScoreNAK::~ScoreNAK(){}
 
-void ScoreNAK::load(const wstring& path_nak)
+void ScoreNAK::load()
 {
-  cout << "----- start score(NAK) loading -----" << endl;
+  clearNotes();
 
-  boost::filesystem::path boost_path_nak(path_nak);
+  wcout << L"nak: " << getScorePath() << endl;
+
+  boost::filesystem::path boost_path_nak(getScorePath());
   boost::property_tree::wptree pt, pt_notes;
   boost::property_tree::read_json(boost_path_nak.string(), pt);
   BOOST_FOREACH (const boost::property_tree::wptree::value_type& child_notes, pt.get_child(L"Score.notes")) {
@@ -63,11 +62,8 @@ void ScoreNAK::load(const wstring& path_nak)
       if (v.size() == 2)
         tmp_note->addVelocityPoint(boost::lexical_cast<long>(v[0]), boost::lexical_cast<short>(v[1]));
     }
-    notes.push_back(*tmp_note);
+    addNote(*tmp_note);
   }
 
-  if (!is_tempered)
-    reloadPitches();
-
-  cout << "----- finish score(NAK) loading -----" << endl;
+  reloadPitches();
 }

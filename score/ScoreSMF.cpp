@@ -2,82 +2,52 @@
 
 using namespace std;
 
-ScoreSMF::ScoreSMF(const wstring& input_smf, short track, const wstring& path_lyrics, const wstring& path_song, const wstring& path_singer)
-  :Score(input_smf, path_song, path_singer),timebase(0),tempo(0),track(0),is_parse(false),time_parse(0),id_parse(0)
-{
-  load(input_smf, track, path_lyrics);
-}
+ScoreSMF::ScoreSMF(const wstring &path_score, const VoiceDB *voice_db, const wstring &path_song, short track, const wstring& path_lyrics)
+  :Score(path_score, voice_db, path_song),track(track),path_lyrics(path_lyrics),timebase(0),tempo(0),is_parse(false),time_parse(0),id_parse(0){}
 
 ScoreSMF::~ScoreSMF() {}
 
-bool ScoreSMF::load(const wstring& input, short track, const wstring& path_lyrics)
+void ScoreSMF::load()
 {
-  cout << "----- start score(smf) loading -----" << endl;
+  timebase = tempo = time_parse = id_parse = 0;
+  is_parse = false;
+  clearNotes();
+
+  wcout << L"smf: " << getScorePath() << endl;
 
   // load lyrics txt
-  list<wstring> prons;
   boost::filesystem::wifstream ifs(path_lyrics);
   wstring buf_str;
-
   if (!ifs) {
     cerr << "[ScoreSMF::load] can't load lyrics file" << endl;
-    return false;
+    return;
   }
   while (getline(ifs, buf_str)) {
-    if (buf_str.empty())
+    if (buf_str.empty()) {
       continue;
-    if (*(buf_str.end()-1) == L',')
+    } if (*(buf_str.end()-1) == L',') {
       buf_str.erase(buf_str.end()-1,buf_str.end());
+    }
     vector<wstring> buf_vector;
     boost::algorithm::split(buf_vector, buf_str, boost::is_any_of(L","));
-    prons.insert(prons.end(), buf_vector.begin(), buf_vector.end());
+    lyrics.insert(lyrics.end(), buf_vector.begin(), buf_vector.end());
   }
 
   // load smf
   this->track = track;
-  SmfParser *smf_parser = new SmfParser(input);
+  SmfParser *smf_parser = new SmfParser(getScorePath());
   if (smf_parser->isSmfFile()) {
     smf_parser->addSmfHandler(this);
     smf_parser->parse();
     is_parse = false;
   } else {
-    ifstream ifs;
-    ifs.open(input.c_str(), ios::in|ios::binary);
-    if (!ifs) {
-      wcerr << L"[Score::loadSmf] " << input << L" cannot open\n";
-      return false;
-    }
-    Note *note = 0;
-    while (!ifs.eof()) {
-      ifs.read((char *)note, sizeof(Note));
-      notes.push_back(*note);
-    }
+    wcerr << L"[ScoreSMF::load] " << getScorePath() << L" cannot open\n";
+    return;
   }
 
-  if (notes.size() == 0) {
-    wcerr << L"[Score::loadSmf] cannot read notes" << endl;
-    return false;
-  }
+  reloadPitches();
 
-  // assign notes to pron
-  list<Note>::iterator it_notes = notes.begin();
-  list<wstring>::iterator it_prons = prons.begin();
-  for (; it_notes!=notes.end()&&it_prons!=prons.end(); ++it_notes,++it_prons) {
-    string::size_type pos_prefix = it_prons->find(L" ");
-    if (pos_prefix != string::npos) {
-      it_notes->setPrefix(it_prons->substr(0, pos_prefix+1));
-      it_notes->setPron(it_prons->substr(pos_prefix+1));
-    } else {
-      it_notes->setPron(*it_prons);
-    }
-  }
-
-  if (!is_tempered)
-    reloadPitches();
-
-  cout << "----- finish score(smf) loading -----" << endl;
-
-  return true;
+  return;
 }
 
 
@@ -107,9 +77,9 @@ void ScoreSMF::eventMidi(long deltatime, unsigned char msg, const unsigned char*
       if (note_parse->getBasePitch() == data[0]) {
         if (data[1] == 0) {
           note_parse->setEnd(time_parse, timebase, tempo);
-          notes.push_back(*note_parse);
+          addNote(*note_parse);
           delete note_parse;
-          note_parse = NULL;
+          note_parse = 0;
         } else {
           return;
         }
@@ -118,19 +88,32 @@ void ScoreSMF::eventMidi(long deltatime, unsigned char msg, const unsigned char*
           return;
         } else {
           note_parse->setEnd(time_parse, timebase, tempo);
-          notes.push_back(*note_parse);
+          addNote(*note_parse);
           delete note_parse;
+          note_parse = 0;
           note_parse = new Note(this, ++id_parse, 0, timebase, tempo, data[0], data[1]);
+          if (id_parse <= lyrics.size()) {
+            note_parse->setAlias(lyrics[id_parse-1]);
+            if (note_parse->getAlias().checkVCV()) {
+              note_parse->isVCV(true);
+            }
+          }
         }
       }
     } else {
       note_parse = new Note(this, ++id_parse, time_parse, timebase, tempo, data[0], data[1]);
+      if (id_parse <= lyrics.size()) {
+        note_parse->setAlias(lyrics[id_parse-1]);
+        if (note_parse->getAlias().checkVCV()) {
+          note_parse->isVCV(true);
+        }
+      }
     }
   } else if (SmfHandler::charToMidiMsg(msg) == MIDI_MSG_NOTE_OFF && note_parse){
     note_parse->setEnd(time_parse, timebase, tempo);
-    notes.push_back(*note_parse);
+    addNote(*note_parse);
     delete note_parse;
-    note_parse = NULL;
+    note_parse = 0;
   }
 }
 

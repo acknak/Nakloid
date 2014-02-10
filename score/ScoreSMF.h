@@ -1,8 +1,8 @@
 #ifndef ScoreSMF_h
 #define ScoreSMF_h
 
-#include <list>
 #include <string>
+#include <vector>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include "Note.h"
@@ -12,10 +12,10 @@
 
 class ScoreSMF : public Score, public SmfHandler {
  public:
-  ScoreSMF(const std::wstring& input_smf, short track, const std::wstring& path_lyrics, const std::wstring& path_song, const std::wstring& path_singer);
+  ScoreSMF(const std::wstring &path_score, const VoiceDB *voice_db, const std::wstring &path_song, short track, const std::wstring& path_lyrics);
   virtual ~ScoreSMF();
 
-  bool load(const std::wstring& input_smf, short track, const std::wstring& path_lyrics);
+  void load();
 
   // inherit from SmfParser 
   void smfInfo(short, short);
@@ -25,11 +25,10 @@ class ScoreSMF : public Score, public SmfHandler {
   void eventMeta(long, unsigned char, long, const unsigned char* const);
 
  protected:
-  std::wstring singer;
-  std::wstring path_song;
+  std::wstring path_lyrics;
+  std::vector<std::wstring> lyrics;
   unsigned short timebase;
   unsigned long tempo;
-  std::vector<float> pitches;
   unsigned short track;
   bool is_parse;
   unsigned long time_parse;

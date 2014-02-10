@@ -17,14 +17,14 @@
 
 class UnitWaveformOverlapper {
  public:
-  UnitWaveformOverlapper(const WavFormat& format, const std::vector<float>& pitches);
+  UnitWaveformOverlapper(const WavFormat& format, const std::vector<long>& pitchmarks);
   virtual ~UnitWaveformOverlapper();
 
-  bool overlapping(const uw::UnitWaveformContainer* const uwc, long pron_start, long pron_end, const std::vector<short>& velocities);
+  bool overlapping(const uw::UnitWaveformContainer* const uwc, std::pair<long, long> ms_note_pron, const std::vector<short>& velocities);
+  bool overlapping(const uw::UnitWaveformContainer* const uwc, std::pair<long, long> ms_note_pron, long ms_note_margin, const std::vector<short>& velocities);
   void outputNormalization();
   void outputCompressing();
   void outputWav(const std::wstring& output) const;
-  void outputWav(const std::wstring& output, long ms_margin);
 
   // accessor
   const WavFormat& getWavFormat() const;
@@ -52,7 +52,6 @@ class UnitWaveformOverlapper {
 
   std::vector<long>::const_iterator pos2it(long pos) const;
   std::vector<uw::UnitWaveform>::const_iterator binary_pos_search(std::vector<uw::UnitWaveform>::const_iterator from, std::vector<uw::UnitWaveform>::const_iterator to, const long pos_target) const;
-  long ms_margin;
   WavFormat format;
   std::vector<long> pitchmarks;
   std::vector<double> output_wav;

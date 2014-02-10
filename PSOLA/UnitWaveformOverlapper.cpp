@@ -3,46 +3,28 @@
 using namespace std;
 using namespace uw;
 
-UnitWaveformOverlapper::UnitWaveformOverlapper(const WavFormat& format, const vector<float>& pitches):ms_margin(0)
+UnitWaveformOverlapper::UnitWaveformOverlapper(const WavFormat& format, const vector<long>& pitchmarks)
+  :format(format),pitchmarks(pitchmarks)
 {
-  this->format = format;
-  long tmp_ms = 0;
-  list<long> tmp_pitchmarks(0);
-  bool is_note_on = false;
-
-  while (tmp_ms < pitches.size()) {
-    if (pitches[tmp_ms] > 0) {
-      if (!is_note_on)
-        tmp_pitchmarks.push_back(nak::ms2pos(tmp_ms, format));
-      tmp_pitchmarks.push_back(tmp_pitchmarks.back()+(1.0/pitches[tmp_ms]*format.dwSamplesPerSec));
-      tmp_ms = nak::pos2ms(tmp_pitchmarks.back(), format);
-      is_note_on = true;
-    } else {
-      tmp_ms++;
-      is_note_on = false;
-    }
-  }
-
-  this->pitchmarks.assign(tmp_pitchmarks.begin(), tmp_pitchmarks.end());
   output_wav.assign(pitchmarks.back(), 0);
 }
 
 
 UnitWaveformOverlapper::~UnitWaveformOverlapper(){}
 
-bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc, long pron_start, long pron_end, const vector<short>& velocities)
+bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc, pair<long, long> ms_note_pron, const vector<short>& velocities)
 {
-  if (pron_start < -ms_margin) {
-    ms_margin += -pron_start;
-    output_wav.insert(output_wav.begin(), nak::ms2pos(ms_margin, format), 0);
-  }
-  long ms_start=pron_start+ms_margin, ms_end=pron_end+ms_margin;
-  if (pitchmarks.empty()) {
-    cerr << "[UnitWaveformOverlapper::overlapping] pitchmarks not found" << endl;
+  return overlapping(uwc, ms_note_pron, 0, velocities);
+}
+
+bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc, pair<long, long> ms_note_pron, long ms_note_margin, const vector<short>& velocities)
+{
+  if (ms_note_pron.second < 0) {
+    cerr << "[UnitWaveformOverlapper::overlapping] negative ms_note_pron end" << endl;
     return false;
   }
-  if (ms_start >= ms_end) {
-    cerr << "[UnitWaveformOverlapper::overlapping] ms_start >= ms_end" << endl;
+  if (pitchmarks.empty()) {
+    cerr << "[UnitWaveformOverlapper::overlapping] pitchmarks not found" << endl;
     return false;
   }
   if (uwc->unit_waveforms.empty()) {
@@ -50,54 +32,61 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
     return false;
   }
 
+  long ms_trim = (ms_note_pron.first<0)?-ms_note_pron.first:0;
+  long ms_start=ms_note_pron.first+ms_trim, ms_end=ms_note_pron.second;
+  if (ms_start >= ms_end) {
+    cerr << "[UnitWaveformOverlapper::overlapping] ms_start >= ms_end" << endl;
+    return false;
+  }
+
   long subset_wav_margin = 0;
   vector<double> subset_wav;
-  vector<PitchMarkObject> pmos;
-  long fade_start=(uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart-1)->fact.dwPosition, fade_last=uwc->unit_waveforms.back().fact.dwPosition;
-  vector<long>::const_iterator it_begin_pitchmarks=pos2it(nak::ms2pos(ms_start,format)), it_end_pitchmarks=pos2it(nak::ms2pos(ms_end,format));
-
   if (nak::overlap_normalize) {
     // prepare subset
     subset_wav_margin = uwc->unit_waveforms.front().fact.dwPitchLeft;
     subset_wav.assign(nak::ms2pos(ms_end-ms_start,format)+subset_wav_margin+uwc->unit_waveforms.back().fact.dwPitchRight,0);
   }
+
+  vector<PitchMarkObject> pmos;
+  long fade_start=(uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart-1)->fact.dwPosition, fade_last=uwc->unit_waveforms.back().fact.dwPosition;
+  long pos_trim=nak::ms2pos(ms_trim, format), pos_margin=nak::ms2pos(ms_note_margin,format);
+  vector<long>::const_iterator it_begin_pitchmarks=pos2it(nak::ms2pos(ms_start,format)), it_end_pitchmarks=pos2it(nak::ms2pos(ms_end,format));
   for (vector<long>::const_iterator it_pitchmarks=it_begin_pitchmarks;it_pitchmarks!=it_end_pitchmarks;++it_pitchmarks) {
     PitchMarkObject pmo(it_pitchmarks);
     vector<UnitWaveform>::const_iterator it_unit_waveform = uwc->unit_waveforms.begin();
-    {
-      // choose unit waveform for overlap
-      long dist = *it_pitchmarks - *it_begin_pitchmarks;
-      if (dist > fade_last) {
-        dist = ((dist-fade_start)/((short)nak::fade_stretch)%(fade_last-fade_start)
-          +(uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart)->fact.dwPosition);
-      }
-      it_unit_waveform = binary_pos_search(it_unit_waveform, uwc->unit_waveforms.end(), dist);
 
-      PitchMarkObject::UnitWaveformSetting uws(it_unit_waveform, 1.0, nak::getRMS(it_unit_waveform->data.getData()));
-      pmo.uwss.push_back(uws);
-      if (nak::interpolation) {
-        long dist_fore=dist-it_unit_waveform->fact.dwPosition, dist_aft;
-        vector<UnitWaveform>::const_iterator it_aft_unit_waveform;
-        if (it_unit_waveform==--uwc->unit_waveforms.end()) {
-          it_aft_unit_waveform = uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart;
-          dist_aft = it_aft_unit_waveform->fact.dwPosition - dist;
-        } else {
-          it_aft_unit_waveform = it_unit_waveform+1;
-          dist_aft = (it_unit_waveform+1)->fact.dwPosition - dist;
-        }
-        PitchMarkObject::UnitWaveformSetting uws(it_aft_unit_waveform,((double)dist_fore+dist_aft)/dist_aft,nak::getRMS(it_aft_unit_waveform->data.getData()));
-        pmo.uwss.push_back(uws);
+    // choose unit waveform for overlap
+    long dist = *it_pitchmarks - *it_begin_pitchmarks + pos_trim + pos_margin;
+    if (dist > fade_last) {
+      dist = ((dist-fade_start)/((short)nak::fade_stretch)%(fade_last-fade_start)
+        +(uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart)->fact.dwPosition);
+    }
+    it_unit_waveform = binary_pos_search(it_unit_waveform, uwc->unit_waveforms.end(), dist);
+
+    PitchMarkObject::UnitWaveformSetting uws(it_unit_waveform, 1.0, nak::getRMS(it_unit_waveform->data.getData()));
+    pmo.uwss.push_back(uws);
+    if (nak::interpolation) {
+      long dist_fore=dist-it_unit_waveform->fact.dwPosition, dist_aft;
+      vector<UnitWaveform>::const_iterator it_aft_unit_waveform;
+      if (it_unit_waveform==--uwc->unit_waveforms.end()) {
+        it_aft_unit_waveform = uwc->unit_waveforms.begin()+uwc->format.dwRepeatStart;
+        dist_aft = it_aft_unit_waveform->fact.dwPosition - dist;
+      } else {
+        it_aft_unit_waveform = it_unit_waveform+1;
+        dist_aft = (it_unit_waveform+1)->fact.dwPosition - dist;
       }
-      if (nak::overlap_normalize) {
-        // prepare subset wav
-        for (vector<PitchMarkObject::UnitWaveformSetting>::iterator it_uwss=pmo.uwss.begin(); it_uwss!=pmo.uwss.end(); ++it_uwss) {
-          long tmp_width=it_uwss->it->fact.dwPitchLeft+it_uwss->it->fact.dwPitchRight+1, tmp_pos=*it_pitchmarks-*it_begin_pitchmarks;
-          double tmp_scale = it_uwss->scale / pmo.getRmsAccumulate();
-          vector<double> tmp_uwd = it_uwss->it->data.getData();
-          for (size_t i=0; i< tmp_width; i++) {
-            if (tmp_pos+i>=0 && tmp_pos+i<subset_wav.size()) {
-              subset_wav[tmp_pos+i] += tmp_uwd[i] * tmp_scale;
-            }
+      PitchMarkObject::UnitWaveformSetting uws(it_aft_unit_waveform,((double)dist_fore+dist_aft)/dist_aft,nak::getRMS(it_aft_unit_waveform->data.getData()));
+      pmo.uwss.push_back(uws);
+    }
+    if (nak::overlap_normalize) {
+      // prepare subset wav
+      for (vector<PitchMarkObject::UnitWaveformSetting>::iterator it_uwss=pmo.uwss.begin(); it_uwss!=pmo.uwss.end(); ++it_uwss) {
+        long tmp_width=it_uwss->it->fact.dwPitchLeft+it_uwss->it->fact.dwPitchRight+1, tmp_pos=*it_pitchmarks-*it_begin_pitchmarks;
+        double tmp_scale = it_uwss->scale / pmo.getRmsAccumulate();
+        vector<double> tmp_uwd = it_uwss->it->data.getData();
+        for (size_t i=0; i< tmp_width; i++) {
+          if (tmp_pos+i>=0 && tmp_pos+i<subset_wav.size()) {
+            subset_wav[tmp_pos+i] += tmp_uwd[i] * tmp_scale;
           }
         }
       }
@@ -165,14 +154,6 @@ void UnitWaveformOverlapper::outputWav(const wstring& output) const
   boost::filesystem::ofstream ofs(output, ios_base::out|ios_base::trunc|ios_base::binary);
   WavParser::setWavFile(&ofs, format, &output_wav);
   ofs.close();
-}
-
-void UnitWaveformOverlapper::outputWav(const wstring& output, long ms_margin)
-{
-  if (ms_margin > this->ms_margin) {
-    output_wav.insert(output_wav.begin(), nak::ms2pos(ms_margin-this->ms_margin, format), 0);
-  }
-  outputWav(output);
 }
 
 /*

@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 #include <boost/utility.hpp>
-#include "Arranger.h"
 #include "parser/WavData.h"
 #include "parser/WavFormat.h"
 #include "parser/WavParser.h"
@@ -26,10 +25,8 @@
 class Nakloid {
  public:
   Nakloid();
-  explicit Nakloid(nak::ScoreMode mode);
   virtual ~Nakloid();
 
-  void loadDefaultFormat();
   bool loadScore(nak::ScoreMode mode);
   bool vocalization();
 
@@ -37,14 +34,11 @@ class Nakloid {
   Score* getScore() const;
   const WavFormat& getFormat() const;
   void setFormat(const WavFormat& format);
-  void setMargin(long margin);
-  long getMargin() const;
 
  protected:
   Score *score;
   VoiceDB *voice_db;
   WavFormat format;
-  long margin;
 
  private:
   Nakloid(const Nakloid& other);

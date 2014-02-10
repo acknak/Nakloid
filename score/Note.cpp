@@ -17,16 +17,21 @@ Note::Note(const Note& other)
   score = other.score;
   id = other.id;
   self = other.self;
-  if (other.self.margin != 0)
+  if (other.self.margin != 0) {
     self.margin = new pair<short,short>(*(other.self.margin));
-  if (other.self.padding != 0)
+  }
+  if (other.self.padding != 0) {
     self.padding = new pair<short,short>(*(other.self.padding));
-  if (other.self.prec != 0)
+  }
+  if (other.self.prec != 0) {
     self.prec = new short (*(other.self.prec));
-  if (other.self.ovrl != 0)
+  }
+  if (other.self.ovrl != 0) {
     self.ovrl = new short (*(other.self.ovrl));
-  if (other.self.cons != 0)
+  }
+  if (other.self.cons != 0) {
     self.cons = new short (*(other.self.cons));
+  }
 }
 
 Note::~Note()
@@ -59,16 +64,21 @@ Note& Note::operator=(const Note& other)
     score = other.score;
     id = other.id;
     self = other.self;
-    if (other.self.margin != 0)
+    if (other.self.margin != 0) {
       self.margin = new pair<short,short>(*(other.self.margin));
-    if (other.self.padding != 0)
+    }
+    if (other.self.padding != 0) {
       self.padding = new pair<short,short>(*(other.self.padding));
-    if (other.self.prec != 0)
+    }
+    if (other.self.prec != 0) {
       self.prec = new short (*(other.self.prec));
-    if (other.self.ovrl != 0)
+    }
+    if (other.self.ovrl != 0) {
       self.ovrl = new short (*(other.self.ovrl));
-    if (other.self.cons != 0)
+    }
+    if (other.self.cons != 0) {
       self.cons = new short (*(other.self.cons));
+    }
   }
   return *this;
 }
@@ -119,11 +129,7 @@ long Note::getStart() const
 
 long Note::getPronStart() const
 {
-  long pron_start = self.start - getPrec();
-  if (getOvrl() < 0) {
-    pron_start -= getOvrl();
-  }
-  return (pron_start>0)?pron_start:0;
+  return self.start - getPrec() - ((getOvrl()<0)?getOvrl():0) + score->getMargin() + getFrontMargin();
 }
 
 void Note::setStart(long ms_start)
@@ -143,11 +149,12 @@ long Note::getEnd() const
 
 long Note::getPronEnd() const
 {
-  if (getPronStart() > self.end) {
+  long tmp_pron_end = self.end + score->getMargin() - getBackMargin();
+  if (getPronStart() > tmp_pron_end) {
     cerr << "[Note::getPronEnd] pron_start > pron_end" << endl;
     return getPronStart();
   }
-  return self.end;
+  return tmp_pron_end;
 }
 
 void Note::setEnd(long ms_end)
@@ -160,44 +167,46 @@ void Note::setEnd(unsigned long deltatime, unsigned short timebase, unsigned lon
   setEnd(nak::tick2ms(deltatime, timebase, tempo));
 }
 
-short Note::getFrontMargin()
+short Note::getFrontMargin() const
 {
   if (self.margin != 0) {
     return self.margin->first;
   }
 
-  Note* note_prev = score->getPrevNote(this);
+  const Note* note_prev = score->getPrevNote(this);
   if (note_prev == 0) {
     return 0;
   }
 
   if (isVCV()) {
-    if (note_prev->getPronEnd()-note_prev->getBackMargin() > getPronStart()+getOvrl()) {
-      return note_prev->getPronEnd() - note_prev->getBackMargin() - nak::ms_back_padding - getPronStart();
+    long ms_prev_cons_start = note_prev->getStart() - note_prev->getPrec() + note_prev->getCons();
+    long ms_start = getStart() - getPrec();
+    if (ms_start < ms_prev_cons_start) {
+      long tmp_margin = ms_prev_cons_start - ms_start;
+      long tmp_padding = max(nak::ms_front_padding, nak::ms_back_padding);
+      tmp_padding = min(tmp_padding, getOvrl());
+      if (getPrec()-tmp_margin > tmp_padding) {
+        return tmp_margin;
+      } else {
+        return getPrec() - tmp_padding;
+      }
     }
   }
   return 0;
 }
 
-short Note::getBackMargin()
+short Note::getBackMargin() const
 {
   if (self.margin != 0) {
     return self.margin->second;
   }
 
-  Note* note_next = score->getNextNote(this);
-  if (note_next == 0){
+  const Note* note_next = score->getNextNote(this);
+  if (note_next==0 || !note_next->isVCV() || getEnd() < note_next->getStart()){
     return 0;
   }
 
-  if (note_next->isVCV()) {
-    if (getPronStart()+getCons()+nak::ms_back_padding < note_next->getPronStart()+note_next->getOvrl()) {
-      return note_next->getPrec() - note_next->getOvrl();
-    } else {
-      return nak::ms_back_padding;
-    }
-  }
-  return 0;
+  return getEnd() - (note_next->getPronStart()+note_next->getFrontPadding());
 }
 
 void Note::setMargin(short front, short back)
@@ -209,35 +218,35 @@ void Note::setMargin(short front, short back)
   self.margin = new pair<short,short>(front, back);
 }
 
-short Note::getFrontPadding()
+short Note::getFrontPadding() const
 {
   if (self.padding != 0) {
     return self.padding->first;
   }
 
   if (isVCV()) {
-    if (getOvrl()-getFrontMargin() > nak::ms_back_padding) {
-      return getOvrl() - getFrontMargin();
-    } else {
-      return nak::ms_back_padding;
+    long tmp_padding = getOvrl() - getFrontMargin();
+    if (tmp_padding > 0) {
+     return tmp_padding;
     }
+    return max(nak::ms_front_padding, nak::ms_back_padding);
   }
   return nak::ms_front_padding;
 }
 
-short Note::getBackPadding()
+short Note::getBackPadding() const
 {
   if (self.padding != 0) {
     return self.padding->second;
   }
 
-  Note* note_next = score->getNextNote(this);
+  const Note* note_next = score->getNextNote(this);
   if (note_next!=0 && note_next->isVCV()) {
     if (note_next!=0) {
       return note_next->getFrontPadding();
     }
   }
-  return nak::ms_back_padding;
+  return max(nak::ms_front_padding, nak::ms_back_padding);
 }
 
 void Note::setPadding(short front, short back)
@@ -247,36 +256,6 @@ void Note::setPadding(short front, short back)
     self.padding = 0;
   }
   self.padding = new pair<short,short>(front, back);
-}
-
-const wstring& Note::getPron() const
-{
-  return self.alias.pron;
-}
-
-void Note::setPron(const wstring& pron)
-{
-  this->self.alias.pron = pron;
-}
-
-const wstring& Note::getPrefix() const
-{
-  return self.alias.prefix;
-}
-
-void Note::setPrefix(const wstring& prefix)
-{
-  this->self.alias.prefix = prefix;
-}
-
-const wstring& Note::getSuffix() const
-{
-  return self.alias.suffix;
-}
-
-void Note::setSuffix(const wstring& suffix)
-{
-  this->self.alias.suffix = suffix;
 }
 
 nak::VoiceAlias Note::getAlias() const
@@ -297,7 +276,7 @@ void Note::setAlias(nak::VoiceAlias voice_alias)
 void Note::setAlias(const std::wstring& alias)
 {
   nak::VoiceAlias voice_alias(alias);
-  self.alias = voice_alias;
+  setAlias(voice_alias);
 }
 
 unsigned char Note::getBasePitch() const
@@ -330,12 +309,12 @@ void Note::addVelocityPoint(long ms, short vel)
   self.velocity_points.push_back(make_pair(ms, vel));
 }
 
-void Note::setVelocityPoints(const list< pair<long,short> >& velocity_points)
+void Note::setVelocityPoints(const vector< pair<long,short> > &velocity_points)
 {
   self.velocity_points = velocity_points;
 }
 
-list< pair<long,short> > Note::getVelocityPoints()
+const vector< pair<long,short> >& Note::getVelocityPoints() const
 {
   return self.velocity_points;
 }
@@ -345,16 +324,17 @@ short Note::getVelocityPointNum() const
   return self.velocity_points.size();
 }
 
-vector<short> Note::getVelocities()
+vector<short> Note::getVelocities() const
 {
-  long velocities_size = getPronEnd()-getPronStart();
-  vector<short> velocities(velocities_size, 100);
-  list< pair<long,short> > tmp_velocity_points = getVelocityPoints();
+  long ms_pron_start=getPronStart(), ms_pron_end=getPronEnd();
+  long velocities_size = ms_pron_end-((getPronStart()>0)?ms_pron_start:0);
+  vector<short> velocities(velocities_size, 100*(nak::auto_vowel_combining?nak::vowel_combining_volume:1.0));
+  vector< pair<long,short> > tmp_velocity_points = getVelocityPoints();
 
   if (tmp_velocity_points.size() > 0) {
     // sanitize
     map<long,short> tmp_vels;
-    for (list< pair<long,short> >::iterator it=tmp_velocity_points.begin(); it!=tmp_velocity_points.end(); ++it) {
+    for (vector< pair<long,short> >::iterator it=tmp_velocity_points.begin(); it!=tmp_velocity_points.end(); ++it) {
       long tmp_ms = (it->first)<0?velocities_size+it->first:it->first;
       if (tmp_ms < velocities_size && tmp_ms >= 0)
         tmp_vels[tmp_ms] = it->second;
@@ -368,19 +348,13 @@ vector<short> Note::getVelocities()
     }
   }
 
-  // margin & padding
-  short margin_front=getFrontMargin(), margin_back=getBackMargin(), padding_front=getFrontPadding(), padding_back=getBackPadding();
-  for (size_t i=0; i<margin_front; i++) {
-    velocities[i] = 0;
-  }
+  // padding
+  short padding_front=getFrontPadding(), padding_back=getBackPadding();
   for (size_t i=0; i<padding_front; i++) {
-    velocities[i+margin_front] *= i / (double)padding_front;
+    velocities[i] *= i / (double)padding_front;
   }
   for (size_t i=0; i<padding_back; i++) {
-    velocities[velocities.size()-1-margin_back-i] *= i / (double)padding_back;
-  }
-  for (size_t i=0; i<margin_back; i++) {
-    velocities[velocities.size()-1-i] = 0;
+    velocities[velocities.size()-1-i] *= i / (double)padding_back;
   }
 
   return velocities;
