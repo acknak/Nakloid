@@ -422,3 +422,19 @@ wstring nak::VoiceAlias::getAliasString() const
 {
   return prefix+pron+suffix;
 }
+
+wstring nak::VoiceAlias::getVowel() const
+{
+  if (nak::pron2vow.count(pron.substr(pron.size()-1)) > 0) {
+    return nak::pron2vow[pron.substr(pron.size()-1)] + suffix;
+  }
+  return L"";
+}
+
+wstring nak::VoiceAlias::getPrefixVowel() const
+{
+  if (prefix.size()>1 && nak::vow2pron.count(prefix.substr(prefix.size()-2,prefix.size()-1)) > 0) {
+    return prefix.substr(prefix.size()-2,prefix.size()-1) + suffix;
+  }
+  return L"";
+}

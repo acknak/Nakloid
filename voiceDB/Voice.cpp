@@ -201,14 +201,12 @@ const UnitWaveformContainer* Voice::getUwc() const
   vector<long> input_pitch_marks;
   {
     PitchMarker *marker = new PitchMarker(wav_data, offs, ovrl, prec, blnk, wav_fs);
-    wstring tmp_pron = nak::pron2vow[alias.pron.substr(alias.pron.size()-1)] + alias.suffix;
-    if (nak::pron2vow.count(alias.pron.substr(alias.pron.size()-1))>0 && voice_db->isVowel(tmp_pron)) {
+    if (voice_db->isVowel(alias.getVowel())) {
       short win_size = wav_fs / getFrq() * 2;
-      vector<double> aft_vowel_wav = voice_db->getVowel(tmp_pron);
+      vector<double> aft_vowel_wav = voice_db->getVowel(alias.getVowel());
       trimVector(&aft_vowel_wav, win_size);
-      tmp_pron = alias.prefix.substr(0,alias.prefix.size()-1) + alias.suffix;
-      if (is_vcv && voice_db->isVowel(tmp_pron)) {
-        vector<double> fore_vowel_wav = voice_db->getVowel(tmp_pron);
+      if (is_vcv && voice_db->isVowel(alias.getPrefixVowel())) {
+        vector<double> fore_vowel_wav = voice_db->getVowel(alias.getPrefixVowel());
         trimVector(&fore_vowel_wav, win_size);
         marker->mark(fore_vowel_wav, aft_vowel_wav);
       } else {

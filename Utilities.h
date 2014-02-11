@@ -29,6 +29,8 @@ namespace nak {
     VoiceAlias(const std::wstring& prefix, const std::wstring& pron, const std::wstring& suffix):prefix(prefix),pron(pron),suffix(suffix){}
     bool checkVCV() const;
     std::wstring getAliasString() const;
+    std::wstring getVowel() const;
+    std::wstring getPrefixVowel() const;
     std::wstring prefix;
     std::wstring pron;
     std::wstring suffix;
