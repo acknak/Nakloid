@@ -81,12 +81,15 @@ bool VoiceDB::initVoiceMap(const wstring& path_oto_ini)
         wav_parser.addTargetTrack(0);
         if (wav_parser.parse()) {
           short win_size = wav_parser.getFormat().dwSamplesPerSec / tmp_voice.getFrq();
-          double tmp_max_rms = -1.0;
           vector<double> tmp_win = nak::getWindow(win_size*2, nak::unit_waveform_lobe);
           vector<double> tmp_wav = (*(wav_parser.getDataChunks().begin())).getData();
           vector<double>::iterator it_tmp_wav_cons = tmp_wav.begin()+((tmp_voice.offs+tmp_voice.cons)/1000.0*wav_parser.getFormat().dwSamplesPerSec);
           vector<double>::iterator it_tmp_wav_max = it_tmp_wav_cons;
+          double tmp_max_rms = -1.0, avr_wav = accumulate(it_tmp_wav_cons-win_size,it_tmp_wav_cons+(win_size*3),0)/tmp_wav.size();
           for (size_t i=0; i<win_size*2; i++) {
+            if (*(it_tmp_wav_cons+i)<avr_wav) {
+              continue;
+            }
             vector<double> tmp_wav(it_tmp_wav_cons+i-win_size, it_tmp_wav_cons+i+win_size);
             for (size_t j=0; j<tmp_wav.size(); j++) {
               tmp_wav[j] *= tmp_win[j];
