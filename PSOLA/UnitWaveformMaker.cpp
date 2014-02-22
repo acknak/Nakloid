@@ -15,7 +15,7 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, bool is_vc
 bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitch, bool is_vcv)
 {
   this->voice = voice;
-  if (voice.size()==0 || pitch_marks.empty() || lobe==0) {
+  if (voice.size()==0 || pitchmarks.empty() || lobe==0) {
     cerr << "[UnitWaveformMaker] voice or pitch mark or lobe is null" << endl;
     return false;
   }
@@ -33,8 +33,8 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
       fade_scale = nak::target_rms/nak::getRMS(makeUnitWaveform(sub_fade_start, pitch).data.getData());
       ovrl_scale = is_vcv?((sub_ovrl>0)?nak::target_rms/nak::getRMS(makeUnitWaveform(0, pitch).data.getData()):1):fade_scale;
     }
-    unit_waveforms.reserve(pitch_marks.size());
-    for (size_t i=0; i<pitch_marks.size(); i++) {
+    unit_waveforms.reserve(pitchmarks.size());
+    for (size_t i=0; i<pitchmarks.size(); i++) {
       double scale = 1.0;
       if (sub_ovrl==0 || i>=sub_fade_start) {
         scale = fade_scale;
@@ -92,35 +92,35 @@ const vector<UnitWaveform>& UnitWaveformMaker::getUnitWaveform() const
 
 const vector<long>& UnitWaveformMaker::getPitchMarks() const
 {
-  return pitch_marks;
+  return pitchmarks;
 }
 
-void UnitWaveformMaker::setPitchMarks(const vector<long>& pitch_marks)
+void UnitWaveformMaker::setPitchMarks(const vector<long>& pitchmarks)
 {
-  this->pitch_marks = pitch_marks;
+  this->pitchmarks = pitchmarks;
   sub_rep_start = sub_ovrl = 0;
 }
 
-void UnitWaveformMaker::setPitchMarks(const vector<long>& pitch_marks, long ms_rep_start, unsigned long fs)
+void UnitWaveformMaker::setPitchMarks(const vector<long>& pitchmarks, long ms_rep_start, unsigned long fs)
 {
-  setPitchMarks(pitch_marks, ms_rep_start, 0, fs);
+  setPitchMarks(pitchmarks, ms_rep_start, 0, fs);
 }
 
-void UnitWaveformMaker::setPitchMarks(const vector<long>& pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs)
+void UnitWaveformMaker::setPitchMarks(const vector<long>& pitchmarks, long ms_rep_start, long ms_ovrl, unsigned long fs)
 {
-  this->pitch_marks = pitch_marks;
+  this->pitchmarks = pitchmarks;
 
   long pos_rep_start = ms_rep_start * fs / 1000;
-  for (size_t i=0; i<pitch_marks.size(); i++) {
-    if (pos_rep_start <= pitch_marks[i]) {
+  for (size_t i=0; i<pitchmarks.size(); i++) {
+    if (pos_rep_start <= pitchmarks[i]) {
       sub_rep_start = i;
       break;
     }
   }
 
   long pos_ovrl = ms_ovrl * fs / 1000;
-  for (size_t i=0; i<pitch_marks.size(); i++) {
-    if (pos_ovrl <= pitch_marks[i]) {
+  for (size_t i=0; i<pitchmarks.size(); i++) {
+    if (pos_ovrl <= pitchmarks[i]) {
       sub_ovrl = i;
       break;
     }
@@ -129,7 +129,7 @@ void UnitWaveformMaker::setPitchMarks(const vector<long>& pitch_marks, long ms_r
 
 long UnitWaveformMaker::getFadeStartSub() const
 {
-  long tmp_fade_start = (pitch_marks.size()-1+sub_rep_start) / 2;
+  long tmp_fade_start = (pitchmarks.size()-1+sub_rep_start) / 2;
   return tmp_fade_start + (tmp_fade_start%2);
 }
 
@@ -146,13 +146,13 @@ UnitWaveform UnitWaveformMaker::makeUnitWaveform(short point, short pitch, doubl
   // cut window out
   UnitWaveform unit_waveform;
   if (pitch <= 0) {
-    pitch = (point>=pitch_marks.size()-1)?pitch_marks.back()-(*----pitch_marks.end()):pitch_marks[point+1]-pitch_marks[point];
+    pitch = (point>=pitchmarks.size()-1)?pitchmarks.back()-(*----pitchmarks.end()):pitchmarks[point+1]-pitchmarks[point];
   }
-  long win_start = pitch_marks[point] - (pitch*lobe);
-  long win_end = pitch_marks[point] + (pitch*lobe);
+  long win_start = pitchmarks[point] - (pitch*lobe);
+  long win_end = pitchmarks[point] + (pitch*lobe);
   vector<double> filter = nak::getWindow(pitch*lobe*2+1, lobe);
   unit_waveform.fact.dwPitchLeft = unit_waveform.fact.dwPitchRight = pitch * lobe;
-  unit_waveform.fact.dwPosition = pitch_marks[point] - pitch_marks[0];
+  unit_waveform.fact.dwPosition = pitchmarks[point] - pitchmarks[0];
 
   // set unit waveform data
   vector<double> unit_waveform_data(win_end-win_start+1, 0);

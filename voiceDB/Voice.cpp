@@ -198,7 +198,7 @@ const UnitWaveformContainer* Voice::getUwc() const
   }
 
   // make input pitch mark
-  vector<long> input_pitch_marks;
+  vector<long> input_pitchmarks;
   {
     PitchMarker *marker = new PitchMarker(wav_data, offs, ovrl, prec, blnk, wav_fs);
     if (voice_db->isVowel(alias.getVowel())) {
@@ -215,14 +215,14 @@ const UnitWaveformContainer* Voice::getUwc() const
     } else {
       marker->mark(getFrq(), wav_fs);
     }
-    input_pitch_marks = marker->getPitchMarks();
+    input_pitchmarks = marker->getPitchMarks();
     delete marker;
   }
 
   // make unit waveforms
   {
     UnitWaveformMaker *maker = new UnitWaveformMaker();
-    maker->setPitchMarks(input_pitch_marks, offs+cons, offs+ovrl, wav_fs);
+    maker->setPitchMarks(input_pitchmarks, offs+cons, offs+ovrl, wav_fs);
     maker->makeUnitWaveform(wav_data, wav_fs/getFrq(), is_vcv);
     uwc->unit_waveforms = maker->getUnitWaveform();
     uwc->format.wLobeSize = nak::unit_waveform_lobe;
