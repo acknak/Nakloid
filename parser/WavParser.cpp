@@ -20,7 +20,7 @@ bool WavParser::isWavFile() const
     return false;
   }
 
-  ifstream ifs(input.c_str(), ios::in | ios::binary);
+  boost::filesystem::ifstream ifs(input.c_str(), ios::in | ios::binary);
   if (!ifs) {
     wcerr << L"[WavParser::isWavFile] file '" << input << L"' cannot open" << endl;
     return false;
@@ -61,7 +61,7 @@ bool WavParser::parse()
   if (!data_chunks.empty())
     data_chunks.clear();
 
-  ifstream ifs(input.c_str(), ios::in | ios::binary);
+  boost::filesystem::ifstream ifs(input.c_str(), ios::in | ios::binary);
   long rest_size = 0;
   long fmtChunkSize = 0;
 

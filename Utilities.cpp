@@ -392,7 +392,6 @@ map<wstring, wstring>::const_iterator nak::getVow2PronIt(const wstring& pron)
 nak::VoiceAlias::VoiceAlias(const wstring &alias)
 {
   pron = alias;
-  bool is_vcv = false;
 
   // get prefix
   wstring::size_type pos_prefix = pron.find(L" ");

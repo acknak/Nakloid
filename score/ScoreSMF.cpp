@@ -34,7 +34,6 @@ void ScoreSMF::load()
   }
 
   // load smf
-  this->track = track;
   SmfParser *smf_parser = new SmfParser(getScorePath());
   if (smf_parser->isSmfFile()) {
     smf_parser->addSmfHandler(this);

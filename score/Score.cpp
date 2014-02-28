@@ -128,6 +128,10 @@ bool Score::loadPitches(const std::wstring& path_pitches, nak::PitchesMode pitch
         wcerr << L"[Score::loadFromLf0] can't open pitches data " << path_pitches << endl;
       }
     }
+  default:
+    {
+      return false;
+    }
   }
 }
 
@@ -264,8 +268,6 @@ void Score::reloadPitches()
   pitches.clear();
   pitches.resize(notes.back().getEnd()+getMargin(), 0.0);
   for (vector<Note>::const_iterator it=notes.begin(); it!=notes.end(); ++it) {
-    long test = it->getPronStart();
-    long test2 = it->getEnd()+getMargin();
     for (long i=it->getPronStart(); i<it->getEnd()+getMargin(); i++) {
       if (i>=0 && pitches[i]==0.0) {
         pitches[i] = it->getBasePitchHz();
@@ -367,8 +369,8 @@ void Score::sanitizeNote(std::vector<Note>::iterator it_notes)
   }
 
   // wo to o
-  if (tmp_alias.pron ==L"Ç" && !voice_db->isAlias(tmp_alias.getAliasString()) && voice_db->isAlias(tmp_alias.prefix+L"Ç®"+tmp_alias.suffix)) {
-    tmp_alias.pron = L"Ç®";
+  if (tmp_alias.pron ==L"„Çí" && !voice_db->isAlias(tmp_alias.getAliasString()) && voice_db->isAlias(tmp_alias.prefix+L"„Åä"+tmp_alias.suffix)) {
+    tmp_alias.pron = L"„Åä";
   }
 
   // complement parameters

@@ -24,10 +24,10 @@ class WavParser {
 
   static void setWavFileFormat(boost::filesystem::ofstream* const  ofs, const WavFormat& format, long wav_size);
   static void setWavFile(boost::filesystem::ofstream* const ofs, const WavFormat& format, const std::vector<double>* data);
-  static void WavParser::sht2dbl(const std::vector<short>& from, std::vector<double>* to);
-  static void WavParser::sht2dbl(const std::vector<short>::const_iterator from, std::vector<double>* to);
-  static void WavParser::dbl2sht(const std::vector<double>& from, std::vector<short>* to);
-  static void WavParser::dbl2sht(const std::vector<double>::const_iterator from, std::vector<short>* to);
+  static void sht2dbl(const std::vector<short>& from, std::vector<double>* to);
+  static void sht2dbl(const std::vector<short>::const_iterator from, std::vector<double>* to);
+  static void dbl2sht(const std::vector<double>& from, std::vector<short>* to);
+  static void dbl2sht(const std::vector<double>::const_iterator from, std::vector<short>* to);
 
   // accessor
   const std::wstring& getInput() const;

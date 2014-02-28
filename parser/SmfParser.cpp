@@ -29,7 +29,7 @@ bool SmfParser::isSmfFile() const
     return false;
   }
 
-  ifstream ifs(input.c_str(), ios::in | ios::binary);
+  boost::filesystem::ifstream ifs(input.c_str(), ios::in | ios::binary);
   if (!ifs) {
     wcerr << L"[SmfParser::isSmfFile] file '" << input << L"' cannot open" << endl;
     return false;
@@ -52,7 +52,7 @@ bool SmfParser::parse()
   if (!isSmfFile())
     return false;
 
-  ifstream ifs(input.c_str(), ios::in | ios::binary);
+  boost::filesystem::ifstream ifs(input.c_str(), ios::in | ios::binary);
   ifs.seekg(sizeof(char)*10); //skip smf header
   unsigned char data;
   vector<SmfHandler*>::iterator it;

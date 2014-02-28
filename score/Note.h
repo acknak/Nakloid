@@ -1,6 +1,7 @@
 #ifndef Note_h
 #define Note_h
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <string>
