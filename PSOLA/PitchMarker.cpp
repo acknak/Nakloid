@@ -59,7 +59,7 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     pitch_cons_start = *(pitchmarks.end()-1) - *(pitchmarks.end()-2);
   }
   {
-    vector<double>::const_reverse_iterator rit_mark_start, rit_input_wav_offs(it_input_wav_blnk), rit_input_wav_prec(it_input_wav_prec), rit_input_wav_ovrl(it_input_wav_ovrl);
+    vector<double>::const_reverse_iterator rit_mark_start, rit_input_wav_offs(it_input_wav_blnk), rit_input_wav_prec(it_input_wav_prec), rit_cons_start(input_wav.begin()+pos_cons_start);
     {
       // find start point
       vector<double> xcorr_win(win_size*2, 0.0);
@@ -73,7 +73,7 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
     }
-    tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), rit_input_wav_ovrl, *(tmp_pitchmarks.end()-3), *(tmp_pitchmarks.end()-1), true);
+    tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), rit_cons_start, *(tmp_pitchmarks.end()-3), *(tmp_pitchmarks.end()-1), true);
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
     }
@@ -201,7 +201,7 @@ vector<Iterator> PitchMarker::markWithSelf(Iterator it_input_begin, Iterator it_
   pitchmarks.reserve((it_input_end-it_input_begin)/win_size);
 
   long dist = win_size/2;
-  double xcorr_sum = 0;
+  double xcorr_sum=0, xcorr_start=0;
   while (tmp_pitchmark < it_input_end-(win_size/2*3)) {
     xcorr(tmp_pitchmark+(win_size/2), xcorr_win.begin(), pitchmarks.back()-(win_size/2), pitchmarks.back()+(win_size/2));
     short margin_fore, margin_aft;
@@ -221,11 +221,25 @@ vector<Iterator> PitchMarker::markWithSelf(Iterator it_input_begin, Iterator it_
     dist = max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft) - xcorr_win.begin() - (win_size/2);
     if (breaker) {
       double tmp_max = *max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft);
-      if (xcorr_sum == 0) {
-        xcorr_sum = tmp_max;
-      } else if (xcorr_sum*nak::xcorr_threshold > tmp_max) {
+      {
+        double tmp_x=0.0, tmp_y=0.0;
+        for (size_t i=0; i<win_size; i++) {
+          tmp_x += pow(*(tmp_pitchmark+(win_size/2)+i), 2.0);
+        }
+        tmp_x = pow(tmp_x, 0.5);
+        for (size_t i=0; i<win_size; i++) {
+          tmp_y += pow(*(pitchmarks.back()-(win_size/2)+i), 2.0);
+        }
+        tmp_y = pow(tmp_y, 0.5);
+        tmp_max /= tmp_x * tmp_y;
+      }
+      if (xcorr_start == 0) {
+        xcorr_start = tmp_max;
+      //} else if (xcorr_sum*nak::xcorr_threshold>tmp_max || xcorr_start*nak::xcorr_threshold>tmp_max) {
+      } else if (xcorr_sum*nak::xcorr_threshold>tmp_max) {
         break;
       }
+      xcorr_sum = tmp_max;
     }
     pitchmarks.push_back(tmp_pitchmark+=dist);
   }
