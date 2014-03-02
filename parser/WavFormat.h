@@ -1,6 +1,8 @@
 #ifndef WavFormat_h
 #define WavFormat_h
 
+#include <cstddef>
+
 class WavFormat {
  public:
   WavFormat() : chunkSize(const_chunk_size) {};

@@ -184,7 +184,7 @@ short Note::getFrontMargin() const
     if (ms_start < ms_prev_cons_start) {
       long tmp_margin = ms_prev_cons_start - ms_start;
       long tmp_padding = max(nak::ms_front_padding, nak::ms_back_padding);
-      tmp_padding = min(tmp_padding, getOvrl());
+      tmp_padding = min(tmp_padding, (long)getOvrl());
       if (getPrec()-tmp_margin > tmp_padding) {
         return tmp_margin;
       } else {

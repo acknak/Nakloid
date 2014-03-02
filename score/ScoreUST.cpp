@@ -158,7 +158,7 @@ void ScoreUST::load()
       }
       float tmp_pitch = it_notes->getBasePitchHz()*pow(2.0,it_pitches->second[i]/1200.0);
       for (size_t j=0; j<ms_tick_end-ms_tick_start; j++) {
-        long ms_tmp=ms_tick_start+j, ms_tmp_note=ms_tmp-ms_note_start;
+        long ms_tmp=ms_tick_start+j;
         if (ms_tmp > 0) {
           tmp_pitches[ms_tmp] = tmp_pitch;
         }

@@ -84,7 +84,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
         long tmp_width=it_uwss->it->fact.dwPitchLeft+it_uwss->it->fact.dwPitchRight+1, tmp_pos=*it_pitchmarks-*it_begin_pitchmarks;
         double tmp_scale = it_uwss->scale / pmo.getRmsAccumulate();
         vector<double> tmp_uwd = it_uwss->it->data.getData();
-        for (size_t i=0; i< tmp_width; i++) {
+        for (long i=0; i< tmp_width; i++) {
           if (tmp_pos+i>=0 && tmp_pos+i<subset_wav.size()) {
             subset_wav[tmp_pos+i] += tmp_uwd[i] * tmp_scale;
           }
@@ -117,7 +117,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
         sub_velocity = velocities.back();
       }
       vector<double> tmp_uwd = it_uwss->it->data.getData();
-      for (size_t i=0; i< tmp_uwd.size(); i++) {
+      for (long i=0; i< tmp_uwd.size(); i++) {
         if (tmp_pos+i>=0 && tmp_pos+i<output_wav.size() && velocities[sub_velocity]!=0) {
           output_wav[tmp_pos+i] += tmp_uwd[i] * (it_uwss->scale/acc_scale) * (velocities[sub_velocity]/100.0) * it_pmos->scale;
         }

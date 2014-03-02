@@ -23,10 +23,10 @@ class UnitWaveformMaker {
   // accessor
   const std::vector<uw::UnitWaveform>& getUnitWaveform() const;
   const std::vector<long>& getPitchMarks() const;
-  void setPitchMarks(const std::vector<long>& pitchmarks);
-  void setPitchMarks(const std::vector<long>& pitchmarks, long ms_rep_start, unsigned long fs);
-  void setPitchMarks(const std::vector<long>& pitchmarks, long ms_rep_start, long ms_ovrl, unsigned long fs);
-  long UnitWaveformMaker::getFadeStartSub() const;
+  void setPitchMarks(const std::vector<long>& pitch_marks);
+  void setPitchMarks(const std::vector<long>& pitch_marks, long ms_rep_start, unsigned long fs);
+  void setPitchMarks(const std::vector<long>& pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs);
+  long getFadeStartSub() const;
 
  protected:
   uw::UnitWaveform makeUnitWaveform(short point, short pitch);

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <boost/filesystem/fstream.hpp>
 #include "SmfHandler.h"
 
 class SmfParser {
