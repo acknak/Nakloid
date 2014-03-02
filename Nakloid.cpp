@@ -1,4 +1,4 @@
-﻿#include "Nakloid.h"
+#include "Nakloid.h"
 
 using namespace std;
 

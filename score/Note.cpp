@@ -206,7 +206,7 @@ short Note::getBackMargin() const
     return 0;
   }
 
-  return getEnd() - (note_next->getPronStart()+note_next->getFrontPadding());
+  return getEnd()+score->getMargin() - (note_next->getPronStart()+note_next->getFrontPadding());
 }
 
 void Note::setMargin(short front, short back)

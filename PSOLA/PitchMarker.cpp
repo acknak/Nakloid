@@ -91,7 +91,6 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
         pitchmarks.push_back(pos_cons_start+(--pos_rem>=0?++tmp_pos:tmp_pos));
       }
     }
-
   }
 
   sort(pitchmarks.begin(), pitchmarks.end());
