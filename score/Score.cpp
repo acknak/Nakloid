@@ -1,4 +1,4 @@
-#include "Score.h"
+﻿#include "Score.h"
 
 using namespace std;
 
