@@ -1,4 +1,4 @@
-#include "Utilities.h"
+﻿#include "Utilities.h"
 
 using namespace std;
 using namespace nak;
@@ -266,34 +266,6 @@ vector<double> nak::normalize(const vector<double>& wav, double target_rms)
   double scale = target_rms / getRMS(tmp_wav);
   for (size_t i=0; i<tmp_wav.size(); i++)
     tmp_wav[i] *= scale;
-  return tmp_wav;
-}
-
-vector<double> nak::normalize(const vector<double>& wav, double target_mean, double target_var)
-{
-  vector<double> tmp_wav = wav;
-  double wav_mean = getMean(tmp_wav);
-  double wav_var = getVar(tmp_wav);
-  for (size_t i=0; i<tmp_wav.size(); i++)
-    tmp_wav[i] = (tmp_wav[i]+(target_mean-wav_mean)) * (target_var/wav_var);
-  return tmp_wav;
-}
-
-vector<double> nak::normalize(const vector<double>& wav, short target_max, short target_min)
-{
-  vector<double> tmp_wav = wav;
-  double wav_max = *max_element(tmp_wav.begin(), tmp_wav.end());
-  double wav_min = *min_element(tmp_wav.begin(), tmp_wav.end());
-
-  for (size_t i=0; i<tmp_wav.size(); i++)
-    tmp_wav[i] -= ((wav_max+wav_min)/2.0);
-
-  for (size_t i=0; i<tmp_wav.size(); i++)
-    tmp_wav[i] *= ((double)target_max-target_min) / (wav_max-wav_min);
-
-  for (size_t i=0; i<tmp_wav.size(); i++)
-    tmp_wav[i] += (target_max+target_min)/2.0;
-
   return tmp_wav;
 }
 

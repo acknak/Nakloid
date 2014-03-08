@@ -113,8 +113,6 @@ namespace nak {
   extern double cent2rate(const double cent);
 
   extern std::vector<double> normalize(const std::vector<double>& wav, double target_rms);
-  extern std::vector<double> normalize(const std::vector<double>& wav, double target_mean, double target_var);
-  extern std::vector<double> normalize(const std::vector<double>& wav, short target_max, short target_min);
   extern double getRMS(const std::vector<double>& wav);
   extern double getRMS(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to);
   extern double getMean(const std::vector<double>& wav);
