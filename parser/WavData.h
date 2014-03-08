@@ -22,6 +22,7 @@ class WavData {
   void setData(const short* const data, long chunk_size);
   void setData(const std::vector<double>& data);
   long getSize() const;
+  double getRMS() const;
 
  protected:
   std::vector<double> data;

@@ -75,7 +75,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
         it_aft_unit_waveform = it_unit_waveform+1;
         dist_aft = (it_unit_waveform+1)->fact.dwPosition - dist;
       }
-      PitchMarkObject::UnitWaveformSetting uws(it_aft_unit_waveform,((double)dist_fore+dist_aft)/dist_aft,nak::getRMS(it_aft_unit_waveform->data.getData()));
+      PitchMarkObject::UnitWaveformSetting uws(it_aft_unit_waveform,((double)dist_fore+dist_aft)/dist_aft,it_aft_unit_waveform->data.getRMS());
       pmo.uwss.push_back(uws);
     }
     if (nak::overlap_normalize) {

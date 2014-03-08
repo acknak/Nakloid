@@ -30,19 +30,30 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
   {
     double fade_scale=1.0, ovrl_scale=1.0;
     if (nak::uwc_normalize) {
-      fade_scale = nak::target_rms/nak::getRMS(makeUnitWaveform(sub_fade_start, pitch).data.getData());
-      ovrl_scale = is_vcv?((sub_ovrl>0)?nak::target_rms/nak::getRMS(makeUnitWaveform(0, pitch).data.getData()):1):fade_scale;
+      fade_scale = nak::target_rms/makeUnitWaveform(sub_fade_start, pitch).data.getRMS();
+      ovrl_scale = is_vcv?((sub_ovrl>0)?nak::target_rms/makeUnitWaveform(0, pitch).data.getRMS():1):fade_scale;
     }
     unit_waveforms.reserve(pitchmarks.size());
     for (size_t i=0; i<pitchmarks.size(); i++) {
       double scale = 1.0;
-      if (sub_ovrl==0 || i>=sub_fade_start) {
-        scale = fade_scale;
-      } else if (i <= sub_ovrl) {
-        scale = ovrl_scale;
-      } else {
-        double tmp = (i-sub_ovrl) / (double)(sub_fade_start-sub_ovrl);
-        scale = (ovrl_scale*(1.0-tmp)) + (fade_scale*tmp);
+      if (nak::uwc_normalize) {
+         if (is_vcv) {
+          if (i > sub_ovrl && i < sub_fade_start) {
+            double tmp = (i-sub_ovrl) / (double)(sub_fade_start-sub_ovrl);
+            scale = (ovrl_scale*(1.0-tmp)) + (fade_scale*tmp);
+          } else {
+            scale = nak::target_rms/makeUnitWaveform(i, pitch).data.getRMS();
+          }
+        } else {
+          if (sub_ovrl==0 || i>=sub_fade_start) {
+            scale = nak::target_rms/makeUnitWaveform(i, pitch).data.getRMS();
+          } else if (i <= sub_ovrl) {
+            scale = ovrl_scale;
+          } else {
+            double tmp = (i-sub_ovrl) / (double)(sub_fade_start-sub_ovrl);
+            scale = (ovrl_scale*(1.0-tmp)) + (fade_scale*tmp);
+          }
+        }
       }
       unit_waveforms.push_back(makeUnitWaveform(i, pitch, scale));
     }

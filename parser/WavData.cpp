@@ -55,3 +55,12 @@ long WavData::getSize() const
 {
   return data.size();
 }
+
+double WavData::getRMS() const
+{
+  double rms = 0.0;
+  for (vector<double>::const_iterator it=data.begin(); it!=data.end(); ++it) {
+    rms += pow((double)*it, 2) / data.size();
+  }
+  return sqrt(rms);
+}
