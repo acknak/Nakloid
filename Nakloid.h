@@ -10,9 +10,6 @@
 #include <string>
 #include <vector>
 #include <boost/utility.hpp>
-#include "parser/WavData.h"
-#include "parser/WavFormat.h"
-#include "parser/WavParser.h"
 #include "PSOLA/UnitWaveformOverlapper.h"
 #include "score/Score.h"
 #include "score/ScoreNAK.h"
