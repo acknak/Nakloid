@@ -39,6 +39,8 @@ namespace nak {
   double target_rms;
   unsigned char unit_waveform_lobe;
   bool uwc_normalize;
+  short min_repeat_length;
+  double repeat_threshold;
 
   // UnitWaveformOverlapper
   double fade_stretch;
@@ -177,6 +179,8 @@ bool nak::parse(const wstring& path_ini)
   target_rms = ptree.get<double>(L"UnitWaveformMaker.target_rms", 0.05);
   unit_waveform_lobe = ptree.get<unsigned char>(L"UnitWaveformMaker.unit_waveform_lobe", 3);
   uwc_normalize = ptree.get<bool>(L"UnitWaveformMaker.uwc_normalize", true);
+  min_repeat_length = ptree.get<short>(L"UnitWaveformMaker.min_repeat_length", 10);
+  repeat_threshold = ptree.get<double>(L"UnitWaveformMaker.repeat_threshold", 0.98);
 
   // UnitWaveformOverlapper
   fade_stretch = ptree.get<double>(L"UnitWaveformOverlapper.fade_stretch", 1.0);
@@ -259,7 +263,7 @@ double nak::cent2rate(const double cent)
 {
   return pow(2, cent/1200.0);
 }
-
+/*
 vector<double> nak::normalize(const vector<double>& wav, double target_rms)
 {
   vector<double> tmp_wav = wav;
@@ -268,7 +272,7 @@ vector<double> nak::normalize(const vector<double>& wav, double target_rms)
     tmp_wav[i] *= scale;
   return tmp_wav;
 }
-
+*/
 double nak::getRMS(const vector<double>& wav)
 {
   return getRMS(wav.begin(), wav.end());
@@ -359,6 +363,32 @@ map<wstring, wstring>::const_iterator nak::getVow2PronIt(const wstring& pron)
     }
   } while (++it != nak::vow2pron.end());
   return it;
+}
+
+double nak::corr_coef(const std::vector<double>::iterator it_input_x_begin, const std::vector<double>::iterator it_input_x_end,
+                      const std::vector<double>::iterator it_input_y_begin, const std::vector<double>::iterator it_input_y_end)
+{
+  double mean_x = nak::getMean(it_input_x_begin, it_input_x_end);
+  double mean_y = nak::getMean(it_input_y_begin, it_input_y_end);
+  vector<double> tmp_x(it_input_x_begin, it_input_x_end);
+  vector<double> tmp_y(it_input_y_begin, it_input_y_end);
+  if (tmp_x.size() > tmp_y.size()) {
+    tmp_y.resize(tmp_x.size(), 0.0);
+  } else if (tmp_y.size() > tmp_x.size()) {
+    tmp_x.resize(tmp_y.size(), 0.0);
+  }
+  for (size_t i=0; i<tmp_x.size(); i++) {
+    tmp_x[i] -= mean_x;
+    tmp_y[i] -= mean_y;
+  }
+
+  double num=0.0, den_x=0.0, den_y=0.0;
+  for (size_t i=0; i<tmp_x.size(); i++) {
+    num += tmp_x[i]*tmp_y[i];
+    den_x += pow(tmp_x[i],2.0);
+    den_y += pow(tmp_y[i],2.0);
+  }
+  return num/(sqrt(den_x)*sqrt(den_y));
 }
 
 nak::VoiceAlias::VoiceAlias(const wstring &alias)

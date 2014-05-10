@@ -235,7 +235,6 @@ vector<Iterator> PitchMarker::markWithSelf(Iterator it_input_begin, Iterator it_
       }
       if (xcorr_start == 0) {
         xcorr_start = tmp_max;
-      //} else if (xcorr_sum*nak::xcorr_threshold>tmp_max || xcorr_start*nak::xcorr_threshold>tmp_max) {
       } else if (xcorr_sum*nak::xcorr_threshold>tmp_max) {
         break;
       }

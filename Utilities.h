@@ -71,6 +71,8 @@ namespace nak {
   extern double target_rms;
   extern unsigned char unit_waveform_lobe;
   extern bool uwc_normalize;
+  extern short min_repeat_length;
+  extern double repeat_threshold;
 
   // UnitWaveformOverlapper
   extern double fade_stretch;
@@ -101,30 +103,32 @@ namespace nak {
   extern double finefluctuation_deviation;
 
   // Nakloid.ini parser
-  extern bool parse(const std::wstring& path_ini);
+  bool parse(const std::wstring& path_ini);
 
   // tools
-  extern WavFormat getDefaultFormat();
-  extern long ms2pos(long ms, WavFormat format);
-  extern long pos2ms(long pos, WavFormat format);
-  extern long tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
-  extern std::pair<bool, double> val2dB(double wav_value);
-  extern double dB2val(const std::pair<bool, double>& dB);
-  extern double cent2rate(const double cent);
+  WavFormat getDefaultFormat();
+  long ms2pos(long ms, WavFormat format);
+  long pos2ms(long pos, WavFormat format);
+  long tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo);
+  std::pair<bool, double> val2dB(double wav_value);
+  double dB2val(const std::pair<bool, double>& dB);
+  double cent2rate(const double cent);
 
-  extern std::vector<double> normalize(const std::vector<double>& wav, double target_rms);
-  extern double getRMS(const std::vector<double>& wav);
-  extern double getRMS(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to);
-  extern double getMean(const std::vector<double>& wav);
-  extern double getMean(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to);
-  extern double getVar(const std::vector<double>& wav);
-  extern double getVar(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to);
+  //std::vector<double> normalize(const std::vector<double>& wav, double target_rms);
+  double getRMS(const std::vector<double>& wav);
+  double getRMS(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to);
+  double getMean(const std::vector<double>& wav);
+  double getMean(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to);
+  double getVar(const std::vector<double>& wav);
+  double getVar(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to);
 
-  extern std::vector<double> getWindow(long length, unsigned char lobe);
-  extern void multipleWindow(std::vector<double>::iterator from, const std::vector<double>::iterator to, unsigned char lobe);
-  extern double sinc(double x);
+  std::vector<double> getWindow(long length, unsigned char lobe);
+  void multipleWindow(std::vector<double>::iterator from, const std::vector<double>::iterator to, unsigned char lobe);
+  double sinc(double x);
 
-  extern std::map<std::wstring, std::wstring>::const_iterator getVow2PronIt(const std::wstring& pron);
+  std::map<std::wstring, std::wstring>::const_iterator getVow2PronIt(const std::wstring& pron);
+  double corr_coef(const std::vector<double>::iterator it_input_x_begin, const std::vector<double>::iterator it_input_x_end,
+    const std::vector<double>::iterator it_input_y_begin, const std::vector<double>::iterator it_input_y_end);
 
   // internal parameters
   extern std::map<std::wstring, std::wstring> vow2pron;

@@ -38,6 +38,7 @@ class UnitWaveformMaker {
   unsigned char lobe;
   long sub_rep_start;
   long sub_ovrl;
+  long sub_fade_start;
 
  private:
   UnitWaveformMaker(const UnitWaveformMaker& other);

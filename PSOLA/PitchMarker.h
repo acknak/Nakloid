@@ -36,9 +36,8 @@ class PitchMarker {
 
  protected:
   template <class Iterator>
-  void xcorr(Iterator it_target_begin, std::vector<double>::iterator it_output,
-             Iterator it_vowel_begin, Iterator it_vowel_end) const;
-
+  void xcorr(Iterator it_input_begin, std::vector<double>::iterator it_output,
+             Iterator it_base_begin, Iterator it_base_end) const;
   std::vector<double> input_wav;
   long pos_offs;
   std::vector<double>::const_iterator it_input_wav_offs;
