@@ -1,11 +1,8 @@
 #include "UnitWaveformMaker.h"
 
 using namespace std;
-using namespace uw;
 
-UnitWaveformMaker::UnitWaveformMaker():lobe(nak::unit_waveform_lobe),sub_rep_start(0),sub_ovrl(0),sub_fade_start(0){}
-
-UnitWaveformMaker::~UnitWaveformMaker(){}
+struct UnitWaveformMaker::Parameters UnitWaveformMaker::params;
 
 bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, bool is_vcv)
 {
@@ -15,7 +12,7 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, bool is_vc
 bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitch, bool is_vcv)
 {
   this->voice = voice;
-  if (voice.size()==0 || pitchmarks.empty() || lobe==0) {
+  if (voice.size()==0 || pitchmarks.empty() || params.num_lobes==0) {
     cerr << "[UnitWaveformMaker] voice or pitch mark or lobe is null" << endl;
     return false;
   }
@@ -30,24 +27,24 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
   {
     double fade_scale=1.0, ovrl_scale=1.0;
     vector<double> base_wav;
-    if (nak::uwc_normalize) {
-      fade_scale = nak::target_rms/fade_start_rms;
-      ovrl_scale = is_vcv?((sub_ovrl>0)?nak::target_rms/makeUnitWaveform(0, pitch).data.getRMS():1):fade_scale;
+    if (params.normalize) {
+      fade_scale = params.target_rms/fade_start_rms;
+      ovrl_scale = is_vcv?((sub_ovrl>0)?params.target_rms/makeUnitWaveform(0, pitch).data.getRMS():1):fade_scale;
     }
     unit_waveforms.reserve(pitchmarks.size());
     for (size_t i=0; i<pitchmarks.size(); i++) {
       double scale = 1.0;
-      if (nak::uwc_normalize) {
+      if (params.normalize) {
          if (is_vcv) {
           if (i > sub_ovrl && i < sub_rep_start) {
             double tmp = (i-sub_ovrl) / (double)(sub_rep_start-sub_ovrl);
             scale = (ovrl_scale*(1.0-tmp)) + (fade_scale*tmp);
           } else {
-            scale = nak::target_rms/makeUnitWaveform(i, pitch).data.getRMS();
+            scale = params.target_rms/makeUnitWaveform(i, pitch).data.getRMS();
           }
         } else {
           if (sub_ovrl==0 || i>=sub_rep_start) {
-            scale = nak::target_rms/makeUnitWaveform(i, pitch).data.getRMS();
+            scale = params.target_rms/makeUnitWaveform(i, pitch).data.getRMS();
           } else if (i <= sub_ovrl) {
             scale = ovrl_scale;
           } else {
@@ -57,15 +54,18 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
         }
       }
       unit_waveforms.push_back(makeUnitWaveform(i, pitch, scale));
-      if (i > sub_rep_start+nak::min_repeat_length) {
+      if (i > sub_rep_start+params.min_repeat_length) {
         if (base_wav.size() == 0) {
           base_wav = unit_waveforms[sub_rep_start].data.getData();
         }
         vector<double> target_wav = unit_waveforms.back().data.getData();
-        if (nak::corr_coef(base_wav.begin(), base_wav.end(), target_wav.begin(), target_wav.end()) < nak::repeat_threshold) {
+        /*
+        cout << nak::corr_coef<vector<double>::iterator>(base_wav.begin(), base_wav.end(), target_wav.begin(), target_wav.end()) << endl;
+        if (nak::corr_coef<vector<double>::iterator>(base_wav.begin(), base_wav.end(), target_wav.begin(), target_wav.end()) < nak::repeat_threshold) {
           unit_waveforms.pop_back();
           break;
         }
+        */
       }
     }
     sub_fade_start = unit_waveforms.size() - ((unit_waveforms.size()-sub_rep_start)/2);
@@ -75,29 +75,29 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
   {
     long sub_rep_len = unit_waveforms.size() - sub_fade_start;
     for (size_t i=0; i<sub_rep_len; i++) {
-      UnitWaveform fore_wav = unit_waveforms[sub_rep_start+i];
-      UnitWaveform aft_wav = unit_waveforms[sub_fade_start+i];
-      vector<double> fore_wav_data = fore_wav.data.getData();
-      vector<double> aft_wav_data = aft_wav.data.getData();
+      UnitWaveform uw_fore = unit_waveforms[sub_rep_start+i];
+      UnitWaveform uw_aft = unit_waveforms[sub_fade_start+i];
+      vector<double> data_fore = uw_fore.data.getData();
+      vector<double> data_aft = uw_aft.data.getData();
 
-      long left_diff = aft_wav.fact.dwPitchLeft - fore_wav.fact.dwPitchLeft;
+      long left_diff = uw_aft.dwPitchLeft - uw_fore.dwPitchLeft;
       if (left_diff < 0) {
-        fore_wav_data.erase(fore_wav_data.begin(), fore_wav_data.begin()-left_diff);
+        data_fore.erase(data_fore.begin(), data_fore.begin()-left_diff);
       } else if (left_diff > 0) {
-        fore_wav_data.insert(fore_wav_data.begin(), left_diff, 0);
+        data_fore.insert(data_fore.begin(), left_diff, 0);
       }
-      long right_diff = aft_wav.fact.dwPitchRight - fore_wav.fact.dwPitchRight;
+      long right_diff = uw_aft.dwPitchRight - uw_fore.dwPitchRight;
       if (right_diff < 0) {
-        fore_wav_data.erase(fore_wav_data.end()+right_diff, fore_wav_data.end());
+        data_fore.erase(data_fore.end()+right_diff, data_fore.end());
       } else if (right_diff > 0) {
-        fore_wav_data.insert(fore_wav_data.end(), right_diff, 0);
+        data_fore.insert(data_fore.end(), right_diff, 0);
       }
 
       double scale = 1.0 / (sub_rep_len-1) * i;
-      for (size_t j=0; j<aft_wav_data.size(); j++) {
-        aft_wav_data[j] = (fore_wav_data[j]*scale) + (aft_wav_data[j]*(1.0-scale));
+      for (size_t j=0; j<data_aft.size(); j++) {
+        data_aft[j] = (data_fore[j]*scale) + (data_aft[j]*(1.0-scale));
       }
-      unit_waveforms[sub_fade_start+i].data.setData(aft_wav_data);
+      unit_waveforms[sub_fade_start+i].data.setData(data_aft);
     }
   }
 
@@ -155,7 +155,7 @@ long UnitWaveformMaker::getFadeStartSub() const
 }
 
 /*
- * protected
+ * private
  */
 UnitWaveform UnitWaveformMaker::makeUnitWaveform(short point, short pitch)
 {
@@ -169,11 +169,11 @@ UnitWaveform UnitWaveformMaker::makeUnitWaveform(short point, short pitch, doubl
   if (pitch <= 0) {
     pitch = (point>=pitchmarks.size()-1)?pitchmarks.back()-(*----pitchmarks.end()):pitchmarks[point+1]-pitchmarks[point];
   }
-  long win_start = pitchmarks[point] - (pitch*lobe);
-  long win_end = pitchmarks[point] + (pitch*lobe);
-  vector<double> filter = nak::getWindow(pitch*lobe*2+1, lobe);
-  unit_waveform.fact.dwPitchLeft = unit_waveform.fact.dwPitchRight = pitch * lobe;
-  unit_waveform.fact.dwPosition = pitchmarks[point] - pitchmarks[0];
+  long win_start = pitchmarks[point] - (pitch*params.num_lobes);
+  long win_end = pitchmarks[point] + (pitch*params.num_lobes);
+  vector<double> filter = nak::getWindow(pitch*params.num_lobes*2+1, params.num_lobes);
+  unit_waveform.dwPitchLeft = unit_waveform.dwPitchRight = pitch * params.num_lobes;
+  unit_waveform.dwPosition = pitchmarks[point] - pitchmarks[0];
 
   // set unit waveform data
   vector<double> unit_waveform_data(win_end-win_start+1, 0);

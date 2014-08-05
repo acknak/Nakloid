@@ -5,7 +5,9 @@
 
 class WavFormat {
  public:
-  WavFormat() : chunkSize(const_chunk_size) {};
+  WavFormat() : chunkSize(const_chunk_size) {
+    setDefaultValues();
+  };
   explicit WavFormat(long chunkSize) : chunkSize(chunkSize) {};
   virtual ~WavFormat(){}
   WavFormat& operator=(const WavFormat& other);

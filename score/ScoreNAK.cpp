@@ -2,8 +2,8 @@
 
 using namespace std;
 
-ScoreNAK::ScoreNAK(const wstring& path_score, const VoiceDB *voice_db, const wstring& path_song)
-  :Score(path_score, voice_db, path_song){}
+ScoreNAK::ScoreNAK(const boost::filesystem::path& path_score, const VocalLibrary *vocal_lib, const boost::filesystem::path& path_song)
+  :Score(path_score, vocal_lib, path_song){}
 
 ScoreNAK::~ScoreNAK(){}
 
@@ -24,7 +24,7 @@ void ScoreNAK::load()
     else
       continue;
     if (boost::optional<wstring> alias = pt_note.get_optional<wstring>(L"alias"))
-      tmp_note->setAlias(alias.get());
+      tmp_note->setPronAlias(alias.get());
     if (boost::optional<bool> is_vcv = pt_note.get_optional<bool>(L"vcv"))
       tmp_note->isVCV(is_vcv);
     if (boost::optional<long> start = pt_note.get_optional<long>(L"start"))

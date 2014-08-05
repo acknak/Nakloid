@@ -4,17 +4,14 @@
 
 using namespace std;
 
-PitchMarker::PitchMarker(const vector<double>& input_wav):pos_offs(0)
-{
-  this->input_wav = input_wav;
-  this->pos_offs = 0;
-  this->it_input_wav_offs = this->input_wav.begin();
-  this->it_input_wav_blnk = this->input_wav.end();
-}
+struct PitchMarker::Parameters PitchMarker::params;
+
+PitchMarker::PitchMarker(const vector<double>& input_wav)
+  :pos_offs(0), input_wav(input_wav), it_input_wav_offs(input_wav.begin()), it_input_wav_blnk(input_wav.end()){}
 
 PitchMarker::PitchMarker(const vector<double>& input_wav, short ms_offs, short ms_ovrl, short ms_prec, short ms_blnk, unsigned long fs)
+  :input_wav(input_wav)
 {
-  this->input_wav = input_wav;
   setInputWavParam(ms_offs, ms_ovrl, ms_prec, ms_blnk, fs);
 }
 
@@ -176,7 +173,7 @@ vector<Iterator> PitchMarker::markWithVowel(Iterator it_input_begin, Iterator it
     xcorr(tmp_pitchmark+(win_size/2), xcorr_win.begin(), it_vowel_begin, it_vowel_end);
     short margin_fore=win_size/4*3, margin_aft=win_size/4*7;
     dist = max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft) - xcorr_win.begin() - (win_size/2);
-    if ((pre_dist<dist-nak::pitch_margin || pre_dist>dist+nak::pitch_margin) && pitchmarks.size()>2) {
+    if ((pre_dist<dist-params.pitch_margin || pre_dist>dist+params.pitch_margin) && pitchmarks.size()>2) {
       return pitchmarks;
     }
     pre_dist = dist;
@@ -206,11 +203,11 @@ vector<Iterator> PitchMarker::markWithSelf(Iterator it_input_begin, Iterator it_
     xcorr(tmp_pitchmark+(win_size/2), xcorr_win.begin(), pitchmarks.back()-(win_size/2), pitchmarks.back()+(win_size/2));
     short margin_fore, margin_aft;
     if (dist>win_size/2) {
-      margin_fore = win_size-nak::pitch_margin;
-      margin_aft = (dist*2)+nak::pitch_margin;
+      margin_fore = win_size-params.pitch_margin;
+      margin_aft = (dist*2)+params.pitch_margin;
     } else {
-      margin_fore = (dist*2)-nak::pitch_margin;
-      margin_aft = win_size+nak::pitch_margin;
+      margin_fore = (dist*2)-params.pitch_margin;
+      margin_aft = win_size+params.pitch_margin;
     }
     if (margin_fore <= (win_size/4*3)) {
       margin_fore = (win_size/4*3)+1;
@@ -220,6 +217,20 @@ vector<Iterator> PitchMarker::markWithSelf(Iterator it_input_begin, Iterator it_
     }
     dist = max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft) - xcorr_win.begin() - (win_size/2);
     if (breaker) {
+      /*
+      double tmp_max = *max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft);
+      nak::corr_coef<Iterator>(tmp_pitchmark, tmp_pitchmark+win_size, pitchmarks.back()-(win_size/2), pitchmarks.back()+(win_size/2));
+      if (xcorr_start == 0) {
+        xcorr_start = tmp_max;
+      } else if (xcorr_sum*nak::xcorr_threshold>tmp_max) {
+        break;
+      }
+      if (xcorr_start == 0) {
+        xcorr_start = tmp_max;
+      } else if (xcorr_sum*nak::xcorr_threshold>tmp_max) {
+        break;
+      }
+      /*
       double tmp_max = *max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft);
       {
         double tmp_x=0.0, tmp_y=0.0;
@@ -239,6 +250,7 @@ vector<Iterator> PitchMarker::markWithSelf(Iterator it_input_begin, Iterator it_
         break;
       }
       xcorr_sum = tmp_max;
+      */
     }
     pitchmarks.push_back(tmp_pitchmark+=dist);
   }
@@ -275,7 +287,7 @@ const vector<long>& PitchMarker::getPitchMarks() const
 }
 
 /*
- * protected
+ * private
  */
 template <class Iterator>
 void PitchMarker::xcorr(Iterator it_input_begin, vector<double>::iterator it_output,

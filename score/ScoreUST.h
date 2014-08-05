@@ -11,10 +11,11 @@
 #include "Score.h"
 #include "../parser/SmfHandler.h"
 #include "../parser/SmfParser.h"
+#include "../utilities/Tools.h"
 
 class ScoreUST : public Score {
  public:
-  ScoreUST(const std::wstring &path_score, const VoiceDB *voice_db, const std::wstring &path_song);
+  ScoreUST(const boost::filesystem::path& path_score, const VocalLibrary *vocal_lib, const boost::filesystem::path& path_song);
   virtual ~ScoreUST();
 
   void load();

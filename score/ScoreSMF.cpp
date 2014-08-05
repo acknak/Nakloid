@@ -2,11 +2,6 @@
 
 using namespace std;
 
-ScoreSMF::ScoreSMF(const wstring &path_score, const VoiceDB *voice_db, const wstring &path_song, short track, const wstring& path_lyrics)
-  :Score(path_score, voice_db, path_song),track(track),path_lyrics(path_lyrics),timebase(0),tempo(0),is_parse(false),time_parse(0),id_parse(0){}
-
-ScoreSMF::~ScoreSMF() {}
-
 void ScoreSMF::load()
 {
   timebase = tempo = time_parse = id_parse = 0;
@@ -34,9 +29,8 @@ void ScoreSMF::load()
   }
 
   // load smf
-  SmfParser *smf_parser = new SmfParser(getScorePath());
+  SmfParser *smf_parser = new SmfParser(getScorePath(), this);
   if (smf_parser->isSmfFile()) {
-    smf_parser->addSmfHandler(this);
     smf_parser->parse();
     is_parse = false;
   } else {
@@ -61,7 +55,7 @@ void ScoreSMF::smfInfo(short numTrack, short timebase)
 void ScoreSMF::trackChange(short track)
 {
   time_parse = 0;
-  is_parse = (this->track == track);
+  is_parse = (params.smf_track == track);
 }
 
 void ScoreSMF::eventMidi(long deltatime, unsigned char msg, const unsigned char* const data)
@@ -92,8 +86,8 @@ void ScoreSMF::eventMidi(long deltatime, unsigned char msg, const unsigned char*
           note_parse = 0;
           note_parse = new Note(this, ++id_parse, 0, timebase, tempo, data[0], data[1]);
           if (id_parse <= lyrics.size()) {
-            note_parse->setAlias(lyrics[id_parse-1]);
-            if (note_parse->getAlias().checkVCV()) {
+            note_parse->setPronAlias(lyrics[id_parse-1]);
+            if (note_parse->getPronAlias().checkVCV()) {
               note_parse->isVCV(true);
             }
           }
@@ -102,8 +96,8 @@ void ScoreSMF::eventMidi(long deltatime, unsigned char msg, const unsigned char*
     } else {
       note_parse = new Note(this, ++id_parse, time_parse, timebase, tempo, data[0], data[1]);
       if (id_parse <= lyrics.size()) {
-        note_parse->setAlias(lyrics[id_parse-1]);
-        if (note_parse->getAlias().checkVCV()) {
+        note_parse->setPronAlias(lyrics[id_parse-1]);
+        if (note_parse->getPronAlias().checkVCV()) {
           note_parse->isVCV(true);
         }
       }

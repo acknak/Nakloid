@@ -2,7 +2,10 @@
 
 using namespace std;
 
-Note::Note(Score *score, long id):score(score),id(id),self(){}
+struct Note::Parameters Note::params;
+
+Note::Note(Score *score, long id)
+  :score(score), id(id), self(){}
 
 Note::Note(Score *score, long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short base_velocity)
   :score(score),id(id),self()
@@ -90,9 +93,9 @@ bool Note::operator==(const Note& other) const
   is_eq &= (id == other.id);
   is_eq &= (self.start == other.self.start);
   is_eq &= (self.end == other.self.end);
-  is_eq &= (self.alias.prefix == other.self.alias.prefix);
-  is_eq &= (self.alias.pron == other.self.alias.pron);
-  is_eq &= (self.alias.suffix == other.self.alias.suffix);
+  is_eq &= (self.pron_alias.prefix == other.self.pron_alias.prefix);
+  is_eq &= (self.pron_alias.pron == other.self.pron_alias.pron);
+  is_eq &= (self.pron_alias.suffix == other.self.pron_alias.suffix);
   is_eq &= (self.base_pitch == other.self.base_pitch);
   is_eq &= (self.base_velocity == other.self.base_velocity);
   is_eq &= (self.velocity_points == other.self.velocity_points);
@@ -183,7 +186,7 @@ short Note::getFrontMargin() const
     long ms_start = getStart() - getPrec();
     if (ms_start < ms_prev_cons_start) {
       long tmp_margin = ms_prev_cons_start - ms_start;
-      long tmp_padding = max(nak::ms_front_padding, nak::ms_back_padding);
+      long tmp_padding = max(params.ms_front_padding, params.ms_back_padding);
       tmp_padding = min(tmp_padding, (long)getOvrl());
       if (getPrec()-tmp_margin > tmp_padding) {
         return tmp_margin;
@@ -229,9 +232,9 @@ short Note::getFrontPadding() const
     if (tmp_padding > 0) {
      return tmp_padding;
     }
-    return max(nak::ms_front_padding, nak::ms_back_padding);
+    return max(params.ms_front_padding, params.ms_back_padding);
   }
-  return nak::ms_front_padding;
+  return params.ms_front_padding;
 }
 
 short Note::getBackPadding() const
@@ -246,7 +249,7 @@ short Note::getBackPadding() const
       return note_next->getFrontPadding();
     }
   }
-  return max(nak::ms_front_padding, nak::ms_back_padding);
+  return max(params.ms_front_padding, params.ms_back_padding);
 }
 
 void Note::setPadding(short front, short back)
@@ -258,25 +261,25 @@ void Note::setPadding(short front, short back)
   self.padding = new pair<short,short>(front, back);
 }
 
-nak::VoiceAlias Note::getAlias() const
+PronunciationAlias Note::getPronAlias() const
 {
-  return self.alias;
+  return self.pron_alias;
 }
 
-wstring Note::getAliasString() const
+wstring Note::getPronAliasString() const
 {
-  return self.alias.prefix+self.alias.pron+self.alias.suffix;
+  return self.pron_alias.getAliasString();
 }
 
-void Note::setAlias(nak::VoiceAlias voice_alias)
+void Note::setPronAlias(PronunciationAlias voice_alias)
 {
-  self.alias = voice_alias;
+  self.pron_alias = voice_alias;
 }
 
-void Note::setAlias(const std::wstring& alias)
+void Note::setPronAlias(const std::wstring& alias)
 {
-  nak::VoiceAlias voice_alias(alias);
-  setAlias(voice_alias);
+  PronunciationAlias voice_alias(alias);
+  setPronAlias(voice_alias);
 }
 
 unsigned char Note::getBasePitch() const
@@ -328,7 +331,7 @@ vector<short> Note::getVelocities() const
 {
   long ms_pron_start=getPronStart(), ms_pron_end=getPronEnd();
   long velocities_size = ms_pron_end-((getPronStart()>0)?ms_pron_start:0);
-  vector<short> velocities(velocities_size, 100*(nak::auto_vowel_combining?nak::vowel_combining_volume:1.0));
+  vector<short> velocities(velocities_size, 100*(params.auto_vowel_combining?params.vowel_combining_volume:1.0));
   vector< pair<long,short> > tmp_velocity_points = getVelocityPoints();
 
   if (tmp_velocity_points.size() > 0) {

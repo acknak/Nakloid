@@ -2,8 +2,8 @@
 
 using namespace std;
 
-ScoreUST::ScoreUST(const wstring &path_score, const VoiceDB *voice_db, const std::wstring &path_song)
-  :Score(path_score,voice_db,path_song),id_parse(0){};
+ScoreUST::ScoreUST(const boost::filesystem::path& path_score, const VocalLibrary *vocal_lib, const boost::filesystem::path& path_song)
+  :Score(path_score,vocal_lib,path_song),id_parse(0){};
 
 ScoreUST::~ScoreUST(){}
 
@@ -27,7 +27,7 @@ void ScoreUST::load()
     if (buf_str[0]=='[' && buf_str[1]=='#' && buf_str.back()==']') {
       // meta data
       if (tmp_note != 0) {
-        if (tmp_note->getAlias().pron != L"R") {
+        if (tmp_note->getPronAlias().pron != L"R") {
           addNote(*tmp_note);
           tmp_pitch.first = tempo;
           pitches_ust.push_back(tmp_pitch);
@@ -61,8 +61,8 @@ void ScoreUST::load()
             tmp_note->setEnd(tmp_pos+=buf_long, 480, 1.0/tempo*60000000);
           }
         } else if (buf_vector[0] == L"Lyric") {
-          tmp_note->setAlias(buf_vector[1]);
-          tmp_note->isVCV(tmp_note->getAlias().checkVCV());
+          tmp_note->setPronAlias(buf_vector[1]);
+          tmp_note->isVCV(tmp_note->getPronAlias().checkVCV());
         } else if (buf_vector[0] == L"NoteNum") {
           if (!buf_vector[1].empty() && (buf_long=boost::lexical_cast<double>(buf_vector[1]))>0) {
             tmp_note->setBasePitch(buf_long);
@@ -120,7 +120,7 @@ void ScoreUST::load()
       }
     }
   }
-  if (tmp_note!=0 && tmp_note->getAlias().pron!=L"R") {
+  if (tmp_note!=0 && tmp_note->getPronAlias().pron!=L"R") {
     addNote(*tmp_note);
     tmp_pitch.first = tempo;
     pitches_ust.push_back(tmp_pitch);

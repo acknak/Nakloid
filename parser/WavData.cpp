@@ -24,7 +24,7 @@ WavData::~WavData(){}
 vector<short> WavData::getWavData() const
 {
   vector<short> tmp(data.size(), 0);
-  WavParser::dbl2sht(data, &tmp);
+  WavParser::dbl2sht(data, tmp);
   return tmp;
 }
 

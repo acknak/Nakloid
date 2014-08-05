@@ -6,32 +6,21 @@ const unsigned char SmfParser::mthd[] = {'M','T','h','d',0,0,0,6,0,1}; //smf hea
 const unsigned char SmfParser::mtrk[] = {'M','T','r','k'}; //data chunk header
 const unsigned char SmfParser::eot[] = {0xFF, 0x2F, 0}; //data chunk end
 
-SmfParser::SmfParser(){}
-
-SmfParser::~SmfParser(){}
-
-SmfParser::SmfParser(const wstring& filename):input(filename){}
-
-SmfParser::SmfParser(SmfHandler* const handler)
-{
-  addSmfHandler(handler);
-}
-
-SmfParser::SmfParser(const wstring& filename, SmfHandler* const handler):input(filename)
+SmfParser::SmfParser(const boost::filesystem::path& path_input, SmfHandler* const handler):path_input(path_input)
 {
   addSmfHandler(handler);
 }
 
 bool SmfParser::isSmfFile() const
 {
-  if (input.empty()) {
+  if (path_input.empty()) {
     cerr << "[SmfParser::isSmfFile] input is NULL" << endl;
     return false;
   }
 
-  boost::filesystem::ifstream ifs(input.c_str(), ios::in | ios::binary);
+  boost::filesystem::ifstream ifs(path_input, ios::in | ios::binary);
   if (!ifs) {
-    wcerr << L"[SmfParser::isSmfFile] file '" << input << L"' cannot open" << endl;
+    wcerr << L"[SmfParser::isSmfFile] file '" << path_input << L"' cannot open" << endl;
     return false;
   }
 
@@ -39,7 +28,7 @@ bool SmfParser::isSmfFile() const
   for (size_t i=0; i<10; i++) {
     ifs.read((char*)&data, sizeof(char));
     if (data != mthd[i]) {
-      wcerr << L"[SmfParser::isSmfFile] file '" << input << L"' is not SMF(format 1)" << endl;
+      wcerr << L"[SmfParser::isSmfFile] file '" << path_input << L"' is not SMF(format 1)" << endl;
       return false;
     } 
   }
@@ -49,10 +38,11 @@ bool SmfParser::isSmfFile() const
 
 bool SmfParser::parse()
 {
-  if (!isSmfFile())
+  if (!isSmfFile() || handlers.empty()) {
     return false;
+  }
 
-  boost::filesystem::ifstream ifs(input.c_str(), ios::in | ios::binary);
+  boost::filesystem::ifstream ifs(path_input, ios::in | ios::binary);
   ifs.seekg(sizeof(char)*10); //skip smf header
   unsigned char data;
   vector<SmfHandler*>::iterator it;
@@ -78,8 +68,9 @@ bool SmfParser::parse()
   // parse data chunk
   cout << "num_track:" << num_track << endl;
   for (size_t i=0; i<num_track; i++) {
-    for (it=handlers.begin(); it!=handlers.end(); it++)
+    for (it=handlers.begin(); it!=handlers.end(); it++) {
       (*it)->trackChange(i);
+    }
 
     // get chunk head
     for (size_t j=0; j<4; j++) {
@@ -181,14 +172,14 @@ bool SmfParser::parse()
 /*
  * accessor
  */
-const wstring& SmfParser::getInput() const
+const boost::filesystem::path& SmfParser::getInputPath() const
 {
-  return input;
+  return path_input;
 }
 
-void SmfParser::setInput(const wstring& filename)
+void SmfParser::setInputPath(const boost::filesystem::path& path_input)
 {
-  input = filename;
+  this->path_input = path_input;
 }
 
 const vector<SmfHandler*>& SmfParser::getSmfHandler() const

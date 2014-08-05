@@ -10,27 +10,43 @@
 #include <vector>
 #include <boost/utility.hpp>
 #include "Score.h"
-#include "../Utilities.h"
+#include "../format/PronunciationAlias.h"
 class Score;
 
 struct NoteFrame {
-  NoteFrame():start(0),end(0),alias(),base_pitch(0x45),base_velocity(100),margin(0),padding(0),prec(0),ovrl(0),cons(0),is_vcv(false){};
-  long start;
-  long end;
-  nak::VoiceAlias alias;
+  NoteFrame() {
+    start = end = 0;
+    base_pitch = 0x45;
+    base_velocity = 100;
+    margin = padding = 0;
+    prec = ovrl = cons = 0;
+    is_vcv = false;
+  }
+  long start, end;
+  PronunciationAlias pron_alias;
   unsigned char base_pitch;
   short base_velocity;
   std::vector< std::pair<long,short> > velocity_points;
-  std::pair<short,short> *margin;
-  std::pair<short,short> *padding;
-  short *prec;
-  short *ovrl;
-  short *cons;
+  std::pair<short,short> *margin, *padding;
+  short *prec, *ovrl, *cons;
   bool is_vcv;
 };
 
 class Note {
  public:
+  static struct Parameters {
+    Parameters() {
+      ms_front_padding = 5;
+      ms_back_padding = 35;
+      auto_vowel_combining = false;
+      vowel_combining_volume = 0.8;
+    };
+    short ms_front_padding;
+    short ms_back_padding;
+    bool auto_vowel_combining;
+    double vowel_combining_volume;
+  } params;
+
   Note(Score *score, long id);
   Note(Score *score, long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short base_velocity);
   Note(const Note& other);
@@ -56,10 +72,10 @@ class Note {
   short getFrontPadding() const;
   short getBackPadding() const;
   void setPadding(short front, short back);
-  nak::VoiceAlias getAlias() const;
-  std::wstring getAliasString() const;
-  void setAlias(nak::VoiceAlias voice_alias);
-  void setAlias(const std::wstring& alias);
+  PronunciationAlias getPronAlias() const;
+  std::wstring getPronAliasString() const;
+  void setPronAlias(PronunciationAlias pron_alias);
+  void setPronAlias(const std::wstring& pron_alias);
   unsigned char getBasePitch() const;
   float getBasePitchHz() const;
   void setBasePitch(unsigned char base_pitch);
@@ -82,7 +98,7 @@ class Note {
   bool isVCV() const;
   void isVCV(bool is_vcv);
 
- protected:
+ private:
   Score *score;
   long id;
   NoteFrame self;

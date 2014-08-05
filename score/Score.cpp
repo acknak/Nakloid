@@ -1,30 +1,32 @@
-﻿#include "Score.h"
+#include "Score.h"
 
 using namespace std;
 
+struct Score::Parameters Score::params;
+
 const vector<wstring> Score::key2notenum = boost::assign::list_of(L"C")(L"C#")(L"D")(L"D#")(L"E")(L"F")(L"F#")(L"G")(L"G#")(L"A")(L"A#")(L"B");
 
-Score::Score(const wstring& path_score, const VoiceDB *voice_db)
-  :path_score(path_score),voice_db(voice_db),path_song(L""),ms_margin(0),key2modifier()
+Score::Score(const boost::filesystem::path& path_score, const VocalLibrary *vocal_lib)
+  :path_score(path_score), vocal_lib(vocal_lib), path_song(L""), ms_margin(0), key2modifier()
 {
   key2modifier[-1] = make_pair(L"",L"");
 }
 
-Score::Score(const wstring& path_score, const VoiceDB *voice_db, const wstring& path_song)
-  :path_score(path_score),voice_db(voice_db),path_song(path_song),ms_margin(0)
+Score::Score(const boost::filesystem::path& path_score, const VocalLibrary *vocal_lib, const boost::filesystem::path& path_song)
+  :path_score(path_score), vocal_lib(vocal_lib), path_song(path_song), ms_margin(0)
 {
   key2modifier[-1] = make_pair(L"",L"");
 }
 
 Score::~Score(){}
 
-void Score::saveScore(const wstring& path_score)
+void Score::saveScore(const boost::filesystem::path& path_score)
 {
   boost::property_tree::wptree pt, pt_notes;
   for (vector<Note>::const_iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
     boost::property_tree::wptree pt_note, pt_vel_points;
     pt_note.put(L"id", it_notes->getId());
-    pt_note.put(L"alias", it_notes->getAliasString());
+    pt_note.put(L"alias", it_notes->getPronAliasString());
     pt_note.put(L"vcv", it_notes->isVCV());
     pt_note.put(L"start", it_notes->getStart());
     pt_note.put(L"end", it_notes->getEnd());
@@ -62,7 +64,7 @@ void Score::saveScore(const wstring& path_score)
   write_json(fs_path_nak.string(), pt);
 }
 
-bool Score::loadModifierMap(const std::wstring& path_modifier_map)
+bool Score::loadModifierMap(const boost::filesystem::path& path_modifier_map)
 {
   boost::filesystem::wifstream ifs(path_modifier_map);
   wstring buf_str;
@@ -89,53 +91,45 @@ bool Score::loadModifierMap(const std::wstring& path_modifier_map)
   return false;
 }
 
-bool Score::loadPitches(const std::wstring& path_pitches, nak::PitchesMode pitches_mode)
+bool Score::loadPitPitches(const boost::filesystem::path& path_pitches)
 {
-  switch(pitches_mode) {
-  case nak::pitches_mode_pit:
-    {
-      boost::filesystem::ifstream ifs(path_pitches, ios::binary);
-      if (ifs) {
-        long pitches_size = boost::filesystem::file_size(path_pitches);
-        pitches.assign(pitches_size/sizeof(float), 0.0);
-        ifs.read((char*)&(pitches[0]), pitches_size);
-        return true;
+  boost::filesystem::ifstream ifs(path_pitches, ios::binary);
+  if (ifs) {
+    long pitches_size = boost::filesystem::file_size(path_pitches);
+    pitches.assign(pitches_size/sizeof(float), 0.0);
+    ifs.read((char*)&(pitches[0]), pitches_size);
+    return true;
+  } else {
+    wcerr << L"[Score::loadFromPit] can't open pitches data " << path_pitches << endl;
+  }
+  return false;
+}
+
+bool Score::loadLf0Pitches(const boost::filesystem::path& path_pitches)
+{
+  boost::filesystem::ifstream ifs(path_pitches, ios::binary);
+  if (ifs) {
+    long pitches_size = boost::filesystem::file_size(path_pitches);
+    vector<float> tmp_pitches(pitches_size/sizeof(float), 0.0);
+    pitches.assign(pitches_size*params.pitch_frame_length/sizeof(float), 0.0);
+    ifs.read((char*)&(tmp_pitches[0]), pitches_size);
+    for (size_t i=0; i<tmp_pitches.size(); i++) {
+      if (tmp_pitches[i] == -1e+10) {
+        tmp_pitches[i] = 0.0;
       } else {
-        wcerr << L"[Score::loadFromPit] can't open pitches data " << path_pitches << endl;
-      }
-      return false;
-    }
-  case nak::pitches_mode_lf0:
-    {
-      boost::filesystem::ifstream ifs(path_pitches, ios::binary);
-      if (ifs) {
-        long pitches_size = boost::filesystem::file_size(path_pitches);
-        vector<float> tmp_pitches(pitches_size/sizeof(float), 0.0);
-        pitches.assign(pitches_size*nak::pitch_frame_length/sizeof(float), 0.0);
-        ifs.read((char*)&(tmp_pitches[0]), pitches_size);
-        for (size_t i=0; i<tmp_pitches.size(); i++) {
-          if (tmp_pitches[i] == -1e+10) {
-            tmp_pitches[i] = 0.0;
-          } else {
-            tmp_pitches[i] = exp(tmp_pitches[i]);
-          }
-        }
-        for (size_t i=0; i<pitches.size(); i++) {
-          pitches[i] = tmp_pitches[i/5];
-        }
-        return true;
-      } else {
-        wcerr << L"[Score::loadFromLf0] can't open pitches data " << path_pitches << endl;
+        tmp_pitches[i] = exp(tmp_pitches[i]);
       }
     }
-  default:
-    {
-      return false;
+    for (size_t i=0; i<pitches.size(); i++) {
+      pitches[i] = tmp_pitches[i/5];
     }
+    return true;
+  } else {
+    wcerr << L"[Score::loadFromLf0] can't open pitches data " << path_pitches << endl;
   }
 }
 
-void Score::savePitches(const std::wstring& path_pitches)
+void Score::savePitches(const boost::filesystem::path& path_pitches)
 {
   boost::filesystem::ofstream ofs(path_pitches, ios::binary);
   ofs.write((char*)&(pitches[0]), pitches.size()*sizeof(float));
@@ -145,17 +139,17 @@ void Score::savePitches(const std::wstring& path_pitches)
 /*
  * accessor
  */
-const wstring& Score::getScorePath() const
+const boost::filesystem::path& Score::getScorePath() const
 {
   return path_score;
 }
 
-const wstring& Score::getSongPath() const
+const boost::filesystem::path& Score::getSongPath() const
 {
   return path_song;
 }
 
-void Score::setSongPath(const wstring& path_song)
+void Score::setSongPath(const boost::filesystem::path& path_song)
 {
   this->path_song = path_song;
 }
@@ -216,20 +210,20 @@ const vector<float>& Score::getPitches() const
   return pitches;
 }
 
-vector<long> Score::getPitchMarks(const WavFormat& format) const
+vector<long> Score::getPitchMarks() const
 {
   vector<long> pitchmarks;
   for (vector<float>::const_iterator it=pitches.begin();it!=pitches.end();++it) {
     if (*it > 0) {
-      pitchmarks.assign(1, nak::ms2pos(it-pitches.begin(), format));
+      pitchmarks.assign(1, nak::ms2pos(it-pitches.begin(), params.wav_header));
       break;
     }
   }
   long ms_tmp = 0;
   while (ms_tmp < pitches.size()) {
     if (pitches[ms_tmp] > 0) {
-      pitchmarks.push_back(pitchmarks.back()+(1.0/pitches[ms_tmp]*format.dwSamplesPerSec));
-      ms_tmp = nak::pos2ms(pitchmarks.back(), format);
+      pitchmarks.push_back(pitchmarks.back()+(1.0/pitches[ms_tmp]*params.wav_header.dwSamplesPerSec));
+      ms_tmp = nak::pos2ms(pitchmarks.back(), params.wav_header);
     } else {
       ms_tmp++;
     }
@@ -278,26 +272,26 @@ void Score::reloadPitches()
   // arrange
   for (vector<Note>::const_iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
     vector<float>::iterator it_pitches_begin=pitches.begin()+it_notes->getStart()+getMargin(), it_pitches_end=pitches.begin()+it_notes->getEnd()+getMargin();
-    if (nak::vibrato) {
-      double tmp_fs = (nak::cent2rate(nak::pitch_vibrato)-1) * *it_pitches_begin;
-      if ((it_pitches_end-it_pitches_begin) > nak::ms_vibrato_offset) {
-        long vibrato_length = (it_pitches_end-it_pitches_begin) - nak::ms_vibrato_offset;
+    if (params.vibrato) {
+      double tmp_fs = (nak::cent2rate(params.pitch_vibrato)-1) * *it_pitches_begin;
+      if ((it_pitches_end-it_pitches_begin) > params.ms_vibrato_offset) {
+        long vibrato_length = (it_pitches_end-it_pitches_begin) - params.ms_vibrato_offset;
         for (size_t i=0; i<vibrato_length; i++) {
-          *(it_pitches_begin+nak::ms_vibrato_offset+i) += sin(2*M_PI*i/nak::ms_vibrato_width) * tmp_fs;
+          *(it_pitches_begin+params.ms_vibrato_offset+i) += sin(2*M_PI*i/params.ms_vibrato_width) * tmp_fs;
         }
       }
     }
-    if (nak::overshoot) {
+    if (params.overshoot) {
       const Note* note_prev = getPrevNote(&*it_notes);
       if (note_prev!=0 && it_notes->getStart()==note_prev->getEnd() && it_notes->getBasePitch()!=note_prev->getBasePitch()) {
-        double fs_tmp = (nak::cent2rate(nak::pitch_overshoot)-1) * *it_pitches_begin;
+        double fs_tmp = (nak::cent2rate(params.pitch_overshoot)-1) * *it_pitches_begin;
         float fs_diff = (*it_pitches_begin-note_prev->getBasePitchHz()) / 2;
-        if (it_pitches_end-it_pitches_begin > nak::ms_overshoot) {
-          for (size_t i=0; i<nak::ms_overshoot/2; i++) {
+        if (it_pitches_end-it_pitches_begin > params.ms_overshoot) {
+          for (size_t i=0; i<params.ms_overshoot/2; i++) {
             *(it_pitches_begin+i) +=
-              -fs_diff + ((fs_diff+(fs_tmp*((fs_diff>0)?1:-1))) / (nak::ms_overshoot/2) * i);
-            *(it_pitches_begin+(nak::ms_overshoot/2)+i) +=
-              (fs_tmp*((fs_diff>0)?1:-1)) + ((fs_tmp*((fs_diff>0)?-1:1))/(nak::ms_overshoot/2) * i);
+              -fs_diff + ((fs_diff+(fs_tmp*((fs_diff>0)?1:-1))) / (params.ms_overshoot/2) * i);
+            *(it_pitches_begin+(params.ms_overshoot/2)+i) +=
+              (fs_tmp*((fs_diff>0)?1:-1)) + ((fs_tmp*((fs_diff>0)?-1:1))/(params.ms_overshoot/2) * i);
           }
         } else {
           for (size_t i=0; i<it_pitches_end-it_pitches_begin; i++) {
@@ -306,19 +300,19 @@ void Score::reloadPitches()
         }
       }
     }
-    if (nak::preparation) {
+    if (params.preparation) {
       const Note* note_next = getNextNote(&*it_notes);
       if (note_next!=0 && it_notes->getEnd()==note_next->getStart() && it_notes->getBasePitch()!=note_next->getBasePitch()) {
-        double fs_tmp = (nak::cent2rate(nak::pitch_preparation)-1) * *it_pitches_begin;
+        double fs_tmp = (nak::cent2rate(params.pitch_preparation)-1) * *it_pitches_begin;
         vector<float>::reverse_iterator rit_pitches_begin(it_pitches_end);
         vector<float>::reverse_iterator rit_pitches_end(it_pitches_begin);
         float fs_diff = (*rit_pitches_begin-note_next->getBasePitchHz()) / 2;
-        if (rit_pitches_end-rit_pitches_begin > nak::ms_preparation) {
-          for (size_t i=0; i<nak::ms_preparation/2; i++) {
+        if (rit_pitches_end-rit_pitches_begin > params.ms_preparation) {
+          for (size_t i=0; i<params.ms_preparation/2; i++) {
             *(rit_pitches_begin+i) +=
-              -fs_diff + ((fs_diff+(fs_tmp*((fs_diff>0)?1:-1))) / (nak::ms_preparation/2) * i);
-            *(rit_pitches_begin+(nak::ms_preparation/2)+i) +=
-              (fs_tmp*((fs_diff>0)?1:-1)) + ((fs_tmp*((fs_diff>0)?-1:1))/(nak::ms_preparation/2) * i);
+              -fs_diff + ((fs_diff+(fs_tmp*((fs_diff>0)?1:-1))) / (params.ms_preparation/2) * i);
+            *(rit_pitches_begin+(params.ms_preparation/2)+i) +=
+              (fs_tmp*((fs_diff>0)?1:-1)) + ((fs_tmp*((fs_diff>0)?-1:1))/(params.ms_preparation/2) * i);
           }
         } else {
           for (size_t i=0; i<rit_pitches_end-rit_pitches_begin; i++) {
@@ -327,9 +321,9 @@ void Score::reloadPitches()
         }
       }
     }
-    if (nak::finefluctuation) {
+    if (params.finefluctuation) {
       boost::minstd_rand gen;
-      boost::normal_distribution<> dst( 0.0, nak::finefluctuation_deviation );
+      boost::normal_distribution<> dst( 0.0, params.finefluctuation_deviation );
       boost::variate_generator<boost::minstd_rand&, boost::normal_distribution<>> rand( gen, dst );
       for (vector<float>::iterator it_pitch=it_pitches_begin; it_pitch!=it_pitches_end; ++it_pitch) {
         if (*it_pitch > 0) {
@@ -351,7 +345,7 @@ void Score::clearPitches()
  */
 void Score::sanitizeNote(std::vector<Note>::iterator it_notes)
 {
-  nak::VoiceAlias tmp_alias = it_notes->getAlias();
+  PronunciationAlias tmp_alias = it_notes->getPronAlias();
 
   // add prefix & suffix
   if (!key2modifier.empty() && key2modifier.count(it_notes->getBasePitch())>0) {
@@ -361,25 +355,25 @@ void Score::sanitizeNote(std::vector<Note>::iterator it_notes)
   }
 
   // vowel combining
-  if (nak::auto_vowel_combining && it_notes!=notes.begin()
+  if (params.auto_vowel_combining && it_notes!=notes.begin()
     && boost::prior(it_notes)->getEnd()==it_notes->getStart()
     && (tmp_alias.prefix==L"*"||tmp_alias.prefix.empty())
-    && voice_db->isAlias(L"* "+tmp_alias.pron)) {
+    && vocal_lib->isAlias(L"* "+tmp_alias.pron)) {
     tmp_alias.prefix = L"* ";
   }
 
   // wo to o
-  if (tmp_alias.pron ==L"を" && !voice_db->isAlias(tmp_alias.getAliasString()) && voice_db->isAlias(tmp_alias.prefix+L"お"+tmp_alias.suffix)) {
+  if (tmp_alias.pron ==L"を" && !vocal_lib->isAlias(tmp_alias.getAliasString()) && vocal_lib->isAlias(tmp_alias.prefix+L"お"+tmp_alias.suffix)) {
     tmp_alias.pron = L"お";
   }
 
   // complement parameters
-  const Voice *tmp_voice = voice_db->getVoice(tmp_alias.getAliasString());
+  const Voice *tmp_voice = vocal_lib->getVoice(tmp_alias.getAliasString());
   if (tmp_voice != 0) {
     it_notes->setOvrl((it_notes->isOvrl())?it_notes->getOvrl():tmp_voice->ovrl);
     it_notes->setPrec((it_notes->isPrec())?it_notes->getPrec():tmp_voice->prec);
     it_notes->setCons((it_notes->isCons())?it_notes->getCons():tmp_voice->cons);
   }
 
-  it_notes->setAlias(tmp_alias);
+  it_notes->setPronAlias(tmp_alias);
 }
