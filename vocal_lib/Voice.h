@@ -1,4 +1,4 @@
-#ifndef Voice_h
+﻿#ifndef Voice_h
 #define Voice_h
 
 #include <string>
@@ -7,7 +7,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
-#include "../utilities/Tools.h"
 #include "../format/PronunciationAlias.h"
 #include "../format/UnitWaveformContainer.h"
 
@@ -61,8 +60,8 @@ class Voice {
   void setUnitWaveformContainer(const UnitWaveformContainer* uwc);
 
  protected:
-  virtual void load(){}
-  void Voice::trimVector(std::vector<double>* target_vector, long target_length) const;
+  inline void trimVector(std::vector<double>* target_vector, long target_length) const;
+  inline double getRMS(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to) const;
 
   mutable float frq;
   mutable UnitWaveformContainer *uwc;
@@ -79,6 +78,15 @@ inline void Voice::trimVector(std::vector<double>* target_vector, long target_le
     target_vector->insert(target_vector->begin(), space/2, 0);
     target_vector->insert(target_vector->end(), space-(space/2), 0);
   }
+}
+
+inline double Voice::getRMS(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to) const
+{
+  double rms = 0.0;
+  for (std::vector<double>::const_iterator it = from; it != to; ++it) {
+    rms += pow((double)*it, 2) / (to - from);
+  }
+  return sqrt(rms);
 }
 
 #endif

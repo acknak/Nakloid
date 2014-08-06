@@ -1,4 +1,4 @@
-#ifndef WavFormat_h
+﻿#ifndef WavFormat_h
 #define WavFormat_h
 
 #include <cstddef>

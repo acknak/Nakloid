@@ -1,4 +1,4 @@
-#ifndef UnitWaveformOverlapper_h
+﻿#ifndef UnitWaveformOverlapper_h
 #define UnitWaveformOverlapper_h
 
 #include <algorithm>
@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 #include <boost/filesystem/fstream.hpp>
+#include "core-inl.h"
 #include "../format/UnitWaveformContainer.h"
 #include "../format/Wav.h"
-#include "../utilities/Tools.h"
 
 class UnitWaveformOverlapper {
  public:

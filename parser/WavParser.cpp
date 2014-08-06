@@ -1,4 +1,4 @@
-#include "WavParser.h"
+﻿#include "WavParser.h"
 
 using namespace std;
 

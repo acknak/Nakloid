@@ -1,4 +1,4 @@
-#ifndef UnitWaveformMaker_h
+﻿#ifndef UnitWaveformMaker_h
 #define UnitWaveformMaker_h
 
 #include <algorithm>
@@ -7,9 +7,9 @@
 #include <numeric>
 #include <vector>
 
+#include "core-inl.h"
 #include "../format/UnitWaveformContainer.h"
 #include "../format/Wav.h"
-#include "../utilities/Tools.h"
 
 class UnitWaveformMaker {
  public:

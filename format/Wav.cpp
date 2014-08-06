@@ -1,4 +1,4 @@
-#include "Wav.h"
+﻿#include "Wav.h"
 
 using namespace std;
 

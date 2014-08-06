@@ -1,4 +1,4 @@
-#ifndef ScoreNAK_h
+﻿#ifndef ScoreNAK_h
 #define ScoreNAK_h
 
 #include <cmath>

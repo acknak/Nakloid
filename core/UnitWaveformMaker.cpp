@@ -1,4 +1,4 @@
-#include "UnitWaveformMaker.h"
+﻿#include "UnitWaveformMaker.h"
 
 using namespace std;
 
@@ -171,7 +171,7 @@ UnitWaveform UnitWaveformMaker::makeUnitWaveform(short point, short pitch, doubl
   }
   long win_start = pitchmarks[point] - (pitch*params.num_lobes);
   long win_end = pitchmarks[point] + (pitch*params.num_lobes);
-  vector<double> filter = nak::getWindow(pitch*params.num_lobes*2+1, params.num_lobes);
+  vector<double> filter = getWindow(pitch*params.num_lobes*2+1, params.num_lobes);
   unit_waveform.dwPitchLeft = unit_waveform.dwPitchRight = pitch * params.num_lobes;
   unit_waveform.dwPosition = pitchmarks[point] - pitchmarks[0];
 

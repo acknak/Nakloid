@@ -1,4 +1,4 @@
-#ifndef WavData_h
+﻿#ifndef WavData_h
 #define WavData_h
 
 #include <cstring>

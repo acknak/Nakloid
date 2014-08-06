@@ -1,4 +1,4 @@
-#ifndef ScoreSMF_h
+﻿#ifndef ScoreSMF_h
 #define ScoreSMF_h
 
 #include <string>

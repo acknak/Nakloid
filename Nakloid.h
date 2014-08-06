@@ -1,4 +1,4 @@
-#ifndef Nakloid_h
+﻿#ifndef Nakloid_h
 #define Nakloid_h
 
 #include <cstdio>
@@ -16,7 +16,6 @@
 #include "score/ScoreNAK.h"
 #include "score/ScoreSMF.h"
 #include "score/ScoreUST.h"
-#include "utilities/Tools.h"
 #include "vocal_lib/Voice.h"
 #include "vocal_lib/VocalLibrary.h"
 

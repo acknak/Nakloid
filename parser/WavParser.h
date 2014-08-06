@@ -1,4 +1,4 @@
-#ifndef WavParser_h
+﻿#ifndef WavParser_h
 #define WavParser_h
 
 #include <fstream>

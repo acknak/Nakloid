@@ -1,4 +1,4 @@
-#include "VocalLibrary.h"
+﻿#include "VocalLibrary.h"
 
 using namespace std;
 
@@ -47,7 +47,7 @@ bool VocalLibrary::initVoiceMap(const boost::filesystem::path& path_oto_ini)
       boost::filesystem::path path_wav = path_ini.parent_path()/v1[0];
       wstring str_pron_alias = (v2[0].empty())?path_wav.stem().wstring():v2[0];
       boost::filesystem::path path_uwc = path_wav.parent_path()/boost::algorithm::replace_all_copy((str_pron_alias+L".uwc"), L"*", L"_");
-      if (UnitWaveformContainer::isUwcFormatFile(path_uwc)) {
+      if (params.uwc_cache && UnitWaveformContainer::isUwcFormatFile(path_uwc)) {
         tmp_voice = new VoiceUWC(path_uwc);
         tmp_voice->setPath(path_uwc);
       } else {

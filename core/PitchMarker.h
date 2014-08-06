@@ -1,4 +1,4 @@
-#ifndef PitchMarker_h
+﻿#ifndef PitchMarker_h
 #define PitchMarker_h
 
 #include <algorithm>
@@ -9,8 +9,8 @@
 #include <numeric>
 #include <vector>
 #include "fftw3.h"
+#include "core-inl.h"
 #include "../format/Wav.h"
-#include "../utilities/Tools.h"
 
 // Refference Object
 class PitchMarker {
@@ -37,7 +37,7 @@ class PitchMarker {
                                       Iterator it_vowel_begin, Iterator it_vowel_end) const;
   template <class Iterator>
   std::vector<Iterator> markWithSelf(Iterator it_input_begin, Iterator it_input_end,
-                                     Iterator it_base_begin, Iterator it_base_end, bool breaker) const;
+                                     Iterator it_base_begin, Iterator it_base_end) const;
 
   // accessor
   void setInputWavParam(short ms_offs, short ms_ovrl, short ms_prec, short ms_blnk, unsigned long fs);
@@ -59,8 +59,4 @@ class PitchMarker {
   std::vector<long> pitchmarks;
 };
 
-#endif
-
-#ifndef M_PI
-#define M_PI 3.1415926535897932384626433832795
 #endif

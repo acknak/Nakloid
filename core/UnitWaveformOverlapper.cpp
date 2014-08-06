@@ -43,13 +43,13 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
   if (params.overlap_normalize) {
     // prepare subset
     subset_wav_margin = uwc->unit_waveforms.front().dwPitchLeft;
-    subset_wav.assign(nak::ms2pos(ms_end-ms_start,params.wav_header)+subset_wav_margin+uwc->unit_waveforms.back().dwPitchRight,0);
+    subset_wav.assign(ms2pos(ms_end-ms_start,params.wav_header)+subset_wav_margin+uwc->unit_waveforms.back().dwPitchRight,0);
   }
 
   vector<PitchMarkObject> pmos;
   long fade_start=(uwc->unit_waveforms.begin()+uwc->header.dwRepeatStart-1)->dwPosition, fade_last=uwc->unit_waveforms.back().dwPosition;
-  long pos_trim=nak::ms2pos(ms_trim, params.wav_header), pos_margin=nak::ms2pos(ms_note_margin,params.wav_header);
-  vector<long>::const_iterator it_begin_pitchmarks=pos2it(nak::ms2pos(ms_start,params.wav_header)), it_end_pitchmarks=pos2it(nak::ms2pos(ms_end,params.wav_header));
+  long pos_trim=ms2pos(ms_trim, params.wav_header), pos_margin=ms2pos(ms_note_margin,params.wav_header);
+  vector<long>::const_iterator it_begin_pitchmarks=pos2it(ms2pos(ms_start,params.wav_header)), it_end_pitchmarks=pos2it(ms2pos(ms_end,params.wav_header));
   for (vector<long>::const_iterator it_pitchmarks=it_begin_pitchmarks;it_pitchmarks!=it_end_pitchmarks;++it_pitchmarks) {
     PitchMarkObject pmo(it_pitchmarks);
     vector<UnitWaveform>::const_iterator it_unit_waveform = uwc->unit_waveforms.begin();
@@ -62,7 +62,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
     }
     it_unit_waveform = binary_pos_search(it_unit_waveform, uwc->unit_waveforms.end(), dist);
 
-    PitchMarkObject::UnitWaveformSetting uws(it_unit_waveform, 1.0, nak::getRMS(it_unit_waveform->data.getData()));
+    PitchMarkObject::UnitWaveformSetting uws(it_unit_waveform, 1.0, getRMS(it_unit_waveform->data.getData()));
     pmo.uwss.push_back(uws);
     if (params.interpolation) {
       long dist_fore=dist-it_unit_waveform->dwPosition, dist_aft;
@@ -101,8 +101,11 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
         theo_rms += it_uwss->rms * it_uwss->scale / acc_scale;
       }
       vector<double> target_wav(subset_wav.begin()+(*it_pmos->it-*it_begin_pitchmarks), subset_wav.begin()+(*it_pmos->it-*it_begin_pitchmarks)+tmp_width);
-      nak::multipleWindow(target_wav.begin(), target_wav.end(), params.num_lobes);
-      it_pmos->scale = theo_rms / nak::getRMS(target_wav.begin(), target_wav.end());
+      vector<double> filter = getWindow(target_wav.end() - target_wav.begin(), params.num_lobes);
+      for (vector<double>::iterator it = target_wav.begin(); it != target_wav.end(); ++it) {
+        *it *= filter[it - target_wav.begin()];
+      }
+      it_pmos->scale = theo_rms / getRMS(target_wav.begin(), target_wav.end());
     }
     vector<double>().swap(subset_wav);
   }
@@ -111,7 +114,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
   for (vector<PitchMarkObject>::iterator it_pmos=pmos.begin(); it_pmos!=pmos.end(); ++it_pmos) {
     double acc_scale = it_pmos->getRmsAccumulate();
     for (vector<PitchMarkObject::UnitWaveformSetting>::iterator it_uwss=it_pmos->uwss.begin(); it_uwss!=it_pmos->uwss.end(); ++it_uwss) {
-      long tmp_pos=*(it_pmos->it)-it_uwss->it->dwPitchLeft, sub_velocity=nak::pos2ms(*(it_pmos->it)-*it_begin_pitchmarks, params.wav_header);
+      long tmp_pos=*(it_pmos->it)-it_uwss->it->dwPitchLeft, sub_velocity=pos2ms(*(it_pmos->it)-*it_begin_pitchmarks, params.wav_header);
       if (sub_velocity >= velocities.size()) {
         sub_velocity = velocities.back();
       }
@@ -138,10 +141,10 @@ void UnitWaveformOverlapper::outputWav(const boost::filesystem::path& path_outpu
   if (params.compressor) {
     cout << "compress output wav" << endl << endl;
     for (size_t i=0; i<output_wav.size(); i++) {
-      pair<bool, double> tmp_dB = nak::val2dB(output_wav[i]);
+      pair<bool, double> tmp_dB = val2dB(output_wav[i]);
       if (tmp_dB.second<1.0 && tmp_dB.second>params.compressor_threshold) {
         tmp_dB.second -= (tmp_dB.second - params.compressor_threshold) / params.compressor_ratio;
-        tmp_output_wav[i] = nak::dB2val(tmp_dB);
+        tmp_output_wav[i] = dB2val(tmp_dB);
       }
     }
   }

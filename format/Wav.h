@@ -1,4 +1,4 @@
-#ifndef Wav_h
+﻿#ifndef Wav_h
 #define Wav_h
 
 #include <iostream>

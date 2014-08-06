@@ -1,4 +1,4 @@
-#include "ScoreSMF.h"
+﻿#include "ScoreSMF.h"
 
 using namespace std;
 
@@ -69,7 +69,7 @@ void ScoreSMF::eventMidi(long deltatime, unsigned char msg, const unsigned char*
     if (note_parse) {
       if (note_parse->getBasePitch() == data[0]) {
         if (data[1] == 0) {
-          note_parse->setEnd(time_parse, timebase, tempo);
+          note_parse->setEnd(tick2ms(time_parse, timebase, tempo));
           addNote(*note_parse);
           delete note_parse;
           note_parse = 0;
@@ -80,11 +80,11 @@ void ScoreSMF::eventMidi(long deltatime, unsigned char msg, const unsigned char*
         if (data[1] == 0) {
           return;
         } else {
-          note_parse->setEnd(time_parse, timebase, tempo);
+          note_parse->setEnd(tick2ms(time_parse, timebase, tempo));
           addNote(*note_parse);
           delete note_parse;
           note_parse = 0;
-          note_parse = new Note(this, ++id_parse, 0, timebase, tempo, data[0], data[1]);
+          note_parse = new Note(this, ++id_parse, 0, data[0], data[1]);
           if (id_parse <= lyrics.size()) {
             note_parse->setPronAlias(lyrics[id_parse-1]);
             if (note_parse->getPronAlias().checkVCV()) {
@@ -94,7 +94,7 @@ void ScoreSMF::eventMidi(long deltatime, unsigned char msg, const unsigned char*
         }
       }
     } else {
-      note_parse = new Note(this, ++id_parse, time_parse, timebase, tempo, data[0], data[1]);
+      note_parse = new Note(this, ++id_parse, tick2ms(time_parse, timebase, tempo), data[0], data[1]);
       if (id_parse <= lyrics.size()) {
         note_parse->setPronAlias(lyrics[id_parse-1]);
         if (note_parse->getPronAlias().checkVCV()) {
@@ -103,7 +103,7 @@ void ScoreSMF::eventMidi(long deltatime, unsigned char msg, const unsigned char*
       }
     }
   } else if (SmfHandler::charToMidiMsg(msg) == MIDI_MSG_NOTE_OFF && note_parse){
-    note_parse->setEnd(time_parse, timebase, tempo);
+    note_parse->setEnd(tick2ms(time_parse, timebase, tempo));
     addNote(*note_parse);
     delete note_parse;
     note_parse = 0;

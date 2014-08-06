@@ -1,4 +1,4 @@
-#include "Note.h"
+﻿#include "Note.h"
 
 using namespace std;
 
@@ -7,10 +7,10 @@ struct Note::Parameters Note::params;
 Note::Note(Score *score, long id)
   :score(score), id(id), self(){}
 
-Note::Note(Score *score, long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short base_velocity)
+Note::Note(Score *score, long id, long ms_start, unsigned char base_pitch, short base_velocity)
   :score(score),id(id),self()
 {
-  this->setStart(deltatime, timebase, tempo);
+  this->setStart(ms_start);
   this->setBasePitch(base_pitch);
   self.base_velocity = base_velocity;
 }
@@ -140,11 +140,6 @@ void Note::setStart(long ms_start)
   this->self.start = ms_start;
 }
 
-void Note::setStart(unsigned long deltatime, unsigned short timebase, unsigned long tempo)
-{
-  setStart(nak::tick2ms(deltatime, timebase, tempo));
-}
-
 long Note::getEnd() const
 {
   return self.end;
@@ -163,11 +158,6 @@ long Note::getPronEnd() const
 void Note::setEnd(long ms_end)
 {
   self.end = ms_end;
-}
-
-void Note::setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo)
-{
-  setEnd(nak::tick2ms(deltatime, timebase, tempo));
 }
 
 short Note::getFrontMargin() const

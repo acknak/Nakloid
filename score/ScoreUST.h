@@ -1,4 +1,4 @@
-#ifndef ScoreUST_h
+﻿#ifndef ScoreUST_h
 #define ScoreUST_h
 
 #include <string>
@@ -11,7 +11,6 @@
 #include "Score.h"
 #include "../parser/SmfHandler.h"
 #include "../parser/SmfParser.h"
-#include "../utilities/Tools.h"
 
 class ScoreUST : public Score {
  public:

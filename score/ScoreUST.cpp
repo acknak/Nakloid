@@ -1,4 +1,4 @@
-#include "ScoreUST.h"
+﻿#include "ScoreUST.h"
 
 using namespace std;
 
@@ -45,7 +45,7 @@ void ScoreUST::load()
       }
       if (is_digit) {
         tmp_note = new Note(this, ++id_parse);
-        tmp_note->setStart(tmp_pos, 480, 1.0/tempo*60000000);
+        tmp_note->setStart(tick2ms(tmp_pos, 480, 1.0/tempo*60000000));
       }
     } else {
       // score parameter
@@ -53,12 +53,12 @@ void ScoreUST::load()
       long buf_long=0;
       boost::algorithm::split(buf_vector, buf_str, boost::is_any_of("="));
       if (buf_vector[0] == L"Tempo") {
-        tempo = (buf_vector[1]!=L"" && ((buf_long=boost::lexical_cast<double>(buf_vector[1]))>0))?buf_long:0;
+        tempo = (!buf_vector[1].empty() && ((buf_long=boost::lexical_cast<double>(buf_vector[1]))>0))?buf_long:0;
       } else if (tmp_note != 0) {
         // note parameter
         if (buf_vector[0] == L"Length") {
           if (!buf_vector[1].empty() && (buf_long=boost::lexical_cast<double>(buf_vector[1]))>0) {
-            tmp_note->setEnd(tmp_pos+=buf_long, 480, 1.0/tempo*60000000);
+            tmp_note->setEnd(tick2ms(tmp_pos+=buf_long, 480, 1.0/tempo*60000000));
           }
         } else if (buf_vector[0] == L"Lyric") {
           tmp_note->setPronAlias(buf_vector[1]);
@@ -148,8 +148,8 @@ void ScoreUST::load()
     long ms_note_end = it_notes->getPronEnd();
     vector<short> note_velocities = it_notes->getVelocities();
     for (size_t i=0; i<it_pitches->second.size(); i++) {
-      long ms_tick_start = ms_note_start + nak::tick2ms(i*5, 480, 1.0/it_pitches->first*60000000);
-      long ms_tick_end = ms_note_start + nak::tick2ms((i+1)*5, 480, 1.0/it_pitches->first*60000000);
+      long ms_tick_start = ms_note_start + tick2ms(i*5, 480, 1.0/it_pitches->first*60000000);
+      long ms_tick_end = ms_note_start + tick2ms((i+1)*5, 480, 1.0/it_pitches->first*60000000);
       if (ms_tick_end > ms_note_end) {
         ms_tick_end = ms_note_end;
       }

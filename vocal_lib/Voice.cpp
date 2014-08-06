@@ -1,4 +1,4 @@
-#include "Voice.h"
+﻿#include "Voice.h"
 
 using namespace std;
 

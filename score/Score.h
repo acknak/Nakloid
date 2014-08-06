@@ -1,4 +1,4 @@
-#ifndef Score_h
+﻿#ifndef Score_h
 #define Score_h
 
 #include <algorithm>
@@ -14,7 +14,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/random.hpp>
 #include "Note.h"
-#include "../utilities/Tools.h"
+#include "../format/Wav.h"
 #include "../vocal_lib/Voice.h"
 #include "../vocal_lib/VocalLibrary.h"
 class Note;
@@ -95,6 +95,11 @@ class Score {
   void setPitches(const std::vector<float>& pitches);
   void reloadPitches();
   void clearPitches();
+
+  inline long ms2pos(long ms, WavHeader header) const { return (long)(ms/1000.0*header.dwSamplesPerSec); }
+  inline long pos2ms(long pos, WavHeader header) const { return (long)(pos/(double)header.dwSamplesPerSec * 1000); }
+  inline long tick2ms(unsigned long tick, unsigned short timebase, unsigned long tempo) const { return (long)(((double)tick) / timebase*(tempo / 1000.0)); }
+  inline double cent2rate(double cent) const { return pow(2, cent / 1200.0); }
 
  private:
   std::vector<float> pitches;

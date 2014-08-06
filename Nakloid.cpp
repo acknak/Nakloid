@@ -1,4 +1,4 @@
-#include "Nakloid.h"
+﻿#include "Nakloid.h"
 
 using namespace std;
 
@@ -12,10 +12,10 @@ Nakloid::Nakloid(wstring path_ini)
     boost::property_tree::ini_parser::read_ini(fs_path_ini.string(), wpt);
   } catch (boost::property_tree::ini_parser::ini_parser_error &e) {
     cerr << "[Nakloid.ini line " << e.line() << "] " << e.message() << endl
-      << "[nak::parse] can't parse Nakloid.ini" << endl;
+      << "[Nakloid::Nakloid] can't parse Nakloid.ini" << endl;
     return;
   } catch (...) {
-    cerr << "[nak::parse] can't parse Nakloid.ini" << endl;
+    cerr << "[Nakloid::Nakloid] can't parse Nakloid.ini" << endl;
   }
 
   if (boost::optional<wstring> tmp = wpt.get_optional<wstring>(L"Input.path_input_score")) {
@@ -36,7 +36,7 @@ Nakloid::Nakloid(wstring path_ini)
         path_lyrics = tmp.get();
       }
     } else {
-      cerr << "[nak::parse] can't recognize score_mode" << endl;
+      cerr << "[Nakloid::Nakloid] can't recognize score_mode" << endl;
       return;
     }
   }
@@ -93,7 +93,7 @@ Nakloid::Nakloid(wstring path_ini)
     UnitWaveformOverlapper::params.compressor_ratio = tmp.get();
   }
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.uwc_cache")) {
-    Voice::params.uwc_cache = tmp.get();
+    Voice::params.uwc_cache = VocalLibrary::params.uwc_cache = tmp.get();
   }
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.print_log")) {
     print_log = tmp.get();

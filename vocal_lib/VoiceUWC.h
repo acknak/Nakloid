@@ -1,11 +1,10 @@
-#ifndef VoiceUWC_h
+﻿#ifndef VoiceUWC_h
 #define VoiceUWC_h
 
 #include "VocalLibrary.h"
 #include "Voice.h"
 #include "../format/UnitWaveformContainer.h"
 #include "../parser/WavHandler.h"
-#include "../utilities/Tools.h"
 
 class VoiceUWC: public Voice, public WavHandler {
  public:

@@ -1,4 +1,4 @@
-#ifndef PronunciationAlias_h
+﻿#ifndef PronunciationAlias_h
 #define PronunciationAlias_h
 
 #include <map>

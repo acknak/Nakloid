@@ -1,4 +1,4 @@
-#ifndef VoiceWAV_h
+﻿#ifndef VoiceWAV_h
 #define VoiceWAV_h
 
 #include <boost/algorithm/string.hpp>
@@ -23,11 +23,16 @@ private:
   mutable Wav tmp_wav;
 
   const std::vector<double>& getVowelWav() const;
-  const bool hasVowelWav() const;
+
+  inline double sinc(double x) const { return sin(M_PI*x) / (M_PI*x); }
 
   // inherit from WavHandler
   void chunkHeader(WavHeader wav_header);
   void chunkData(WavData wav_data);
 };
+
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif
 
 #endif

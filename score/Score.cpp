@@ -1,4 +1,4 @@
-#include "Score.h"
+﻿#include "Score.h"
 
 using namespace std;
 
@@ -215,7 +215,7 @@ vector<long> Score::getPitchMarks() const
   vector<long> pitchmarks;
   for (vector<float>::const_iterator it=pitches.begin();it!=pitches.end();++it) {
     if (*it > 0) {
-      pitchmarks.assign(1, nak::ms2pos(it-pitches.begin(), params.wav_header));
+      pitchmarks.assign(1, ms2pos(it-pitches.begin(), params.wav_header));
       break;
     }
   }
@@ -223,7 +223,7 @@ vector<long> Score::getPitchMarks() const
   while (ms_tmp < pitches.size()) {
     if (pitches[ms_tmp] > 0) {
       pitchmarks.push_back(pitchmarks.back()+(1.0/pitches[ms_tmp]*params.wav_header.dwSamplesPerSec));
-      ms_tmp = nak::pos2ms(pitchmarks.back(), params.wav_header);
+      ms_tmp = pos2ms(pitchmarks.back(), params.wav_header);
     } else {
       ms_tmp++;
     }
@@ -273,7 +273,7 @@ void Score::reloadPitches()
   for (vector<Note>::const_iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
     vector<float>::iterator it_pitches_begin=pitches.begin()+it_notes->getStart()+getMargin(), it_pitches_end=pitches.begin()+it_notes->getEnd()+getMargin();
     if (params.vibrato) {
-      double tmp_fs = (nak::cent2rate(params.pitch_vibrato)-1) * *it_pitches_begin;
+      double tmp_fs = (cent2rate(params.pitch_vibrato)-1) * *it_pitches_begin;
       if ((it_pitches_end-it_pitches_begin) > params.ms_vibrato_offset) {
         long vibrato_length = (it_pitches_end-it_pitches_begin) - params.ms_vibrato_offset;
         for (size_t i=0; i<vibrato_length; i++) {
@@ -284,7 +284,7 @@ void Score::reloadPitches()
     if (params.overshoot) {
       const Note* note_prev = getPrevNote(&*it_notes);
       if (note_prev!=0 && it_notes->getStart()==note_prev->getEnd() && it_notes->getBasePitch()!=note_prev->getBasePitch()) {
-        double fs_tmp = (nak::cent2rate(params.pitch_overshoot)-1) * *it_pitches_begin;
+        double fs_tmp = (cent2rate(params.pitch_overshoot)-1) * *it_pitches_begin;
         float fs_diff = (*it_pitches_begin-note_prev->getBasePitchHz()) / 2;
         if (it_pitches_end-it_pitches_begin > params.ms_overshoot) {
           for (size_t i=0; i<params.ms_overshoot/2; i++) {
@@ -303,7 +303,7 @@ void Score::reloadPitches()
     if (params.preparation) {
       const Note* note_next = getNextNote(&*it_notes);
       if (note_next!=0 && it_notes->getEnd()==note_next->getStart() && it_notes->getBasePitch()!=note_next->getBasePitch()) {
-        double fs_tmp = (nak::cent2rate(params.pitch_preparation)-1) * *it_pitches_begin;
+        double fs_tmp = (cent2rate(params.pitch_preparation)-1) * *it_pitches_begin;
         vector<float>::reverse_iterator rit_pitches_begin(it_pitches_end);
         vector<float>::reverse_iterator rit_pitches_end(it_pitches_begin);
         float fs_diff = (*rit_pitches_begin-note_next->getBasePitchHz()) / 2;

@@ -1,4 +1,4 @@
-#include "VoiceUWC.h"
+﻿#include "VoiceUWC.h"
 
 using namespace std;
 
@@ -12,13 +12,15 @@ VoiceUWC::~VoiceUWC()
 
 const UnitWaveformContainer* VoiceUWC::getUnitWaveformContainer() const
 {
-  if (params.uwc_cache && UnitWaveformContainer::isUwcFormatFile(path)) {
+  if (UnitWaveformContainer::isUwcFormatFile(path)) {
     wcout << L"load voice \"" << getPronAliasString() << L"\" from uwc data" << endl;
     if (uwc == 0) {
       uwc = new UnitWaveformContainer();
       WavParser wav_parser(path, (WavHandler*)this);
       wav_parser.parse();
     }
+  } else {
+    wcerr << L"[VoiceUWC::getUnitWaveformContainer] can't load \"" << getPronAliasString() << L"\"" << endl;
   }
   return uwc;
 }

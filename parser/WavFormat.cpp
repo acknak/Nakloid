@@ -1,4 +1,4 @@
-#include "WavFormat.h"
+﻿#include "WavFormat.h"
 
 const char WavFormat::riff[] = {'R','I','F','F'};
 const char WavFormat::wave[] = {'W','A','V','E'};

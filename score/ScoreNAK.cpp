@@ -1,4 +1,4 @@
-#include "ScoreNAK.h"
+﻿#include "ScoreNAK.h"
 
 using namespace std;
 

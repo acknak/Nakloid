@@ -1,4 +1,4 @@
-#ifndef SmfParser_h
+﻿#ifndef SmfParser_h
 #define SmfParser_h
 
 #include <cstring>

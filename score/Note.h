@@ -1,4 +1,4 @@
-#ifndef Note_h
+﻿#ifndef Note_h
 #define Note_h
 
 #include <algorithm>
@@ -48,7 +48,7 @@ class Note {
   } params;
 
   Note(Score *score, long id);
-  Note(Score *score, long id, unsigned long deltatime, unsigned short timebase, unsigned long tempo, unsigned char base_pitch, short base_velocity);
+  Note(Score *score, long id, long ms_start, unsigned char base_pitch, short base_velocity);
   Note(const Note& other);
   virtual ~Note();
 
@@ -61,11 +61,9 @@ class Note {
   long getStart() const;
   long getPronStart() const;
   void setStart(long ms_start);
-  void setStart(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
   long getEnd() const;
   long getPronEnd() const;
   void setEnd(long ms_end);
-  void setEnd(unsigned long deltatime, unsigned short timebase, unsigned long tempo);
   short getFrontMargin() const;
   short getBackMargin() const;
   void setMargin(short front, short back);

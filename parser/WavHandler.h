@@ -1,4 +1,4 @@
-#ifndef WavHandler_h
+﻿#ifndef WavHandler_h
 #define WavHandler_h
 
 #include "../format/Wav.h"

@@ -1,4 +1,4 @@
-#ifndef SmfHandler_h
+﻿#ifndef SmfHandler_h
 #define SmfHandler_h
 
 #include <fstream>

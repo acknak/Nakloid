@@ -1,4 +1,4 @@
-#ifndef VocalLibrary_h
+﻿#ifndef VocalLibrary_h
 #define VocalLibrary_h
 
 #include <cctype>
@@ -13,15 +13,16 @@
 #include "VoiceWAV.h"
 #include "../format/PronunciationAlias.h"
 #include "../format/UnitWaveformContainer.h"
-#include "../utilities/Tools.h"
 
 class VocalLibrary {
  public:
   static struct Parameters {
     Parameters() {
       num_default_uwc_lobes = 3;
+      uwc_cache = false;
     }
     short num_default_uwc_lobes;
+    bool uwc_cache;
   } params;
 
   VocalLibrary():path_singer(L""){}

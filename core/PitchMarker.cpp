@@ -1,4 +1,4 @@
-#include "PitchMarker.h"
+﻿#include "PitchMarker.h"
 
 #pragma comment(lib, "libfftw3-3.lib")
 
@@ -48,7 +48,7 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(tmp_pitchmarks[i] - input_wav.begin());
     }
-    tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), it_input_wav_prec, *(tmp_pitchmarks.end()-3), *(tmp_pitchmarks.end()-1), true);
+    tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), it_input_wav_prec, *(tmp_pitchmarks.end()-3), *(tmp_pitchmarks.end()-1));
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(tmp_pitchmarks[i] - input_wav.begin());
     }
@@ -70,7 +70,7 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
     }
-    tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), rit_cons_start, *(tmp_pitchmarks.end()-3), *(tmp_pitchmarks.end()-1), true);
+    tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), rit_cons_start, *(tmp_pitchmarks.end()-3), *(tmp_pitchmarks.end()-1));
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
     }
@@ -134,7 +134,7 @@ bool PitchMarker::mark(const vector<double>& vowel_wav)
     // consonant pitch mark
     vector<double>::const_reverse_iterator rit_input_wav_blnk(it_input_wav_offs);
     vector<vector<double>::const_reverse_iterator> tmp_pitchmarks =
-      markWithSelf(rit_base_end, rit_input_wav_blnk, rit_base_start, rit_base_end, false);
+      markWithSelf(rit_base_end, rit_input_wav_blnk, rit_base_start, rit_base_end);
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
     }
@@ -185,7 +185,7 @@ vector<Iterator> PitchMarker::markWithVowel(Iterator it_input_begin, Iterator it
 
 template <class Iterator>
 vector<Iterator> PitchMarker::markWithSelf(Iterator it_input_begin, Iterator it_input_end,
-                                           Iterator it_base_begin, Iterator it_base_end, bool breaker) const
+                                           Iterator it_base_begin, Iterator it_base_end) const
 {
   vector<Iterator> pitchmarks(1, it_input_begin);
   if (it_base_begin>=it_base_end || it_input_begin>=it_input_end) {
@@ -216,42 +216,6 @@ vector<Iterator> PitchMarker::markWithSelf(Iterator it_input_begin, Iterator it_
       margin_aft = (win_size/4*7)-1;
     }
     dist = max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft) - xcorr_win.begin() - (win_size/2);
-    if (breaker) {
-      /*
-      double tmp_max = *max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft);
-      nak::corr_coef<Iterator>(tmp_pitchmark, tmp_pitchmark+win_size, pitchmarks.back()-(win_size/2), pitchmarks.back()+(win_size/2));
-      if (xcorr_start == 0) {
-        xcorr_start = tmp_max;
-      } else if (xcorr_sum*nak::xcorr_threshold>tmp_max) {
-        break;
-      }
-      if (xcorr_start == 0) {
-        xcorr_start = tmp_max;
-      } else if (xcorr_sum*nak::xcorr_threshold>tmp_max) {
-        break;
-      }
-      /*
-      double tmp_max = *max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft);
-      {
-        double tmp_x=0.0, tmp_y=0.0;
-        for (size_t i=0; i<win_size; i++) {
-          tmp_x += pow(*(tmp_pitchmark+(win_size/2)+i), 2.0);
-        }
-        tmp_x = pow(tmp_x, 0.5);
-        for (size_t i=0; i<win_size; i++) {
-          tmp_y += pow(*(pitchmarks.back()-(win_size/2)+i), 2.0);
-        }
-        tmp_y = pow(tmp_y, 0.5);
-        tmp_max /= tmp_x * tmp_y;
-      }
-      if (xcorr_start == 0) {
-        xcorr_start = tmp_max;
-      } else if (xcorr_sum*nak::xcorr_threshold>tmp_max) {
-        break;
-      }
-      xcorr_sum = tmp_max;
-      */
-    }
     pitchmarks.push_back(tmp_pitchmark+=dist);
   }
 
@@ -295,7 +259,7 @@ void PitchMarker::xcorr(Iterator it_input_begin, vector<double>::iterator it_out
 {
   short win_size = it_base_end - it_base_begin;
   int fftlen = win_size * 2;
-  vector<double> filter = nak::getWindow(win_size, 1);
+  vector<double> filter = getWindow(win_size, 1);
 
   fftw_complex *in1 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
   fftw_complex *in2 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));

@@ -1,4 +1,4 @@
-#include "WavData.h"
+﻿#include "WavData.h"
 
 using namespace std;
 

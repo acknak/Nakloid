@@ -1,4 +1,4 @@
-#ifndef UnitWaveform_h
+﻿#ifndef UnitWaveform_h
 #define UnitWaveform_h
 
 #include <boost/filesystem.hpp>
