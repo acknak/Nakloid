@@ -56,11 +56,12 @@ class WavData {
   void clear();
 
   // accessor
-  std::vector<short> getDataForWav() const;
+  std::vector<short> getDataForWavFile() const;
   const std::vector<double>& getData() const;
   void setData(const std::vector<double>& data);
   void setData(const short* const data, long chunk_size);
   long getSize() const;
+  long getSizeForWavFile() const;
   double getRMS() const;
 
   // tag

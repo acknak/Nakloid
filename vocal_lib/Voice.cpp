@@ -4,11 +4,8 @@ using namespace std;
 
 struct Voice::Parameters Voice::params;
 
-map< wstring, vector<double> > Voice::vowel_wav_map;
-
 Voice::Voice(const Voice& other)
-  :path(other.path),pron_alias(other.pron_alias),is_vcv(other.is_vcv),
-   offs(other.offs),cons(other.cons),blnk(other.blnk),prec(other.prec),ovrl(other.ovrl),frq(0.0),uwc(0)
+  :path(other.path),pron_alias(other.pron_alias),offs(other.offs),cons(other.cons),blnk(other.blnk),prec(other.prec),ovrl(other.ovrl),frq(0.0),uwc(0)
 {
   if (other.hasFrq()) {
     setFrq(other.getFrq());
@@ -31,7 +28,6 @@ Voice& Voice::operator=(const Voice& other)
   if (this != &other) {
     path = other.path;
     pron_alias = other.pron_alias;
-    is_vcv = other.is_vcv;
     offs = other.offs;
     cons = other.cons;
     blnk = other.blnk;
@@ -53,7 +49,6 @@ bool Voice::operator==(const Voice& other) const
 
   is_eq &= (path == other.path);
   is_eq &= (pron_alias == other.pron_alias);
-  is_eq &= (is_vcv == other.is_vcv);
   is_eq &= (offs == other.offs);
   is_eq &= (cons == other.cons);
   is_eq &= (blnk == other.blnk);
@@ -110,7 +105,12 @@ const wstring& Voice::getSuffix() const
 
 void Voice::setPronAlias(const std::wstring& pron_alias)
 {
-  this->pron_alias = PronunciationAlias(pron_alias);
+  setPronAlias(PronunciationAlias(pron_alias));
+}
+
+void Voice::setPronAlias(const PronunciationAlias& pron_alias)
+{
+  this->pron_alias = pron_alias;
 }
 
 void Voice::setPath(const boost::filesystem::path &path)
@@ -158,4 +158,9 @@ void Voice::setUnitWaveformContainer(const UnitWaveformContainer* uwc)
     this->uwc = 0;
   }
   *(this->uwc) = *uwc;
+}
+
+bool Voice::isVCV() const
+{
+  return pron_alias.checkVCV();
 }

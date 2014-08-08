@@ -2,6 +2,8 @@
 
 using namespace std;
 
+map< wstring, vector<double> > VoiceWAV::vowel_wav_map;
+
 const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
 {
   if (uwc != 0) {
@@ -20,12 +22,12 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
   vector<long> input_pitchmarks;
   {
     PitchMarker *marker = new PitchMarker(tmp_wav.data.getData(), offs, ovrl, prec, blnk, tmp_wav.header.dwSamplesPerSec);
-    if (PronunciationAlias::isVowel(pron_alias.getVowel())) {
+    if (!pron_alias.getPronVowel().empty()) {
       short win_size = tmp_wav.header.dwSamplesPerSec / getFrq() * 2;
-      vector<double> aft_vowel_wav = getVowelWav();
+      vector<double> aft_vowel_wav = getVowelWav(pron_alias.getPronVowel());
       trimVector(&aft_vowel_wav, win_size);
-      if (is_vcv && vowel_wav_map.count(pron_alias.pron)>0) {
-        vector<double> fore_vowel_wav = vowel_wav_map[pron_alias.pron];
+      if (isVCV() && pron_alias.getPrefixVowel().empty()) {
+        vector<double> fore_vowel_wav = getVowelWav(pron_alias.getPrefixVowel());
         trimVector(&fore_vowel_wav, win_size);
         marker->mark(fore_vowel_wav, aft_vowel_wav);
       } else {
@@ -42,7 +44,7 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
   {
     UnitWaveformMaker *maker = new UnitWaveformMaker();
     maker->setPitchMarks(input_pitchmarks, offs+cons, offs+ovrl, tmp_wav.header.dwSamplesPerSec);
-    maker->makeUnitWaveform(tmp_wav.data.getData(), tmp_wav.header.dwSamplesPerSec/getFrq(), is_vcv);
+    maker->makeUnitWaveform(tmp_wav.data.getData(), tmp_wav.header.dwSamplesPerSec/getFrq(), isVCV());
     uwc->unit_waveforms = maker->getUnitWaveform();
     uwc->header.wLobeSize = Voice::params.num_default_uwc_lobes;
     uwc->header.dwRepeatStart = maker->getFadeStartSub();
@@ -58,13 +60,11 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
   }
 
   tmp_wav.clear();
-
   return this->uwc;
 }
-
-const vector<double>& VoiceWAV::getVowelWav() const
+const vector<double>& VoiceWAV::getVowelWav(wstring vowel) const
 {
-  if (vowel_wav_map.count(pron_alias.getVowel()) == 0) {
+  if (vowel_wav_map.count(vowel) == 0) {
     tmp_wav.clear();
     WavParser wav_parser(path, (WavHandler*)this);
     wav_parser.parse();
@@ -104,10 +104,10 @@ const vector<double>& VoiceWAV::getVowelWav() const
         it_tmp_wav_max = it_tmp_wav_cons+i;
       }
     }
-    vowel_wav_map[pron_alias.getVowel()].assign(it_tmp_wav_max-win_size, it_tmp_wav_max+win_size);
+    vowel_wav_map[vowel].assign(it_tmp_wav_max-win_size, it_tmp_wav_max+win_size);
     tmp_wav.clear();
   }
-  return vowel_wav_map[pron_alias.getVowel()];
+  return vowel_wav_map[vowel];
 }
 
 /*

@@ -13,7 +13,7 @@
 
 class VoiceWAV: public Voice, public WavHandler {
  public:
-  explicit VoiceWAV(boost::filesystem::path path_wav):Voice(path_wav){}
+  explicit VoiceWAV(boost::filesystem::path path_wav) :Voice(path_wav){}
   VoiceWAV(const VoiceWAV& other):Voice(other){}
   ~VoiceWAV(){}
 
@@ -21,8 +21,9 @@ class VoiceWAV: public Voice, public WavHandler {
 
 private:
   mutable Wav tmp_wav;
+  static std::map< std::wstring, std::vector<double> > vowel_wav_map;
 
-  const std::vector<double>& getVowelWav() const;
+  const std::vector<double>& getVowelWav(const std::wstring vowel) const;
 
   inline double sinc(double x) const { return sin(M_PI*x) / (M_PI*x); }
 

@@ -57,7 +57,7 @@ void UnitWaveformContainer::save(const boost::filesystem::path& path_uwc)
 
   // fact chunk & data chunk
   for (size_t i=0; i<unit_waveforms.size(); i++) {
-    vector<short> data_short = unit_waveforms[i].data.getDataForWav();
+    vector<short> data_short = unit_waveforms[i].data.getDataForWavFile();
     long dataChunkSize = data_short.size()*sizeof(short);
 
     ofs.write((char*)WavData::tag_fact, sizeof(char)*4);

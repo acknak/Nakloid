@@ -57,7 +57,6 @@ bool VocalLibrary::initVoiceMap(const boost::filesystem::path& path_oto_ini)
       tmp_voice->setPronAlias(str_pron_alias);
     }
     short tmp;
-    tmp_voice->is_vcv = (tmp_voice->pron_alias.prefix!=L"- " && tmp_voice->pron_alias.prefix!=L"* " && !tmp_voice->pron_alias.prefix.empty());
     tmp_voice->offs = (((tmp=boost::lexical_cast<double>(v2[1]))>0))?tmp:0;
     tmp_voice->cons = (((tmp=boost::lexical_cast<double>(v2[2]))>0))?tmp:0;
     tmp_voice->blnk = boost::lexical_cast<double>(v2[3]);

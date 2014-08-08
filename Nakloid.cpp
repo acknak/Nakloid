@@ -98,12 +98,6 @@ Nakloid::Nakloid(wstring path_ini)
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.print_log")) {
     print_log = tmp.get();
   }
-  if (boost::optional<short> tmp = wpt.get_optional<short>(L"Pitchmark.pitch_margin")) {
-    PitchMarker::params.pitch_margin = tmp.get();
-  }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Pitchmark.xcorr_threshold")) {
-    PitchMarker::params.xcorr_threshold = tmp.get();
-  }
   if (boost::optional<long> tmp = wpt.get_optional<long>(L"UnitWaveformContainer.target_rms")) {
     UnitWaveformMaker::params.target_rms = tmp.get();
   }
@@ -112,6 +106,12 @@ Nakloid::Nakloid(wstring path_ini)
   }
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"UnitWaveformContainer.uwc_normalize")) {
     UnitWaveformMaker::params.normalize = tmp.get();
+  }
+  if (boost::optional<short> tmp = wpt.get_optional<short>(L"Pitchmark.pitch_margin")) {
+    PitchMarker::params.pitch_margin = tmp.get();
+  }
+  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Pitchmark.xcorr_threshold")) {
+    PitchMarker::params.xcorr_threshold = tmp.get();
   }
   if (boost::optional<double> tmp = wpt.get_optional<double>(L"Overlap.fade_stretch")) {
     UnitWaveformOverlapper::params.fade_stretch = tmp.get();

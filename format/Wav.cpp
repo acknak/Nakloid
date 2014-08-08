@@ -91,7 +91,7 @@ void WavData::clear()
   vector<double>(data).swap(data);
 }
 
-vector<short> WavData::getDataForWav() const
+vector<short> WavData::getDataForWavFile() const
 {
   vector<short> tmp(data.size(), 0);
   for (size_t i=0; i<data.size(); i++) {
@@ -125,6 +125,11 @@ void WavData::setData(const vector<double>& data)
 long WavData::getSize() const
 {
   return data.size();
+}
+
+long WavData::getSizeForWavFile() const
+{
+  return data.size()*sizeof(short);
 }
 
 double WavData::getRMS() const
@@ -187,7 +192,7 @@ bool Wav::operator!=(const Wav& other) const
 
 void Wav::save(const boost::filesystem::path& path)
 {
-  vector<short>& output_data = data.getDataForWav();
+  vector<short>& output_data = data.getDataForWavFile();
   long data_chunk_size = output_data.size() * sizeof(short);
   long wav_size = data_chunk_size + WavHeader::const_chunk_size + 12;
 

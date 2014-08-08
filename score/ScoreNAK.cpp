@@ -25,8 +25,6 @@ void ScoreNAK::load()
       continue;
     if (boost::optional<wstring> alias = pt_note.get_optional<wstring>(L"alias"))
       tmp_note->setPronAlias(alias.get());
-    if (boost::optional<bool> is_vcv = pt_note.get_optional<bool>(L"vcv"))
-      tmp_note->isVCV(is_vcv);
     if (boost::optional<long> start = pt_note.get_optional<long>(L"start"))
       tmp_note->setStart(start.get());
     if (boost::optional<long> end = pt_note.get_optional<long>(L"end"))
