@@ -28,19 +28,20 @@ class UnitWaveformMaker {
     double repeat_threshold;
   } params;
 
-  UnitWaveformMaker():sub_rep_start(0),sub_ovrl(0),sub_fade_start(0){}
+  UnitWaveformMaker(UnitWaveformContainer *uwc, const std::vector<long>& pitchmarks)
+   :uwc(uwc),pitchmarks(pitchmarks),sub_ovrl(0),sub_fade_start(0),sub_fade_end(0){}
   virtual ~UnitWaveformMaker(){}
 
   bool makeUnitWaveform(const std::vector<double>& voice, bool is_vcv);
   bool makeUnitWaveform(const std::vector<double>& voice, short pitch, bool is_vcv);
 
   // accessor
-  const std::vector<UnitWaveform>& getUnitWaveform() const;
+  UnitWaveformContainer getUnitWaveformContainer() const;
   const std::vector<long>& getPitchMarks() const;
-  void setPitchMarks(const std::vector<long>& pitch_marks);
-  void setPitchMarks(const std::vector<long>& pitch_marks, long ms_rep_start, unsigned long fs);
-  void setPitchMarks(const std::vector<long>& pitch_marks, long ms_rep_start, long ms_ovrl, unsigned long fs);
-  long getFadeStartSub() const;
+  void setOvrl(long ms_ovrl, unsigned long fs);
+  void setOvrl(long sub_ovrl);
+  void setFadeParams(long ms_fade_start, long ms_fade_end, unsigned long fs);
+  void setFadeParams(long sub_fade_start, long sub_fade_end);
 
  private:
   UnitWaveformMaker(const UnitWaveformMaker& other);
@@ -49,16 +50,11 @@ class UnitWaveformMaker {
   UnitWaveform makeUnitWaveform(short point, short pitch);
   UnitWaveform makeUnitWaveform(short point, short pitch, double scale);
 
-  std::vector<UnitWaveform> unit_waveforms;
+  UnitWaveformContainer *uwc;
   std::vector<double> voice;
   std::vector<long> pitchmarks;
-  long sub_rep_start;
   long sub_ovrl;
-  long sub_fade_start;
+  long sub_fade_start, sub_fade_end;
 };
 
-#endif
-
-#ifndef M_PI
-#define M_PI 3.1415926535897932384626433832795
 #endif

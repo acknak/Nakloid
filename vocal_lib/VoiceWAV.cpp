@@ -20,6 +20,7 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
 
   // make input pitch mark
   vector<long> input_pitchmarks;
+  long sub_fade_start=0, sub_fade_end=0;
   {
     PitchMarker *marker = new PitchMarker(tmp_wav.data.getData(), offs, ovrl, prec, blnk, tmp_wav.header.dwSamplesPerSec);
     if (!pron_alias.getPronVowel().empty()) {
@@ -37,17 +38,18 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
       marker->mark(getFrq(), tmp_wav.header.dwSamplesPerSec);
     }
     input_pitchmarks = marker->getPitchMarks();
+    sub_fade_start = marker->getFadeStartSub();
+    sub_fade_end = marker->getFadeEndSub();
     delete marker;
   }
 
   // make unit waveforms
   {
-    UnitWaveformMaker *maker = new UnitWaveformMaker();
-    maker->setPitchMarks(input_pitchmarks, offs+cons, offs+ovrl, tmp_wav.header.dwSamplesPerSec);
+    UnitWaveformMaker *maker = new UnitWaveformMaker(uwc, input_pitchmarks);
+    maker->setOvrl(offs+ovrl, tmp_wav.header.dwSamplesPerSec);
+    maker->setFadeParams(sub_fade_start, sub_fade_end);
     maker->makeUnitWaveform(tmp_wav.data.getData(), tmp_wav.header.dwSamplesPerSec/getFrq(), isVCV());
-    uwc->unit_waveforms = maker->getUnitWaveform();
     uwc->header.wLobeSize = Voice::params.num_default_uwc_lobes;
-    uwc->header.dwRepeatStart = maker->getFadeStartSub();
     uwc->header.wF0 = getFrq();
     delete maker;
   }
@@ -62,6 +64,7 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
   tmp_wav.clear();
   return this->uwc;
 }
+
 const vector<double>& VoiceWAV::getVowelWav(wstring vowel) const
 {
   if (vowel_wav_map.count(vowel) == 0) {

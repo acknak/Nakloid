@@ -13,15 +13,14 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
 {
   this->voice = voice;
   if (voice.size()==0 || pitchmarks.empty() || params.num_lobes==0) {
-    cerr << "[UnitWaveformMaker] voice or pitch mark or lobe is null" << endl;
+    cerr << "[UnitWaveformMaker] voice, pitch mark or lobe is null" << endl;
     return false;
   }
-  if (sub_ovrl > sub_rep_start) {
+  if (sub_ovrl > sub_fade_start) {
     cerr << "[UnitWaveformMaker] invalid ovrl and rep_start" << endl;
     return false;
   }
-  unit_waveforms.clear();
-  double fade_start_rms = makeUnitWaveform(sub_rep_start, pitch).data.getRMS();
+  double fade_start_rms = makeUnitWaveform(sub_fade_start, pitch).data.getRMS();
 
   // make unit waveforms
   {
@@ -31,52 +30,46 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
       fade_scale = params.target_rms/fade_start_rms;
       ovrl_scale = is_vcv?((sub_ovrl>0)?params.target_rms/makeUnitWaveform(0, pitch).data.getRMS():1):fade_scale;
     }
-    unit_waveforms.reserve(pitchmarks.size());
-    for (size_t i=0; i<pitchmarks.size(); i++) {
+    for (size_t i=0; i<pitchmarks.size()&&i<sub_fade_end; i++) {
       double scale = 1.0;
+      // adjust uwc volume
       if (params.normalize) {
          if (is_vcv) {
-          if (i > sub_ovrl && i < sub_rep_start) {
-            double tmp = (i-sub_ovrl) / (double)(sub_rep_start-sub_ovrl);
+          if (i > sub_ovrl && i < sub_fade_start) {
+            double tmp = (i-sub_ovrl) / (double)(sub_fade_start-sub_ovrl);
             scale = (ovrl_scale*(1.0-tmp)) + (fade_scale*tmp);
           } else {
             scale = params.target_rms/makeUnitWaveform(i, pitch).data.getRMS();
           }
         } else {
-          if (sub_ovrl==0 || i>=sub_rep_start) {
+          if (sub_ovrl==0 || i>=sub_fade_start) {
             scale = params.target_rms/makeUnitWaveform(i, pitch).data.getRMS();
           } else if (i <= sub_ovrl) {
             scale = ovrl_scale;
           } else {
-            double tmp = (i-sub_ovrl) / (double)(sub_rep_start-sub_ovrl);
+            double tmp = (i-sub_ovrl) / (double)(sub_fade_start-sub_ovrl);
             scale = (ovrl_scale*(1.0-tmp)) + (fade_scale*tmp);
           }
         }
       }
-      unit_waveforms.push_back(makeUnitWaveform(i, pitch, scale));
-      if (i > sub_rep_start+params.min_repeat_length) {
+      // make unit waveform
+      uwc->unit_waveforms.push_back(makeUnitWaveform(i, pitch, scale));
+      if (i > sub_fade_start+params.min_repeat_length) {
         if (base_wav.size() == 0) {
-          base_wav = unit_waveforms[sub_rep_start].data.getData();
+          base_wav = uwc->unit_waveforms[sub_fade_start].data.getData();
         }
-        vector<double> target_wav = unit_waveforms.back().data.getData();
-        /*
-        cout << nak::corr_coef<vector<double>::iterator>(base_wav.begin(), base_wav.end(), target_wav.begin(), target_wav.end()) << endl;
-        if (nak::corr_coef<vector<double>::iterator>(base_wav.begin(), base_wav.end(), target_wav.begin(), target_wav.end()) < nak::repeat_threshold) {
-          unit_waveforms.pop_back();
-          break;
-        }
-        */
+        vector<double> target_wav = uwc->unit_waveforms.back().data.getData();
       }
     }
-    sub_fade_start = unit_waveforms.size() - ((unit_waveforms.size()-sub_rep_start)/2);
   }
 
   // make self fade
   {
-    long sub_rep_len = unit_waveforms.size() - sub_fade_start;
+    long sub_rep_len = (sub_fade_end-sub_fade_start) / 2;
+    sub_fade_start = sub_fade_end - (sub_rep_len*2);
     for (size_t i=0; i<sub_rep_len; i++) {
-      UnitWaveform uw_fore = unit_waveforms[sub_rep_start+i];
-      UnitWaveform uw_aft = unit_waveforms[sub_fade_start+i];
+      UnitWaveform uw_fore = uwc->unit_waveforms[sub_fade_start+i];
+      UnitWaveform uw_aft = uwc->unit_waveforms[sub_fade_start+sub_rep_len+i];
       vector<double> data_fore = uw_fore.data.getData();
       vector<double> data_aft = uw_aft.data.getData();
 
@@ -92,13 +85,13 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
       } else if (right_diff > 0) {
         data_fore.insert(data_fore.end(), right_diff, 0);
       }
-
-      double scale = 1.0 / (sub_rep_len-1) * i;
+      double scale = 1.0 / (sub_rep_len+1) * (i+1);
       for (size_t j=0; j<data_aft.size(); j++) {
         data_aft[j] = (data_fore[j]*scale) + (data_aft[j]*(1.0-scale));
       }
-      unit_waveforms[sub_fade_start+i].data.setData(data_aft);
+      uwc->unit_waveforms[sub_fade_start+sub_rep_len+i].data.setData(data_aft);
     }
+    uwc->header.dwRepeatStart = sub_fade_start + sub_rep_len;
   }
 
   return true;
@@ -107,39 +100,13 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
 /*
  * accessor
  */
-const vector<UnitWaveform>& UnitWaveformMaker::getUnitWaveform() const
-{
-  return unit_waveforms;
-}
-
 const vector<long>& UnitWaveformMaker::getPitchMarks() const
 {
   return pitchmarks;
 }
 
-void UnitWaveformMaker::setPitchMarks(const vector<long>& pitchmarks)
+void UnitWaveformMaker::setOvrl(long ms_ovrl, unsigned long fs)
 {
-  this->pitchmarks = pitchmarks;
-  sub_rep_start = sub_ovrl = 0;
-}
-
-void UnitWaveformMaker::setPitchMarks(const vector<long>& pitchmarks, long ms_rep_start, unsigned long fs)
-{
-  setPitchMarks(pitchmarks, ms_rep_start, 0, fs);
-}
-
-void UnitWaveformMaker::setPitchMarks(const vector<long>& pitchmarks, long ms_rep_start, long ms_ovrl, unsigned long fs)
-{
-  this->pitchmarks = pitchmarks;
-
-  long pos_rep_start = ms_rep_start * fs / 1000;
-  for (size_t i=0; i<pitchmarks.size(); i++) {
-    if (pos_rep_start <= pitchmarks[i]) {
-      sub_rep_start = i;
-      break;
-    }
-  }
-
   long pos_ovrl = ms_ovrl * fs / 1000;
   for (size_t i=0; i<pitchmarks.size(); i++) {
     if (pos_ovrl <= pitchmarks[i]) {
@@ -149,9 +116,37 @@ void UnitWaveformMaker::setPitchMarks(const vector<long>& pitchmarks, long ms_re
   }
 }
 
-long UnitWaveformMaker::getFadeStartSub() const
+void UnitWaveformMaker::setOvrl(long sub_ovrl)
 {
-  return sub_fade_start;
+  this->sub_ovrl = sub_ovrl;
+}
+
+void UnitWaveformMaker::setFadeParams(long ms_fade_start, long ms_fade_end, unsigned long fs)
+{
+  long pos_fade_start = ms_fade_start * fs / 1000;
+  for (size_t i=0; i<pitchmarks.size(); i++) {
+    if (pos_fade_start <= pitchmarks[i]) {
+      sub_fade_start = i;
+      break;
+    }
+  }
+  long pos_fade_end = ms_fade_end * fs / 1000;
+  if (pos_fade_end>pitchmarks.back() || ms_fade_start>ms_fade_end) {
+    sub_fade_end = pitchmarks.size()-1;
+  } else {
+    for (size_t i=0; i<pitchmarks.size(); i++) {
+      if (pos_fade_end <= pitchmarks[i]) {
+        ms_fade_end = i;
+        break;
+      }
+    }
+  }
+}
+
+void UnitWaveformMaker::setFadeParams(long sub_fade_start, long sub_fade_end)
+{
+  this->sub_fade_start = sub_fade_start;
+  this->sub_fade_end = sub_fade_end;
 }
 
 /*
