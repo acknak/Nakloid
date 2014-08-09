@@ -34,7 +34,7 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
       double scale = 1.0;
       // adjust uwc volume
       if (params.normalize) {
-         if (is_vcv) {
+        if (is_vcv) {
           if (i > sub_ovrl && i < sub_fade_start) {
             double tmp = (i-sub_ovrl) / (double)(sub_fade_start-sub_ovrl);
             scale = (ovrl_scale*(1.0-tmp)) + (fade_scale*tmp);
@@ -43,7 +43,7 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
           }
         } else {
           if (sub_ovrl==0 || i>=sub_fade_start) {
-            scale = params.target_rms/makeUnitWaveform(i, pitch).data.getRMS();
+            scale = fade_scale;
           } else if (i <= sub_ovrl) {
             scale = ovrl_scale;
           } else {
