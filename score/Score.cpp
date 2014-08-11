@@ -7,13 +7,13 @@ struct Score::Parameters Score::params;
 const vector<wstring> Score::key2notenum = boost::assign::list_of(L"C")(L"C#")(L"D")(L"D#")(L"E")(L"F")(L"F#")(L"G")(L"G#")(L"A")(L"A#")(L"B");
 
 Score::Score(const boost::filesystem::path& path_score, const VocalLibrary *vocal_lib)
-  :path_score(path_score), vocal_lib(vocal_lib), path_song(L""), ms_margin(0), key2modifier()
+  :path_score(path_score), vocal_lib(vocal_lib), path_song(L""), key2modifier()
 {
   key2modifier[-1] = make_pair(L"",L"");
 }
 
 Score::Score(const boost::filesystem::path& path_score, const VocalLibrary *vocal_lib, const boost::filesystem::path& path_song)
-  :path_score(path_score), vocal_lib(vocal_lib), path_song(path_song), ms_margin(0)
+  :path_score(path_score), vocal_lib(vocal_lib), path_song(path_song)
 {
   key2modifier[-1] = make_pair(L"",L"");
 }
@@ -156,12 +156,12 @@ void Score::setSongPath(const boost::filesystem::path& path_song)
 
 long Score::getMargin() const
 {
-  return ms_margin;
+  return params.ms_margin;
 }
 
 void Score::setMargin(long ms_margin)
 {
-  this->ms_margin = ms_margin;
+  params.ms_margin = ms_margin;
 }
 
 vector<Note>::const_iterator Score::getNotesBegin() const

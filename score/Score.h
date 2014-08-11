@@ -84,7 +84,6 @@ class Score {
   std::vector<long> getPitchMarks() const;
 
  protected:
-  long ms_margin;
   boost::filesystem::path path_song;
   const VocalLibrary *vocal_lib;
   const static std::vector<std::wstring> key2notenum;
