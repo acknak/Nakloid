@@ -4,10 +4,11 @@ DEST          = /usr/local/bin
 LDFLAGS       = -L/usr/local/lib
 LIBS          = -lstdc++ -lfftw3-3 -lboost_filesystem -lm
 OBJS          = $(patsubst %.c,%.o,$(wildcard *.cpp))
-OBJS         := $(OBJS) $(patsubst %.c,%.o,$(wildcard voiceDB/*.cpp))
+OBJS         := $(OBJS) $(patsubst %.c,%.o,$(wildcard core/*.cpp))
+OBJS         := $(OBJS) $(patsubst %.c,%.o,$(wildcard format/*.cpp))
 OBJS         := $(OBJS) $(patsubst %.c,%.o,$(wildcard parser/*.cpp))
-OBJS         := $(OBJS) $(patsubst %.c,%.o,$(wildcard PSOLA/*.cpp))
 OBJS         := $(OBJS) $(patsubst %.c,%.o,$(wildcard score/*.cpp))
+OBJS         := $(OBJS) $(patsubst %.c,%.o,$(wildcard vocal_lib/*.cpp))
 PROGRAM       = Nakloid
 
 all:            $(PROGRAM)
