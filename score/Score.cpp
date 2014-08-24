@@ -370,9 +370,9 @@ void Score::sanitizeNote(std::vector<Note>::iterator it_notes)
   // complement parameters
   const Voice *tmp_voice = vocal_lib->getVoice(tmp_alias.getAliasString());
   if (tmp_voice != 0) {
-    it_notes->setOvrl((it_notes->isOvrl())?it_notes->getOvrl():tmp_voice->ovrl);
-    it_notes->setPrec((it_notes->isPrec())?it_notes->getPrec():tmp_voice->prec);
-    it_notes->setCons((it_notes->isCons())?it_notes->getCons():tmp_voice->cons);
+    it_notes->setOvrl((it_notes->isOvrl())?it_notes->getOvrl():tmp_voice->getOvrl());
+    it_notes->setPrec((it_notes->isPrec())?it_notes->getPrec():tmp_voice->getPrec());
+    it_notes->setCons((it_notes->isCons())?it_notes->getCons():tmp_voice->getCons());
   }
 
   it_notes->setPronAlias(tmp_alias);

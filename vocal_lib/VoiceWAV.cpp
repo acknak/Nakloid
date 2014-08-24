@@ -25,10 +25,10 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
     PitchMarker *marker = new PitchMarker(tmp_wav.data.getData(), offs, ovrl, prec, blnk, tmp_wav.header.dwSamplesPerSec);
     if (!pron_alias.getPronVowel().empty()) {
       short win_size = tmp_wav.header.dwSamplesPerSec / getFrq() * 2;
-      vector<double> aft_vowel_wav = getVowelWav(pron_alias.getPronVowel());
+      vector<double> aft_vowel_wav = getVowelWav();
       trimVector(&aft_vowel_wav, win_size);
       if (isVCV() && pron_alias.getPrefixVowel().empty()) {
-        vector<double> fore_vowel_wav = getVowelWav(pron_alias.getPrefixVowel());
+        vector<double> fore_vowel_wav = getVowelWav();
         trimVector(&fore_vowel_wav, win_size);
         marker->mark(fore_vowel_wav, aft_vowel_wav);
       } else {
@@ -65,52 +65,76 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
   return this->uwc;
 }
 
-const vector<double>& VoiceWAV::getVowelWav(wstring vowel) const
+void VoiceWAV::setOffs(short offs)
 {
-  if (vowel_wav_map.count(vowel) == 0) {
-    tmp_wav.clear();
-    WavParser wav_parser(path, (WavHandler*)this);
-    wav_parser.parse();
-    short win_size = tmp_wav.header.dwSamplesPerSec / frq;
-    vector<double> tmp_win(win_size*2, 0);
-    if (params.num_default_uwc_lobes > 1) {
-      long pos_half = tmp_win.size() / 2;
-      if (tmp_win.size() % 2 > 0) {
-        tmp_win[pos_half] = 1.0;
-        ++pos_half;
-      }
-      for (size_t i = 0; i<tmp_win.size() - pos_half; i++) {
-        double x = (i + 1.0) * params.num_default_uwc_lobes / pos_half;
-        tmp_win[pos_half + i] = sinc(x) * sinc(x / params.num_default_uwc_lobes);
-      }
-      reverse_copy(tmp_win.begin() + pos_half, tmp_win.end(), tmp_win.begin());
-    } else {
-      for (size_t i = 0; i<tmp_win.size(); ++i) {
-        double x = (i + 1.0) / (tmp_win.size() + 1.0);
-        tmp_win[i] = 0.5 - (0.5 * cos(2 * M_PI*x));
-      }
-    }
-    vector<double>::const_iterator it_tmp_wav_cons = tmp_wav.data.getData().begin()+((offs+cons)/1000.0*tmp_wav.header.dwSamplesPerSec);
-    vector<double>::const_iterator it_tmp_wav_max = it_tmp_wav_cons;
-    double tmp_max_rms = -1.0, avr_wav = accumulate(it_tmp_wav_cons-win_size,it_tmp_wav_cons+(win_size*3),0)/tmp_wav.data.getData().size();
-    for (size_t i=0; i<win_size*2; i++) {
-      if (*(it_tmp_wav_cons+i)<avr_wav) {
-        continue;
-      }
-      vector<double> tmp_wav(it_tmp_wav_cons+i-win_size, it_tmp_wav_cons+i+win_size);
-      for (size_t j=0; j<tmp_wav.size(); j++) {
-        tmp_wav[j] *= tmp_win[j];
-      }
-      double tmp_rms = getRMS(tmp_wav.begin(), tmp_wav.end());
-      if (tmp_rms>tmp_max_rms) {
-        tmp_max_rms = tmp_rms;
-        it_tmp_wav_max = it_tmp_wav_cons+i;
-      }
-    }
-    vowel_wav_map[vowel].assign(it_tmp_wav_max-win_size, it_tmp_wav_max+win_size);
-    tmp_wav.clear();
+  this->offs = offs;
+  is_set_offs = true;
+  if (is_set_cons && pron_alias.checkVowelPron()) {
+    setVowelWav();
   }
-  return vowel_wav_map[vowel];
+}
+
+void VoiceWAV::setCons(short cons)
+{
+  this->cons = cons;
+  is_set_cons = true;
+  if (is_set_offs && pron_alias.checkVowelPron()) {
+    setVowelWav();
+  }
+}
+
+void VoiceWAV::setVowelWav() const
+{
+  tmp_wav.clear();
+  WavParser wav_parser(path, (WavHandler*)this);
+  wav_parser.parse();
+  short win_size = tmp_wav.header.dwSamplesPerSec / getFrq();
+  vector<double> tmp_win(win_size*2, 0);
+  if (params.num_default_uwc_lobes > 1) {
+    long pos_half = tmp_win.size() / 2;
+    if (tmp_win.size() % 2 > 0) {
+      tmp_win[pos_half] = 1.0;
+      ++pos_half;
+    }
+    for (size_t i = 0; i<tmp_win.size() - pos_half; i++) {
+      double x = (i + 1.0) * params.num_default_uwc_lobes / pos_half;
+      tmp_win[pos_half + i] = sinc(x) * sinc(x / params.num_default_uwc_lobes);
+    }
+    reverse_copy(tmp_win.begin() + pos_half, tmp_win.end(), tmp_win.begin());
+  } else {
+    for (size_t i = 0; i<tmp_win.size(); ++i) {
+      double x = (i + 1.0) / (tmp_win.size() + 1.0);
+      tmp_win[i] = 0.5 - (0.5 * cos(2 * M_PI*x));
+    }
+  }
+  vector<double>::const_iterator it_tmp_wav_cons = tmp_wav.data.getData().begin()+((offs+cons)/1000.0*tmp_wav.header.dwSamplesPerSec);
+  vector<double>::const_iterator it_tmp_wav_max = it_tmp_wav_cons;
+  double tmp_max_rms = -1.0, avr_wav = accumulate(it_tmp_wav_cons-win_size,it_tmp_wav_cons+(win_size*3),0)/tmp_wav.data.getData().size();
+  for (size_t i=0; i<win_size*2; i++) {
+    if (*(it_tmp_wav_cons+i)<avr_wav) {
+      continue;
+    }
+    vector<double> tmp_wav(it_tmp_wav_cons+i-win_size, it_tmp_wav_cons+i+win_size);
+    for (size_t j=0; j<tmp_wav.size(); j++) {
+      tmp_wav[j] *= tmp_win[j];
+    }
+    double tmp_rms = getRMS(tmp_wav.begin(), tmp_wav.end());
+    if (tmp_rms>tmp_max_rms) {
+      tmp_max_rms = tmp_rms;
+      it_tmp_wav_max = it_tmp_wav_cons+i;
+    }
+  }
+  vowel_wav_map[pron_alias.getPronVowel()+pron_alias.suffix].assign(it_tmp_wav_max-win_size, it_tmp_wav_max+win_size);
+  tmp_wav.clear();
+}
+
+const vector<double>& VoiceWAV::getVowelWav() const
+{
+  map< wstring, vector<double> >::iterator it = vowel_wav_map.find(pron_alias.getPronVowel());
+  if (it != vowel_wav_map.end()) {
+    setVowelWav();
+  }
+  return vowel_wav_map[pron_alias.getPronVowel()+pron_alias.suffix];
 }
 
 /*

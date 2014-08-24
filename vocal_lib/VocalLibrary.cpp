@@ -48,39 +48,36 @@ bool VocalLibrary::initVoiceMap(const boost::filesystem::path& path_oto_ini)
       wstring str_pron_alias = (v2[0].empty())?path_wav.stem().wstring():v2[0];
       boost::filesystem::path path_uwc = path_wav.parent_path()/boost::algorithm::replace_all_copy((str_pron_alias+L".uwc"), L"*", L"_");
       if (params.uwc_cache && UnitWaveformContainer::isUwcFormatFile(path_uwc)) {
-        tmp_voice = new VoiceUWC(path_uwc);
-        tmp_voice->setPath(path_uwc);
+        tmp_voice = new VoiceUWC(str_pron_alias, path_uwc);
       } else {
-        tmp_voice = new VoiceWAV(path_wav);
-        tmp_voice->setPath(path_wav);
+        tmp_voice = new VoiceWAV(str_pron_alias, path_wav);
       }
-      tmp_voice->setPronAlias(str_pron_alias);
     }
     short tmp;
-    tmp_voice->offs = (((tmp=boost::lexical_cast<double>(v2[1]))>0))?tmp:0;
-    tmp_voice->cons = (((tmp=boost::lexical_cast<double>(v2[2]))>0))?tmp:0;
-    tmp_voice->blnk = boost::lexical_cast<double>(v2[3]);
-    tmp_voice->prec = boost::lexical_cast<double>(v2[4]);
-    tmp_voice->ovrl = boost::lexical_cast<double>(v2[5]);
+    tmp_voice->setOffs((((tmp=boost::lexical_cast<double>(v2[1]))>0))?tmp:0);
+    tmp_voice->setCons((((tmp=boost::lexical_cast<double>(v2[2]))>0))?tmp:0);
+    tmp_voice->setBlnk(boost::lexical_cast<double>(v2[3]));
+    tmp_voice->setPrec(boost::lexical_cast<double>(v2[4]));
+    tmp_voice->setOvrl(boost::lexical_cast<double>(v2[5]));
 
     // sanitize
-    if (tmp_voice->ovrl > tmp_voice->prec) {
-      tmp_voice->prec = tmp_voice->ovrl;
+    if (tmp_voice->getOvrl() > tmp_voice->getPrec()) {
+      tmp_voice->setPrec(tmp_voice->getOvrl());
     }
-    if (tmp_voice->prec > tmp_voice->cons) {
-      tmp_voice->cons = tmp_voice->prec;
+    if (tmp_voice->getPrec() > tmp_voice->getCons()) {
+      tmp_voice->setCons(tmp_voice->getPrec());
     }
-    if (tmp_voice->blnk<0 && tmp_voice->cons>-tmp_voice->blnk) {
-      tmp_voice->blnk = -tmp_voice->cons;
+    if (tmp_voice->getBlnk()<0 && tmp_voice->getCons()>-tmp_voice->getBlnk()) {
+      tmp_voice->setBlnk(-tmp_voice->getCons());
     }
-    if (tmp_voice->offs < 0) {
-      short tmp = -tmp_voice->offs;
-      tmp_voice->offs = 0;
-      tmp_voice->ovrl += tmp;
-      tmp_voice->cons += tmp;
-      tmp_voice->prec += tmp;
-      if (tmp_voice->blnk < 0) {
-        tmp_voice->blnk -= tmp;
+    if (tmp_voice->getOffs() < 0) {
+      short tmp = -tmp_voice->getOffs();
+      tmp_voice->setOffs(0);
+      tmp_voice->setOvrl(tmp_voice->getOvrl()+tmp);
+      tmp_voice->setCons(tmp_voice->getCons()+tmp);
+      tmp_voice->setPrec(tmp_voice->getPrec()+tmp);
+      if (tmp_voice->getBlnk() < 0) {
+        tmp_voice->setBlnk(tmp_voice->getBlnk()-tmp);
       }
     }
     voice_map[tmp_voice->getPronAliasString()] = tmp_voice;

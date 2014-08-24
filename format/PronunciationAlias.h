@@ -18,12 +18,14 @@ class PronunciationAlias {
   std::wstring suffix;
 
   bool checkVCV() const;
+  bool checkVowelPron() const;
   std::wstring getAliasString() const;
   std::wstring getPronVowel() const;
   std::wstring getPrefixVowel() const;
   static bool isVowel(std::wstring vowel);
-  static std::wstring vowel2pron(std::wstring vowel);
+  static bool isVowelPron(std::wstring pron);
   static bool isPron(std::wstring pron);
+  static std::wstring vowel2pron(std::wstring vowel);
   static std::wstring pron2vowel(std::wstring pron);
 
  private:

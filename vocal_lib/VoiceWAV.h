@@ -13,18 +13,23 @@
 
 class VoiceWAV: public Voice, public WavHandler {
  public:
-  explicit VoiceWAV(boost::filesystem::path path_wav) :Voice(path_wav){}
+  VoiceWAV(const std::wstring& str_pron_alias, const boost::filesystem::path& path):Voice(str_pron_alias, path),is_set_offs(false),is_set_cons(false){}
+  VoiceWAV(const PronunciationAlias& pron_alias, const boost::filesystem::path& path):Voice(pron_alias, path),is_set_offs(false),is_set_cons(false){}
   VoiceWAV(const VoiceWAV& other):Voice(other){}
   ~VoiceWAV(){}
 
   const UnitWaveformContainer* getUnitWaveformContainer() const;
+  void setOffs(short offs);
+  void setCons(short cons);
 
-private:
+ private:
   mutable Wav tmp_wav;
+  bool is_set_offs;
+  bool is_set_cons;
   static std::map< std::wstring, std::vector<double> > vowel_wav_map;
 
-  const std::vector<double>& getVowelWav(const std::wstring vowel) const;
-
+  const std::vector<double>& getVowelWav() const;
+  void setVowelWav() const;
   inline double sinc(double x) const { return sin(M_PI*x) / (M_PI*x); }
 
   // inherit from WavHandler

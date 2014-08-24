@@ -73,6 +73,11 @@ bool PronunciationAlias::checkVCV() const
   return (!prefix.empty() && prefix.find(L" ")!=wstring::npos && (prefix[0]!=L'*'&&prefix[0]!=L'-'));
 }
 
+bool PronunciationAlias::checkVowelPron() const
+{
+  return ((prefix.empty() || prefix==L"- " || prefix==L"-") && isVowelPron(pron));
+}
+
 wstring PronunciationAlias::getAliasString() const
 {
   return prefix + pron + suffix;
@@ -80,7 +85,11 @@ wstring PronunciationAlias::getAliasString() const
 
 wstring PronunciationAlias::getPronVowel() const
 {
-  return pron2vowel(pron);
+  wstring tmp_pron = pron;
+  if (tmp_pron.length() > 1) {
+    tmp_pron = pron.substr(pron.length()-2, 1);
+  }
+  return pron2vowel(tmp_pron);
 }
 
 wstring PronunciationAlias::getPrefixVowel() const
@@ -96,17 +105,27 @@ bool PronunciationAlias::isVowel(wstring vowel)
   return data_vowel2pron.find(vowel) != data_vowel2pron.end();
 }
 
+bool PronunciationAlias::isVowelPron(wstring pron)
+{
+  for (map<wstring,wstring>::iterator it=data_vowel2pron.begin(); it!= data_vowel2pron.end(); ++it) {
+    if (it->second == pron) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool PronunciationAlias::isPron(wstring pron)
+{
+  return data_pron2vowel.find(pron) != data_pron2vowel.end();
+}
+
 wstring PronunciationAlias::vowel2pron(wstring vowel)
 {
   if(data_vowel2pron.find(vowel) == data_vowel2pron.end()) {
     return L"";
   }
   return data_vowel2pron[vowel];
-}
-
-bool PronunciationAlias::isPron(wstring pron)
-{
-  return data_pron2vowel.find(pron) != data_pron2vowel.end();
 }
 
 wstring PronunciationAlias::pron2vowel(wstring pron)

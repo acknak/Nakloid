@@ -21,10 +21,10 @@ class Voice {
     short num_default_uwc_lobes;
   } params;
 
-  Voice()
-    :path(L""),pron_alias(),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0){}
-  explicit Voice(boost::filesystem::path path)
-    :path(path),pron_alias(),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0){}
+  Voice(const std::wstring& str_pron_alias, boost::filesystem::path path)
+    :path(path),pron_alias(PronunciationAlias(str_pron_alias)),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0){}
+  Voice(const PronunciationAlias& pron_alias, boost::filesystem::path path)
+    :path(path),pron_alias(pron_alias),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0){}
   Voice(const Voice& other);
   virtual ~Voice();
   
@@ -32,21 +32,13 @@ class Voice {
   bool operator==(const Voice& other) const;
   bool operator!=(const Voice& other) const;
 
-  short offs; // offset(left blank)
-  short cons; // consonant part(unaltered range)
-  short blnk; // blank(right blank)
-  short prec; // preceding utterance
-  short ovrl; // overlap range
-
   // accessor
   virtual const PronunciationAlias& getPronAlias() const;
   virtual std::wstring getPronAliasString() const;
   virtual const std::wstring& getPrefix() const;
   virtual const std::wstring& getPron() const;
   virtual const std::wstring& getSuffix() const;
-  virtual void setPronAlias(const std::wstring& pron_alias);
-  virtual void setPronAlias(const PronunciationAlias& pron_alias);
-  virtual void setPath(const boost::filesystem::path& path);
+  virtual const boost::filesystem::path& getPath() const;
   virtual bool hasFrq() const;
   virtual float getFrq() const;
   virtual void setFrq(double frq);
@@ -54,6 +46,17 @@ class Voice {
   virtual bool hasUnitWaveformContainer() const;
   virtual void setUnitWaveformContainer(const UnitWaveformContainer* uwc);
   virtual bool isVCV() const;
+
+  virtual short getOffs() const;
+  virtual void setOffs(short offs);
+  virtual short getCons() const;
+  virtual void setCons(short cons);
+  virtual short getBlnk() const;
+  virtual void setBlnk(short blnk);
+  virtual short getPrec() const;
+  virtual void setPrec(short prec);
+  virtual short getOvrl() const;
+  virtual void setOvrl(short ovrl);
 
  protected:
   inline void trimVector(std::vector<double>* target_vector, long target_length) const;
@@ -63,6 +66,12 @@ class Voice {
   PronunciationAlias pron_alias;
   mutable float frq;
   mutable UnitWaveformContainer *uwc;
+
+  short offs; // offset(left blank)
+  short cons; // consonant part(unaltered range)
+  short blnk; // blank(right blank)
+  short prec; // preceding utterance
+  short ovrl; // overlap range
 };
 
 inline void Voice::trimVector(std::vector<double>* target_vector, long target_length) const

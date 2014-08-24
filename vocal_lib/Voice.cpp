@@ -103,19 +103,9 @@ const wstring& Voice::getSuffix() const
   return pron_alias.suffix;
 }
 
-void Voice::setPronAlias(const std::wstring& pron_alias)
+const boost::filesystem::path& Voice::getPath() const
 {
-  setPronAlias(PronunciationAlias(pron_alias));
-}
-
-void Voice::setPronAlias(const PronunciationAlias& pron_alias)
-{
-  this->pron_alias = pron_alias;
-}
-
-void Voice::setPath(const boost::filesystem::path &path)
-{
-  this->path = path;
+  return path;
 }
 
 bool Voice::hasFrq() const
@@ -163,4 +153,54 @@ void Voice::setUnitWaveformContainer(const UnitWaveformContainer* uwc)
 bool Voice::isVCV() const
 {
   return pron_alias.checkVCV();
+}
+
+short Voice::getOffs() const
+{
+  return offs;
+}
+
+void Voice::setOffs(short offs)
+{
+  this->offs = offs;
+}
+
+short Voice::getCons() const
+{
+  return cons;
+}
+
+void Voice::setCons(short cons)
+{
+  this->cons = cons;
+}
+
+short Voice::getBlnk() const
+{
+  return blnk;
+}
+
+void Voice::setBlnk(short blnk)
+{
+  this->blnk = blnk;
+}
+
+short Voice::getPrec() const
+{
+  return prec;
+}
+
+void Voice::setPrec(short prec)
+{
+  this->prec = prec;
+}
+
+short Voice::getOvrl() const
+{
+  return ovrl;
+}
+
+void Voice::setOvrl(short ovrl)
+{
+  this->ovrl = ovrl;
 }

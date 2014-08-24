@@ -3,12 +3,14 @@
 
 #include "VocalLibrary.h"
 #include "Voice.h"
+#include "../format/PronunciationAlias.h"
 #include "../format/UnitWaveformContainer.h"
 #include "../parser/WavHandler.h"
 
 class VoiceUWC: public Voice, public WavHandler {
  public:
-  explicit VoiceUWC(boost::filesystem::path path_uwc):Voice(path_uwc){}
+  VoiceUWC(const std::wstring& str_pron_alias, const boost::filesystem::path& path):Voice(str_pron_alias, path){}
+  VoiceUWC(const PronunciationAlias& pron_alias, const boost::filesystem::path& path):Voice(pron_alias, path){}
   VoiceUWC(const VoiceUWC& other):Voice(other){}
   ~VoiceUWC();
 
