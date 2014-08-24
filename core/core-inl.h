@@ -1,5 +1,5 @@
-﻿#ifndef psola_inl_h
-#define psola_inl_h
+﻿#ifndef core_inl_h
+#define core_inl_h
 
 #include "../format/Wav.h"
 
@@ -7,11 +7,13 @@
 #define M_PI 3.1415926535897932384626433832795
 #endif
 
-inline long ms2pos(long ms, WavHeader header) { return (long)(ms / 1000.0*header.dwSamplesPerSec); }
+inline long ms2pos(long ms, WavHeader header) { return (long)(ms / 1000.0 * header.dwSamplesPerSec); }
 inline long pos2ms(long pos, WavHeader header) { return (long)(pos / (double)header.dwSamplesPerSec * 1000); }
 inline double dB2val(const std::pair<bool, double>& dB) { return (dB.second>0) ? 0.0 : pow(10, dB.second / 20)*(dB.first ? 1 : -1); };
 inline double sinc(double x){ return sin(M_PI*x) / (M_PI*x); }
-inline std::pair<bool, double> val2dB(double wav_value) {
+
+inline std::pair<bool, double> val2dB(double wav_value)
+{
   if (wav_value >= 1.0) {
     wav_value = 32768.0 / 32767.0;
   }
@@ -23,6 +25,7 @@ inline std::pair<bool, double> val2dB(double wav_value) {
   }
   return std::make_pair(wav_value>0, log10(abs(wav_value)) * 20);
 }
+
 inline std::vector<double> getWindow(long len, unsigned char lobe)
 {
   std::vector<double> filter(len, 0);
@@ -48,6 +51,7 @@ inline std::vector<double> getWindow(long len, unsigned char lobe)
   }
   return filter;
 }
+
 inline double getRMS(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to)
 {
   double rms = 0.0;
@@ -56,6 +60,7 @@ inline double getRMS(const std::vector<double>::const_iterator from, const std::
   }
   return sqrt(rms);
 }
+
 inline double getRMS(const std::vector<double>& wav){ return getRMS(wav.begin(), wav.end()); }
 
 #endif
