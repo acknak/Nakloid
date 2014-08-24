@@ -9,7 +9,7 @@ required
 
 license
 ----------
-Copyright &copy; 2012-2013, acknak
+Copyright &copy; 2012-2014, acknak
 All rights reserved.
 
 Nakloid is released under the [BSD 3-Clause License](http://opensource.org/licenses/BSD-3-Clause)
