@@ -83,11 +83,9 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     // consonant pitch mark
     long pos_len=pos_cons_end-pos_cons_start, pitch_avg=(pitch_cons_start+pitch_cons_end)/2;
     if (pos_len > pitch_avg) {
-      long pos_div = (pos_len%pitch_avg) / (pos_len/pitch_avg);
-      long pos_rem = (pos_len%pitch_avg) % (pos_len/pitch_avg);
-      long tmp_pos = 0;
-      while ((tmp_pos+=pitch_avg+pos_div) < pos_len) {
-        pitchmarks.push_back(pos_cons_start+(--pos_rem>=0?++tmp_pos:tmp_pos));
+      long num_pitchmark = (long)((pos_len/(double)pitch_avg)+0.5) - 1;
+      for (size_t i=0; i<num_pitchmark; i++) {
+        pitchmarks.push_back(pos_len/(num_pitchmark+1.0)*(i+1)+pos_cons_start);
       }
     }
   }
