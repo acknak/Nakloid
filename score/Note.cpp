@@ -150,7 +150,7 @@ long Note::getPronEnd() const
   long tmp_pron_end = self.end + score->getMargin() - getBackMargin();
   if (getPronStart() > tmp_pron_end) {
     cerr << "[Note::getPronEnd] pron_start > pron_end" << endl;
-    return getPronStart();
+    return getPronStart()+1;
   }
   return tmp_pron_end;
 }
@@ -195,11 +195,14 @@ short Note::getBackMargin() const
   }
 
   const Note* note_next = score->getNextNote(this);
-  if (note_next==0 || !note_next->isVCV() || getEnd() < note_next->getStart()){
+  if (note_next==0 || getEnd() < note_next->getStart()){
     return 0;
   }
 
-  return getEnd()+score->getMargin() - (note_next->getPronStart()+note_next->getFrontPadding());
+  if (isVCV() || note_next->isVCV()) {
+    return getEnd()+score->getMargin() - (note_next->getPronStart()+note_next->getFrontPadding());
+  }
+  return note_next->getPrec() - note_next->getOvrl();
 }
 
 void Note::setMargin(short front, short back)
