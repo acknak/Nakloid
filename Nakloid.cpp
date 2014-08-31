@@ -107,6 +107,9 @@ Nakloid::Nakloid(wstring path_ini)
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"UnitWaveformContainer.uwc_normalize")) {
     UnitWaveformMaker::params.normalize = tmp.get();
   }
+  if (boost::optional<long> tmp = wpt.get_optional<long>(L"Pitchmark.pitch_default")) {
+    Voice::params.pitch_default = tmp.get();
+  }
   if (boost::optional<short> tmp = wpt.get_optional<short>(L"Pitchmark.pitch_margin")) {
     PitchMarker::params.pitch_margin = tmp.get();
   }

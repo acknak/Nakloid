@@ -121,7 +121,7 @@ float Voice::getFrq() const
 
   boost::filesystem::ifstream ifs_frq(path.parent_path()/(path.stem().wstring()+L"_wav.frq"), ios::binary);
   if (ifs_frq.fail()) {
-    return 260.0;
+    return params.pitch_default;
   }
   double tmp_frq = 0.0;
   ifs_frq.seekg(sizeof(char)*12, ios_base::beg);
