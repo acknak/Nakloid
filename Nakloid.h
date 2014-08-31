@@ -55,6 +55,7 @@ class Nakloid {
   std::wstring path_output_score;
   std::wstring path_output_pitches;
   bool print_log;
+  bool print_debug;
 };
 
 #endif

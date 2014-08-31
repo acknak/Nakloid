@@ -4,7 +4,7 @@ using namespace std;
 
 Nakloid::Nakloid(wstring path_ini)
   :vocal_lib(0), score(0), path_input_score(L""), path_lyrics(L""), path_input_pitches(L""), path_singer(L""), path_prefix_map(L""),
-   path_song(L""),path_output_score(L""),path_output_pitches(L""), print_log(L"")
+   path_song(L""),path_output_score(L""),path_output_pitches(L""), print_log(true), print_debug(false)
 {
   boost::property_tree::wptree wpt;
   try {
@@ -97,6 +97,9 @@ Nakloid::Nakloid(wstring path_ini)
   }
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.print_log")) {
     print_log = tmp.get();
+  }
+  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.print_debug")) {
+    print_debug = tmp.get();
   }
   if (boost::optional<long> tmp = wpt.get_optional<long>(L"UnitWaveformContainer.target_rms")) {
     UnitWaveformMaker::params.target_rms = tmp.get();
@@ -244,14 +247,14 @@ bool Nakloid::vocalization()
   long notes_size = score->getNotesEnd() - score->getNotesEnd();
   for (vector<Note>::const_iterator it_notes=score->getNotesBegin(); it_notes!=score->getNotesEnd(); ++it_notes) {
     wcout << L"synthesize \"" << it_notes->getPronAliasString() << L"\" from " << it_notes->getPronStart() << L"ms to " << it_notes->getPronEnd() << L"ms" << endl;
-    /*
-    cout << "ovrl: " << it_notes->getOvrl() << ", prec: " << it_notes->getPrec() << ", cons: " << it_notes->getCons() << endl
-      << "start: " << it_notes->getStart() << ", end: " << it_notes->getEnd() << endl
-      << "front margin: "  << it_notes->getFrontMargin()
-      << ", front padding: " << it_notes->getFrontPadding() << endl
-      << "back padding: " << it_notes->getBackPadding()
-      << ", back margin: " << it_notes->getBackMargin() << endl;
-    */
+    if (print_debug) {
+      cout << "ovrl: " << it_notes->getOvrl() << ", prec: " << it_notes->getPrec() << ", cons: " << it_notes->getCons() << endl
+        << "start: " << it_notes->getStart() << ", end: " << it_notes->getEnd() << endl
+        << "front margin: "  << it_notes->getFrontMargin()
+        << ", front padding: " << it_notes->getFrontPadding() << endl
+        << "back padding: " << it_notes->getBackPadding()
+        << ", back margin: " << it_notes->getBackMargin() << endl << endl;
+    }
     if (vocal_lib->isAlias(it_notes->getPronAliasString())) {
       overlapper->overlapping(vocal_lib->getVoice(it_notes->getPronAliasString())->getUnitWaveformContainer(), make_pair(it_notes->getPronStart(), it_notes->getPronEnd()), it_notes->getFrontMargin(), it_notes->getVelocities());
 
