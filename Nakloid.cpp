@@ -2,6 +2,91 @@
 
 using namespace std;
 
+bool Nakloid::vocalization()
+{
+  cout << "----- load voice DB -----" << endl;
+  if (vocal_lib != 0) {
+    delete vocal_lib;
+    vocal_lib = 0;
+  }
+  vocal_lib = new VocalLibrary(path_singer);
+  if (vocal_lib==0 || !vocal_lib->initVoiceMap()) {
+    cerr << "[Nakloid::vocalization] can't find VocalLibrary" << endl;
+    return false;
+  }
+
+  // load score
+  cout << endl << "----- load score -----" << endl;
+  switch(score_mode){
+  case score_mode_nak:
+    score=new ScoreNAK(path_input_score, vocal_lib, path_song); break;
+  case score_mode_ust:
+    score=new ScoreUST(path_input_score, vocal_lib, path_song); break;
+  case score_mode_smf:
+    score=new ScoreSMF(path_input_score, vocal_lib, path_song, path_lyrics); break;
+  }
+  if (!path_prefix_map.empty()) {
+    score->loadModifierMap(path_prefix_map);
+    cout << "use modifier map..." << endl;
+  }
+  score->load();
+  switch(pitch_mode){
+  case pitches_mode_pit:
+    score->loadPitPitches(path_input_pitches); break;
+  case pitches_mode_lf0:
+    score->loadLf0Pitches(path_input_pitches); break;
+  }
+  if (score->getNotesBegin() == score->getNotesEnd()) {
+    cerr << "[Nakloid::vocalization] can't load notes" << endl;
+    return false;
+  }
+  if (score->getPitches().size() == 0) {
+    cerr << "[Nakloid::vocalization] can't load pitches" << endl;
+    return false;
+  }
+  
+  cout << endl << "----- start vocalization -----" << endl;
+
+  // synthesize singing voice 
+  UnitWaveformOverlapper *overlapper = new UnitWaveformOverlapper(score->getPitchMarks());
+  double counter=0, percent=0;
+  long notes_size = score->getNotesEnd() - score->getNotesEnd();
+  for (vector<Note>::const_iterator it_notes=score->getNotesBegin(); it_notes!=score->getNotesEnd(); ++it_notes) {
+    wcout << L"synthesize \"" << it_notes->getPronAliasString() << L"\" from " << it_notes->getPronStart() << L"ms to " << it_notes->getPronEnd() << L"ms" << endl;
+    if (print_debug) {
+      cout << "ovrl: " << it_notes->getOvrl() << ", prec: " << it_notes->getPrec() << ", cons: " << it_notes->getCons() << endl
+        << "start: " << it_notes->getStart() << ", end: " << it_notes->getEnd() << endl
+        << "front margin: "  << it_notes->getFrontMargin()
+        << ", front padding: " << it_notes->getFrontPadding() << endl
+        << "back padding: " << it_notes->getBackPadding()
+        << ", back margin: " << it_notes->getBackMargin() << endl << endl;
+    }
+    if (vocal_lib->isAlias(it_notes->getPronAliasString())) {
+      overlapper->overlapping(vocal_lib->getVoice(it_notes->getPronAliasString())->getUnitWaveformContainer(), make_pair(it_notes->getPronStart(), it_notes->getPronEnd()), it_notes->getFrontMargin(), it_notes->getVelocities());
+
+      // show progress
+      if (++counter/notes_size>percent+0.1 && (percent=floor(counter/notes_size*10)/10.0)<1.0) {
+        cout << endl << percent*100 << "%..." << endl << endl;
+      }
+    }
+  }
+  cout << endl;
+  overlapper->outputWav(score->getSongPath());
+  delete overlapper;
+
+  cout << "----- vocalization finished -----" << endl << endl;
+
+  if (!path_output_score.empty()) {
+    score->saveScore(path_output_score);
+  }
+
+  if (!path_output_pitches.empty()) {
+    score->savePitches(path_output_pitches);
+  }
+
+  return true;
+}
+
 Nakloid::Nakloid(wstring path_ini)
   :vocal_lib(0), score(0), path_input_score(L""), path_lyrics(L""), path_input_pitches(L""), path_singer(L""), path_prefix_map(L""),
    path_song(L""),path_output_score(L""),path_output_pitches(L""), print_log(true), print_debug(false)
@@ -194,91 +279,6 @@ Nakloid::~Nakloid()
     delete score;
     score = 0;
   }
-}
-
-bool Nakloid::vocalization()
-{
-  cout << "----- load voice DB -----" << endl;
-  if (vocal_lib != 0) {
-    delete vocal_lib;
-    vocal_lib = 0;
-  }
-  vocal_lib = new VocalLibrary(path_singer);
-  if (vocal_lib==0 || !vocal_lib->initVoiceMap()) {
-    cerr << "[Nakloid::vocalization] can't find VocalLibrary" << endl;
-    return false;
-  }
-
-  // load score
-  cout << endl << "----- load score -----" << endl;
-  switch(score_mode){
-  case score_mode_nak:
-    score=new ScoreNAK(path_input_score, vocal_lib, path_song); break;
-  case score_mode_ust:
-    score=new ScoreUST(path_input_score, vocal_lib, path_song); break;
-  case score_mode_smf:
-    score=new ScoreSMF(path_input_score, vocal_lib, path_song, path_lyrics); break;
-  }
-  if (!path_prefix_map.empty()) {
-    score->loadModifierMap(path_prefix_map);
-    cout << "use modifier map..." << endl;
-  }
-  score->load();
-  switch(pitch_mode){
-  case pitches_mode_pit:
-    score->loadPitPitches(path_input_pitches); break;
-  case pitches_mode_lf0:
-    score->loadLf0Pitches(path_input_pitches); break;
-  }
-  if (score->getNotesBegin() == score->getNotesEnd()) {
-    cerr << "[Nakloid::vocalization] can't load notes" << endl;
-    return false;
-  }
-  if (score->getPitches().size() == 0) {
-    cerr << "[Nakloid::vocalization] can't load pitches" << endl;
-    return false;
-  }
-  
-  cout << endl << "----- start vocalization -----" << endl;
-
-  // synthesize singing voice 
-  UnitWaveformOverlapper *overlapper = new UnitWaveformOverlapper(score->getPitchMarks());
-  double counter=0, percent=0;
-  long notes_size = score->getNotesEnd() - score->getNotesEnd();
-  for (vector<Note>::const_iterator it_notes=score->getNotesBegin(); it_notes!=score->getNotesEnd(); ++it_notes) {
-    wcout << L"synthesize \"" << it_notes->getPronAliasString() << L"\" from " << it_notes->getPronStart() << L"ms to " << it_notes->getPronEnd() << L"ms" << endl;
-    if (print_debug) {
-      cout << "ovrl: " << it_notes->getOvrl() << ", prec: " << it_notes->getPrec() << ", cons: " << it_notes->getCons() << endl
-        << "start: " << it_notes->getStart() << ", end: " << it_notes->getEnd() << endl
-        << "front margin: "  << it_notes->getFrontMargin()
-        << ", front padding: " << it_notes->getFrontPadding() << endl
-        << "back padding: " << it_notes->getBackPadding()
-        << ", back margin: " << it_notes->getBackMargin() << endl << endl;
-    }
-    if (vocal_lib->isAlias(it_notes->getPronAliasString())) {
-      overlapper->overlapping(vocal_lib->getVoice(it_notes->getPronAliasString())->getUnitWaveformContainer(), make_pair(it_notes->getPronStart(), it_notes->getPronEnd()), it_notes->getFrontMargin(), it_notes->getVelocities());
-
-      // show progress
-      if (++counter/notes_size>percent+0.1 && (percent=floor(counter/notes_size*10)/10.0)<1.0) {
-        cout << endl << percent*100 << "%..." << endl << endl;
-      }
-    }
-  }
-  cout << endl;
-  overlapper->outputWav(score->getSongPath());
-  delete overlapper;
-
-  cout << "----- vocalization finished -----" << endl << endl;
-
-  if (!path_output_score.empty()) {
-    score->saveScore(path_output_score);
-  }
-
-  if (!path_output_pitches.empty()) {
-    score->savePitches(path_output_pitches);
-  }
-
-  return true;
 }
 
 bool Nakloid::is_logging() {
