@@ -122,6 +122,12 @@ Nakloid::Nakloid(wstring path_ini)
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.overlap_normalize")) {
     UnitWaveformOverlapper::params.overlap_normalize = tmp.get();
   }
+  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.unitwaveform_stretch")) {
+    UnitWaveformOverlapper::params.unitwaveform_stretch = tmp.get();
+  }
+  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Overlap.unitwaveform_stretch_ratio")) {
+    UnitWaveformOverlapper::params.unitwaveform_stretch_ratio = tmp.get();
+  }
   if (boost::optional<short> tmp = wpt.get_optional<short>(L"Note.ms_front_padding")) {
     Note::params.ms_front_padding = tmp.get();
   }
@@ -238,10 +244,10 @@ bool Nakloid::vocalization()
     /*
     cout << "ovrl: " << it_notes->getOvrl() << ", prec: " << it_notes->getPrec() << ", cons: " << it_notes->getCons() << endl
       << "start: " << it_notes->getStart() << ", end: " << it_notes->getEnd() << endl
-      << "front margin: "  << it_notes->getPronStart()+it_notes->getFrontMargin()
-      << ", front padding: " << it_notes->getPronStart()+it_notes->getFrontMargin()+it_notes->getFrontPadding() << endl
-      << "back padding: " << it_notes->getPronEnd()-it_notes->getBackPadding()-it_notes->getBackMargin()
-      << ", back margin: " << it_notes->getPronEnd()-it_notes->getBackMargin() << endl;
+      << "front margin: "  << it_notes->getFrontMargin()
+      << ", front padding: " << it_notes->getFrontPadding() << endl
+      << "back padding: " << it_notes->getBackPadding()
+      << ", back margin: " << it_notes->getBackMargin() << endl;
     */
     if (vocal_lib->isAlias(it_notes->getPronAliasString())) {
       overlapper->overlapping(vocal_lib->getVoice(it_notes->getPronAliasString())->getUnitWaveformContainer(), make_pair(it_notes->getPronStart(), it_notes->getPronEnd()), it_notes->getFrontMargin(), it_notes->getVelocities());

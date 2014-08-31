@@ -25,6 +25,8 @@ class UnitWaveformOverlapper {
       compressor_threshold = -18.0;
       compressor_ratio = 2.5;
       num_lobes = 3;
+      unitwaveform_stretch = false;
+      unitwaveform_stretch_ratio = 10.0;
     };
     double fade_stretch;
     bool interpolation;
@@ -34,6 +36,8 @@ class UnitWaveformOverlapper {
     double compressor_threshold;
     double compressor_ratio;
     short num_lobes;
+    bool unitwaveform_stretch;
+    double unitwaveform_stretch_ratio;
     WavHeader wav_header;
   } params;
 
@@ -56,16 +60,15 @@ class UnitWaveformOverlapper {
     explicit PitchMarkObject(std::vector<long>::const_iterator it):it(it),scale(1.0){};
     virtual ~PitchMarkObject(){};
 
-    class UnitWaveformSetting {
+    class UnitWaveformParams {
      public:
-      UnitWaveformSetting(std::vector<UnitWaveform>::const_iterator it,double scale,double rms):it(it),scale(scale),rms(rms){}
-      virtual ~UnitWaveformSetting(){}
-      std::vector<UnitWaveform>::const_iterator it;
+      UnitWaveformParams(std::vector<UnitWaveform>::const_iterator it, double scale, double rms, long output_pitch, long base_f0);
+      UnitWaveform uw;
       double scale;
       double rms;
     };
-    std::vector<long>::const_iterator it;
-    std::vector<UnitWaveformSetting> uwss;
+    std::vector<long>::const_iterator it; //pitchmarks iterator
+    std::vector<UnitWaveformParams> uwps;
     double scale;
     double getRmsAccumulate();
   };
