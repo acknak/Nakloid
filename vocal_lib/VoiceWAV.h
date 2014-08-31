@@ -29,6 +29,7 @@ class VoiceWAV: public Voice, public WavHandler {
   static std::map< std::wstring, std::vector<double> > vowel_wav_map;
 
   const std::vector<double>& getVowelWav() const;
+  const std::vector<double>& getPrefixVowelWav() const;
   void setVowelWav() const;
   inline double sinc(double x) const { return sin(M_PI*x) / (M_PI*x); }
 

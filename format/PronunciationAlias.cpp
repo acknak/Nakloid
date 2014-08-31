@@ -70,7 +70,7 @@ bool PronunciationAlias::operator!=(const PronunciationAlias& other) const
 
 bool PronunciationAlias::checkVCV() const
 {
-  return (!prefix.empty() && prefix.find(L" ")!=wstring::npos && (prefix[0]!=L'*'&&prefix[0]!=L'-'));
+  return (!prefix.empty() && prefix.find(L" ")!=wstring::npos && prefix[0]!=L'*' && prefix[0]!=L'-');
 }
 
 bool PronunciationAlias::checkVowelPron() const
@@ -94,7 +94,7 @@ wstring PronunciationAlias::getPronVowel() const
 
 wstring PronunciationAlias::getPrefixVowel() const
 {
-  if (prefix.length() > 2) {
+  if (prefix.length() > 1) {
     return prefix.substr(prefix.length()-2, 1);
   }
   return L"";

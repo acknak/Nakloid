@@ -26,9 +26,9 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
     if (!pron_alias.getPronVowel().empty()) {
       short win_size = tmp_wav.header.dwSamplesPerSec / getFrq() * 2;
       vector<double> aft_vowel_wav = getVowelWav();
+      vector<double> fore_vowel_wav;
       trimVector(&aft_vowel_wav, win_size);
-      if (isVCV() && pron_alias.getPrefixVowel().empty()) {
-        vector<double> fore_vowel_wav = getVowelWav();
+      if (isVCV() && (fore_vowel_wav=getPrefixVowelWav()).size()>0) {
         trimVector(&fore_vowel_wav, win_size);
         marker->mark(fore_vowel_wav, aft_vowel_wav);
       } else {
@@ -130,11 +130,21 @@ void VoiceWAV::setVowelWav() const
 
 const vector<double>& VoiceWAV::getVowelWav() const
 {
-  map< wstring, vector<double> >::iterator it = vowel_wav_map.find(pron_alias.getPronVowel());
+  map< wstring, vector<double> >::iterator it = vowel_wav_map.find(pron_alias.getPronVowel()+pron_alias.suffix);
   if (it != vowel_wav_map.end()) {
     setVowelWav();
   }
   return vowel_wav_map[pron_alias.getPronVowel()+pron_alias.suffix];
+}
+
+const vector<double>& VoiceWAV::getPrefixVowelWav() const
+{
+  wstring test = pron_alias.getPrefixVowel();
+  map< wstring, vector<double> >::iterator it = vowel_wav_map.find(pron_alias.getPrefixVowel()+pron_alias.suffix);
+  if (it != vowel_wav_map.end()) {
+    return vowel_wav_map[pron_alias.getPrefixVowel()+pron_alias.suffix];
+  }
+  return vector<double>(0,0);
 }
 
 /*
