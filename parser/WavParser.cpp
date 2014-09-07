@@ -79,7 +79,7 @@ bool WavParser::parse()
   }
   rest_size -= 24;
 
-  while (rest_size>sizeof(char)*4 && !ifs.eof()) {
+  while (rest_size>(long)sizeof(char)*4 && !ifs.eof()) {
     char tag[4] = {0};
     ifs.read((char*)tag, sizeof(char)*4);
     long chunk_size = 0;
