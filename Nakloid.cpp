@@ -52,6 +52,9 @@ bool Nakloid::vocalization()
   double counter=0, percent=0;
   long notes_size = score->getNotesEnd() - score->getNotesEnd();
   for (vector<Note>::const_iterator it_notes=score->getNotesBegin(); it_notes!=score->getNotesEnd(); ++it_notes) {
+    if (print_debug) {
+      cout << endl;
+    }
     wcout << L"synthesize \"" << it_notes->getPronAliasString() << L"\" from " << it_notes->getPronStart() << L"ms to " << it_notes->getPronEnd() << L"ms" << endl;
     if (print_debug) {
       cout << "ovrl: " << it_notes->getOvrl() << ", prec: " << it_notes->getPrec() << ", cons: " << it_notes->getCons() << endl
@@ -59,15 +62,16 @@ bool Nakloid::vocalization()
         << "front margin: "  << it_notes->getFrontMargin()
         << ", front padding: " << it_notes->getFrontPadding() << endl
         << "back padding: " << it_notes->getBackPadding()
-        << ", back margin: " << it_notes->getBackMargin() << endl << endl;
+        << ", back margin: " << it_notes->getBackMargin() << endl;
     }
     if (vocal_lib->isAlias(it_notes->getPronAliasString())) {
       overlapper->overlapping(vocal_lib->getVoice(it_notes->getPronAliasString())->getUnitWaveformContainer(), make_pair(it_notes->getPronStart(), it_notes->getPronEnd()), it_notes->getFrontMargin(), it_notes->getVelocities());
-
-      // show progress
-      if (++counter/notes_size>percent+0.1 && (percent=floor(counter/notes_size*10)/10.0)<1.0) {
-        cout << endl << percent*100 << "%..." << endl << endl;
-      }
+    } else {
+      wcerr << L"[Nakloid::vocalization] unknown alias \"" + it_notes->getPronAliasString() + L"\" found";
+    }
+    // show progress
+    if (++counter/notes_size>percent+0.1 && (percent=floor(counter/notes_size*10)/10.0)<1.0) {
+      cout << endl << percent*100 << "%..." << endl << endl;
     }
   }
   cout << endl;
