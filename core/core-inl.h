@@ -52,6 +52,26 @@ inline std::vector<double> getWindow(long len, unsigned char lobe)
   return filter;
 }
 
+inline std::vector<double> getWindow(long len, unsigned char lobe, long output_pitch)
+{
+  if (lobe > 1) {
+    getWindow(len, lobe);
+  }
+  /*
+   * F(x,n) = sin(%pi*x)^n;
+   * n = -log(2)/log(sin(%pi*x)); (F(x,n)=0.5)
+   */
+  double coeff = -log(2) / log(sin(M_PI*(0.5-(output_pitch/2.0/len))));
+  std::vector<double> filter(len, 0.0);
+  for (size_t i=0; i<len/2+1; i++) {
+    filter[i] = filter[len-i-1] = pow(sin(M_PI*i/len), coeff);
+  }
+  if (len%2==1) {
+    filter[len/2+1] = 1.0;
+  }
+  return filter;
+}
+
 inline double getRMS(const std::vector<double>::const_iterator from, const std::vector<double>::const_iterator to)
 {
   double rms = 0.0;

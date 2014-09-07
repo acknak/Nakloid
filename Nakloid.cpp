@@ -194,7 +194,7 @@ Nakloid::Nakloid(wstring path_ini)
     UnitWaveformMaker::params.target_rms = tmp.get();
   }
   if (boost::optional<short> tmp = wpt.get_optional<short>(L"UnitWaveformContainer.num_lobes")) {
-    UnitWaveformMaker::params.num_lobes = UnitWaveformOverlapper::params.num_lobes = VocalLibrary::params.num_default_uwc_lobes = tmp.get();
+    UnitWaveformMaker::params.num_lobes = UnitWaveformOverlapper::params.num_lobes = VocalLibrary::params.num_default_uwc_lobes = Voice::params.num_default_uwc_lobes = tmp.get();
   }
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"UnitWaveformContainer.uwc_normalize")) {
     UnitWaveformMaker::params.normalize = tmp.get();
@@ -222,6 +222,9 @@ Nakloid::Nakloid(wstring path_ini)
   }
   if (boost::optional<double> tmp = wpt.get_optional<double>(L"Overlap.unitwaveform_stretch_ratio")) {
     UnitWaveformOverlapper::params.unitwaveform_stretch_ratio = tmp.get();
+  }
+  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.window_modification")) {
+    UnitWaveformOverlapper::params.window_modification = tmp.get();
   }
   if (boost::optional<short> tmp = wpt.get_optional<short>(L"Note.ms_front_padding")) {
     Note::params.ms_front_padding = tmp.get();

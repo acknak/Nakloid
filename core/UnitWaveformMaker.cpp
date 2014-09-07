@@ -168,14 +168,13 @@ UnitWaveform UnitWaveformMaker::makeUnitWaveform(short point, short pitch, doubl
   }
   long win_start = pitchmarks[point] - (pitch*params.num_lobes);
   long win_end = pitchmarks[point] + (pitch*params.num_lobes);
-  vector<double> filter = getWindow(pitch*params.num_lobes*2+1, params.num_lobes);
   unit_waveform.dwPitchLeft = unit_waveform.dwPitchRight = pitch * params.num_lobes;
   unit_waveform.dwPosition = pitchmarks[point] - pitchmarks[0];
 
   // set unit waveform data
   vector<double> unit_waveform_data(win_end-win_start+1, 0);
   for (long i=0; i<unit_waveform_data.size(); i++) {
-    unit_waveform_data[i] = (win_start+i<0 || win_start+i>=voice.size())?0:(voice[win_start+i]*filter[i])*scale;
+    unit_waveform_data[i] = (win_start+i<0 || win_start+i>=voice.size())?0:(voice[win_start+i])*scale;
   }
   unit_waveform.data.setData(unit_waveform_data);
 

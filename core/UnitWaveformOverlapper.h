@@ -27,6 +27,7 @@ class UnitWaveformOverlapper {
       num_lobes = 3;
       unitwaveform_stretch = false;
       unitwaveform_stretch_ratio = 10.0;
+      window_modification = true;
     };
     double fade_stretch;
     bool interpolation;
@@ -38,6 +39,7 @@ class UnitWaveformOverlapper {
     short num_lobes;
     bool unitwaveform_stretch;
     double unitwaveform_stretch_ratio;
+    bool window_modification;
     WavHeader wav_header;
   } params;
 
@@ -62,7 +64,7 @@ class UnitWaveformOverlapper {
 
     class UnitWaveformParams {
      public:
-      UnitWaveformParams(std::vector<UnitWaveform>::const_iterator it, double scale, double rms, long output_pitch, long base_f0);
+      UnitWaveformParams(std::vector<UnitWaveform>::const_iterator it, double scale, double rms, long output_pitch, long base_f0, unsigned char lobe);
       UnitWaveform uw;
       double scale;
       double rms;

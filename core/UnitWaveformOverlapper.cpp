@@ -64,7 +64,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
 
     long output_pitch = (it_pitchmarks==it_begin_pitchmarks)?(*(it_pitchmarks+1)-*it_pitchmarks):(*it_pitchmarks-*(it_pitchmarks-1));
     long base_pitch = uwc->header.dwSamplesPerSec / uwc->header.wF0;
-    pmo.uwps.push_back(PitchMarkObject::UnitWaveformParams(it_unit_waveform, 1.0, getRMS(it_unit_waveform->data.getData()), output_pitch, base_pitch));
+    pmo.uwps.push_back(PitchMarkObject::UnitWaveformParams(it_unit_waveform, 1.0, getRMS(it_unit_waveform->data.getData()), output_pitch, base_pitch, uwc->header.wLobeSize));
     if (params.interpolation) {
       // add data for interpolation to pmo
       long dist_fore=dist-it_unit_waveform->dwPosition, dist_aft;
@@ -76,7 +76,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
         it_aft_unit_waveform = it_unit_waveform+1;
         dist_aft = (it_unit_waveform+1)->dwPosition - dist;
       }
-      pmo.uwps.push_back(PitchMarkObject::UnitWaveformParams(it_aft_unit_waveform,((double)dist_fore+dist_aft)/dist_aft,it_aft_unit_waveform->data.getRMS(), output_pitch, base_pitch));
+      pmo.uwps.push_back(PitchMarkObject::UnitWaveformParams(it_aft_unit_waveform,((double)dist_fore+dist_aft)/dist_aft,it_aft_unit_waveform->data.getRMS(), output_pitch, base_pitch, uwc->header.wLobeSize));
     }
     if (params.overlap_normalize) {
       // prepare subset wav
@@ -197,22 +197,33 @@ double UnitWaveformOverlapper::PitchMarkObject::getRmsAccumulate()
   return accumurate_scale;
 }
 
-UnitWaveformOverlapper::PitchMarkObject::UnitWaveformParams::UnitWaveformParams(vector<UnitWaveform>::const_iterator it, double scale, double rms, long output_pitch, long base_pitch)
+UnitWaveformOverlapper::PitchMarkObject::UnitWaveformParams::UnitWaveformParams(vector<UnitWaveform>::const_iterator it, double scale, double rms, long output_pitch, long base_pitch, unsigned char lobe)
   :scale(scale), rms(rms)
 {
-
   double interpolation_scale = (params.unitwaveform_stretch)?pow(output_pitch/(double)base_pitch,1/params.unitwaveform_stretch_ratio):1.0;
   uw.dwPosition = it->dwPosition;
   uw.dwPitchLeft = it->dwPitchLeft * interpolation_scale;
   uw.dwPitchRight = it->dwPitchRight * interpolation_scale;
-  vector<double> output_waveform(uw.dwPitchLeft+1+uw.dwPitchRight);
   vector<double> base_waveform = it->data.getData();
-  output_waveform.front() = base_waveform.back();
-  output_waveform.back() = base_waveform.back();
-  for (size_t j=1; j<output_waveform.size()-1; j++) {
-    double old_point = j / interpolation_scale;
-    long fore_old_point=(long)old_point, aft_old_point=(long)(old_point+1);
-    output_waveform[j] = (base_waveform[fore_old_point]*(aft_old_point-old_point)) + (base_waveform[aft_old_point]*(old_point-fore_old_point));
+
+  {
+    vector<double> window = (params.window_modification)?getWindow(base_waveform.size(), lobe, output_pitch):getWindow(base_waveform.size(), lobe);
+    for (size_t i=0; i<base_waveform.size(); i++) {
+      base_waveform[i] *= window[i];
+    }
   }
-  uw.data = WavData(output_waveform);
+
+  if (params.unitwaveform_stretch) {
+    vector<double> output_waveform(base_waveform.size());
+    output_waveform.front() = base_waveform.back();
+    output_waveform.back() = base_waveform.back();
+    for (size_t j=1; j<output_waveform.size()-1; j++) {
+      double old_point = j / interpolation_scale;
+      long fore_old_point=(long)old_point, aft_old_point=(long)(old_point+1);
+      output_waveform[j] = (base_waveform[fore_old_point]*(aft_old_point-old_point)) + (base_waveform[aft_old_point]*(old_point-fore_old_point));
+    }
+    uw.data = WavData(output_waveform);
+  } else {
+    uw.data = WavData(base_waveform);
+  }
 }
