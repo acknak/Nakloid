@@ -221,11 +221,8 @@ short Note::getFrontPadding() const
   }
 
   if (isVCV()) {
-    long tmp_padding = getOvrl() - getFrontMargin();
-    if (tmp_padding > 0) {
-     return tmp_padding;
-    }
-    return max(params.ms_front_padding, params.ms_back_padding);
+    long tmp_padding = getOvrl()-getFrontMargin(), default_padding = max(params.ms_front_padding, params.ms_back_padding);
+    return max(tmp_padding, default_padding);
   }
   return params.ms_front_padding;
 }
