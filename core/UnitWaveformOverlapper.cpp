@@ -57,7 +57,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
     // choose unit waveform for overlap
     long dist = *it_pitchmarks - *it_begin_pitchmarks + pos_trim + pos_margin;
     if (dist > fade_last) {
-      dist = ((dist-fade_start)/((short)params.fade_stretch)%(fade_last-fade_start)
+      dist = ((long)((dist-fade_start)/params.fade_stretch)%(fade_last-fade_start)
         +(uwc->unit_waveforms.begin()+uwc->header.dwRepeatStart)->dwPosition);
     }
     it_unit_waveform = binary_pos_search(it_unit_waveform, uwc->unit_waveforms.end(), dist);
