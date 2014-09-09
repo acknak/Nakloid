@@ -49,6 +49,9 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
   vector<PitchMarkObject> pmos;
   long fade_start=(uwc->unit_waveforms.begin()+uwc->header.dwRepeatStart-1)->dwPosition, fade_last=uwc->unit_waveforms.back().dwPosition;
   long pos_trim=ms2pos(ms_trim, params.wav_header), pos_margin=ms2pos(ms_note_margin,params.wav_header);
+  double fade_stretch_scale = (params.self_fade)
+    ? params.ms_self_fade/((uwc->unit_waveforms.back().dwPosition-uwc->unit_waveforms[uwc->header.dwRepeatStart].dwPosition)/(double)uwc->header.dwSamplesPerSec)
+    : 1.0;
   vector<long>::const_iterator it_begin_pitchmarks=pos2it(ms2pos(ms_start,params.wav_header)), it_end_pitchmarks=pos2it(ms2pos(ms_end,params.wav_header));
   for (vector<long>::const_iterator it_pitchmarks=it_begin_pitchmarks;it_pitchmarks!=it_end_pitchmarks;++it_pitchmarks) {
     PitchMarkObject pmo(it_pitchmarks);
@@ -57,7 +60,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
     // choose unit waveform for overlap
     long dist = *it_pitchmarks - *it_begin_pitchmarks + pos_trim + pos_margin;
     if (dist > fade_last) {
-      dist = ((long)((dist-fade_start)/params.fade_stretch)%(fade_last-fade_start)
+      dist = ((long)((dist-fade_start)/fade_stretch_scale)%(fade_last-fade_start)
         +(uwc->unit_waveforms.begin()+uwc->header.dwRepeatStart)->dwPosition);
     }
     it_unit_waveform = binary_pos_search(it_unit_waveform, uwc->unit_waveforms.end(), dist);

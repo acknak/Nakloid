@@ -67,7 +67,7 @@ bool Nakloid::vocalization()
     if (vocal_lib->isAlias(it_notes->getPronAliasString())) {
       overlapper->overlapping(vocal_lib->getVoice(it_notes->getPronAliasString())->getUnitWaveformContainer(), make_pair(it_notes->getPronStart(), it_notes->getPronEnd()), it_notes->getFrontMargin(), it_notes->getVelocities());
     } else {
-      wcerr << L"[Nakloid::vocalization] unknown alias \"" + it_notes->getPronAliasString() + L"\" found";
+      wcerr << L"[Nakloid::vocalization] unknown alias \"" + it_notes->getPronAliasString() + L"\" found" << endl;
     }
     // show progress
     if (++counter/notes_size>percent+0.1 && (percent=floor(counter/notes_size*10)/10.0)<1.0) {
@@ -208,8 +208,11 @@ Nakloid::Nakloid(wstring path_ini)
   if (boost::optional<double> tmp = wpt.get_optional<double>(L"Pitchmark.xcorr_threshold")) {
     PitchMarker::params.xcorr_threshold = tmp.get();
   }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Overlap.fade_stretch")) {
-    UnitWaveformOverlapper::params.fade_stretch = tmp.get();
+  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.self_fade")) {
+    UnitWaveformOverlapper::params.self_fade = tmp.get();
+  }
+  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Overlap.ms_self_fade")) {
+    UnitWaveformOverlapper::params.ms_self_fade = tmp.get();
   }
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.interpolation")) {
     UnitWaveformOverlapper::params.interpolation = tmp.get();
