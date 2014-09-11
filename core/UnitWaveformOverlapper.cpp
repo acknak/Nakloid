@@ -109,7 +109,8 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
       for (vector<double>::iterator it = target_wav.begin(); it != target_wav.end(); ++it) {
         *it *= filter[it - target_wav.begin()];
       }
-      it_pmos->scale = theo_rms / getRMS(target_wav.begin(), target_wav.end());
+      double tmp_rms = getRMS(target_wav.begin(), target_wav.end());
+      it_pmos->scale = (tmp_rms>0.0)?(theo_rms/tmp_rms):0.0;
     }
     vector<double>().swap(subset_wav);
   }
