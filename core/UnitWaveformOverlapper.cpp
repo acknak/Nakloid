@@ -38,14 +38,6 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
     return false;
   }
 
-  long subset_wav_margin = 0;
-  vector<double> subset_wav;
-  if (params.overlap_normalize) {
-    // prepare subset
-    subset_wav_margin = uwc->unit_waveforms.front().dwPitchLeft;
-    subset_wav.assign(ms2pos(ms_end-ms_start,params.wav_header)+subset_wav_margin+uwc->unit_waveforms.back().dwPitchRight,0);
-  }
-
   vector<PitchMarkObject> pmos;
   long fade_start=(uwc->unit_waveforms.begin()+uwc->header.dwRepeatStart-1)->dwPosition, fade_last=uwc->unit_waveforms.back().dwPosition;
   long pos_trim=ms2pos(ms_trim, params.wav_header), pos_margin=ms2pos(ms_note_margin,params.wav_header);
@@ -84,34 +76,45 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
         pmo.uwps.push_back(PitchMarkObject::UnitWaveformParams(it_aft_unit_waveform,dist_fore/(double)dist_aft,it_aft_unit_waveform->data.getRMS(), output_pitch, base_pitch, uwc->header.wLobeSize));
       }
     }
+    pmos.push_back(pmo);
+  }
+
+  if (params.overlap_normalize) {
+    long margin = 0;
+    vector<double> subset_wav;
     if (params.overlap_normalize) {
-      // prepare subset wav
-      for (vector<PitchMarkObject::UnitWaveformParams>::iterator it_uwps=pmo.uwps.begin(); it_uwps!=pmo.uwps.end(); ++it_uwps) {
-        long tmp_width=it_uwps->uw.dwPitchLeft+it_uwps->uw.dwPitchRight+1, tmp_pos=*it_pitchmarks-*it_begin_pitchmarks;
-        double tmp_scale = it_uwps->scale / pmo.getRmsAccumulate();
+      // prepare subset
+      margin = uwc->unit_waveforms.front().dwPitchLeft;
+      subset_wav.assign(ms2pos(ms_end-ms_start,params.wav_header)+margin+uwc->unit_waveforms.back().dwPitchRight,0);
+    }
+    // prepare subset wav
+    for (vector<PitchMarkObject>::iterator it_pmos=pmos.begin();it_pmos!=pmos.end();++it_pmos) {
+      long tmp_pos = *it_pmos->it - *it_begin_pitchmarks + margin;
+      for (vector<PitchMarkObject::UnitWaveformParams>::iterator it_uwps=it_pmos->uwps.begin(); it_uwps!=it_pmos->uwps.end(); ++it_uwps) {
+        double tmp_scale = it_uwps->scale / it_pmos->getRmsAccumulate();
         vector<double> tmp_uwd = it_uwps->uw.data.getData();
-        for (long i=0; i< tmp_width; i++) {
+        for (size_t i=0; i< tmp_uwd.size(); i++) {
           if (tmp_pos+i>=0 && tmp_pos+i<subset_wav.size()) {
             subset_wav[tmp_pos+i] += tmp_uwd[i] * tmp_scale;
           }
         }
       }
     }
-    pmos.push_back(pmo);
-  }
-  if (params.overlap_normalize) {
     // analyze subset
     for (vector<PitchMarkObject>::iterator it_pmos=pmos.begin();it_pmos!=pmos.end();++it_pmos) {
       double acc_scale=it_pmos->getRmsAccumulate(), theo_rms=0.0;
-      long tmp_width = it_pmos->uwps.front().uw.dwPitchLeft+it_pmos->uwps.front().uw.dwPitchRight+1;
       for (vector<PitchMarkObject::UnitWaveformParams>::iterator it_uwss=it_pmos->uwps.begin(); it_uwss!=it_pmos->uwps.end(); ++it_uwss) {
         theo_rms += it_uwss->rms * it_uwss->scale / acc_scale;
       }
-      vector<double> target_wav(subset_wav.begin()+(*it_pmos->it-*it_begin_pitchmarks), subset_wav.begin()+(*it_pmos->it-*it_begin_pitchmarks)+tmp_width);
-      double tmp_rms = getRMS(target_wav.begin(), target_wav.end());
-      it_pmos->scale = (tmp_rms>0.0)?(theo_rms/tmp_rms):0.0;
+      long tmp_dist = *it_pmos->it - *it_begin_pitchmarks + margin;
+      if (tmp_dist-it_pmos->uwps.front().uw.dwPitchLeft > 0) {
+        vector<double> target_wav(subset_wav.begin()+tmp_dist-it_pmos->uwps.front().uw.dwPitchLeft, subset_wav.begin()+tmp_dist+it_pmos->uwps.front().uw.dwPitchRight);
+        double tmp_rms = getRMS(target_wav.begin(), target_wav.end());
+        it_pmos->scale = (tmp_rms>0.0)?(theo_rms/tmp_rms):0.0;
+      } else {
+        it_pmos->scale = 1.0;
+      }
     }
-    vector<double>().swap(subset_wav);
   }
 
   // overlap
