@@ -199,9 +199,6 @@ vector<Iterator> PitchMarker::markWithVowel(Iterator it_input_begin, Iterator it
     if (xcorr_std != 0) {
       xcorr_max.push_back(*it_xcorr_max);
     }
-    if ((pre_dist<dist-params.pitch_margin || pre_dist>dist+params.pitch_margin) && pitchmarks.size()>2) {
-      break;
-    }
     pre_dist = dist;
     pitchmarks.push_back(tmp_pitchmark+=dist);
   }
