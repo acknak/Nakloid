@@ -272,7 +272,7 @@ Nakloid::Nakloid(wstring path_ini)
     Score::params.pitch_preparation = tmp.get();
   }
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Arrange.finefluctuation")) {
-    Score::params.finefluctuation_deviation = tmp.get();
+    Score::params.finefluctuation = tmp.get();
   }
   if (boost::optional<double> tmp = wpt.get_optional<double>(L"Arrange.finefluctuation_deviation")) {
     Score::params.finefluctuation_deviation = tmp.get();
