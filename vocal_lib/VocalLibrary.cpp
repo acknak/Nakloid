@@ -53,6 +53,9 @@ bool VocalLibrary::initVoiceMap(const boost::filesystem::path& path_oto_ini)
         tmp_voice = new VoiceWAV(str_pron_alias, path_wav);
       }
     }
+    for (size_t i=0; i<v2.size(); i++) {
+      boost::algorithm::trim(v2[i]);
+    }
     short tmp;
     tmp_voice->setOffs((((tmp=boost::lexical_cast<double>(v2[1]))>0))?tmp:0);
     tmp_voice->setCons((((tmp=boost::lexical_cast<double>(v2[2]))>0))?tmp:0);
