@@ -127,6 +127,7 @@ bool Score::loadLf0Pitches(const boost::filesystem::path& path_pitches)
   } else {
     wcerr << L"[Score::loadFromLf0] can't open pitches data " << path_pitches << endl;
   }
+  return false;
 }
 
 void Score::savePitches(const boost::filesystem::path& path_pitches)

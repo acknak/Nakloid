@@ -47,6 +47,7 @@ class WavData {
   WavData(){}
   WavData(const WavData& other):data(other.data){}
   explicit WavData(const std::vector<double>& data):data(data){}
+  WavData(std::vector<double>::const_iterator from, std::vector<double>::const_iterator to):data(std::vector<double>(from,to)){}
   WavData(const short data[], long chunk_size);
   ~WavData(){}
   WavData& operator=(const WavData& other);

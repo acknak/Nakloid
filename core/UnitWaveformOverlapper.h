@@ -66,15 +66,14 @@ class UnitWaveformOverlapper {
 
     class UnitWaveformParams {
      public:
-      UnitWaveformParams(std::vector<UnitWaveform>::const_iterator it, double scale, double rms, long output_pitch, long base_f0, unsigned char lobe);
+      UnitWaveformParams(std::vector<UnitWaveform>::const_iterator it, double scale, long output_pitch, long base_f0, unsigned char lobe);
       UnitWaveform uw;
       double scale;
-      double rms;
     };
     std::vector<long>::const_iterator it; //pitchmarks iterator
     std::vector<UnitWaveformParams> uwps;
     double scale;
-    double getRmsAccumulate();
+    double getRmsMean();
   };
 
   std::vector<long>::const_iterator pos2it(long pos) const;
