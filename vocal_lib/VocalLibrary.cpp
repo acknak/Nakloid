@@ -94,6 +94,20 @@ bool VocalLibrary::initVoiceMap(const boost::filesystem::path& path_oto_ini)
 const Voice* VocalLibrary::getVoice(const wstring& alias) const
 {
   if (!isAlias(alias)) {
+    PronunciationAlias pron_alias(alias);
+    if (pron_alias.prefix == L"- ") {
+      pron_alias.prefix = L"";
+      if (isAlias(pron_alias.getAliasString())) {
+        wcout << L"[Voice::getVoice] replace pron_alias " << alias << L"with " << pron_alias.getAliasString() << endl;
+        return voice_map.at(pron_alias.getAliasString());
+      }
+    } else if (pron_alias.prefix == L"") {
+      pron_alias.prefix = L"- ";
+      if (isAlias(pron_alias.getAliasString())) {
+        wcout << L"[Voice::getVoice] replace pron_alias " << alias << L"with " << pron_alias.getAliasString() << endl;
+        return voice_map.at(pron_alias.getAliasString());
+      }
+    }
     return 0;
   }
 

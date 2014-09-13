@@ -64,10 +64,11 @@ bool Nakloid::vocalization()
         << "back padding: " << it_notes->getBackPadding()
         << ", back margin: " << it_notes->getBackMargin() << endl;
     }
-    if (vocal_lib->isAlias(it_notes->getPronAliasString())) {
-      overlapper->overlapping(vocal_lib->getVoice(it_notes->getPronAliasString())->getUnitWaveformContainer(), make_pair(it_notes->getPronStart(), it_notes->getPronEnd()), it_notes->getFrontMargin(), it_notes->getVelocities());
-    } else {
+    const Voice *tmp_voice = vocal_lib->getVoice(it_notes->getPronAliasString());
+    if (tmp_voice == 0) {
       wcerr << L"[Nakloid::vocalization] unknown alias \"" + it_notes->getPronAliasString() + L"\" found" << endl;
+    } else {
+      overlapper->overlapping(tmp_voice->getUnitWaveformContainer(), make_pair(it_notes->getPronStart(), it_notes->getPronEnd()), it_notes->getFrontMargin(), it_notes->getVelocities());
     }
     // show progress
     if (++counter/notes_size>percent+0.1 && (percent=floor(counter/notes_size*10)/10.0)<1.0) {
