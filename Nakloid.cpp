@@ -220,12 +220,6 @@ Nakloid::Nakloid(wstring path_ini)
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.overlap_normalize")) {
     UnitWaveformOverlapper::params.overlap_normalize = tmp.get();
   }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.unitwaveform_stretch")) {
-    UnitWaveformOverlapper::params.unitwaveform_stretch = tmp.get();
-  }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Overlap.unitwaveform_stretch_ratio")) {
-    UnitWaveformOverlapper::params.unitwaveform_stretch_ratio = tmp.get();
-  }
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.window_modification")) {
     UnitWaveformOverlapper::params.window_modification = tmp.get();
   }

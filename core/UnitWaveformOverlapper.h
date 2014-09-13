@@ -26,8 +26,6 @@ class UnitWaveformOverlapper {
       compressor_threshold = -18.0;
       compressor_ratio = 2.5;
       num_lobes = 3;
-      unitwaveform_stretch = false;
-      unitwaveform_stretch_ratio = 10.0;
       window_modification = true;
     };
     bool self_fade;
@@ -39,8 +37,6 @@ class UnitWaveformOverlapper {
     double compressor_threshold;
     double compressor_ratio;
     short num_lobes;
-    bool unitwaveform_stretch;
-    double unitwaveform_stretch_ratio;
     bool window_modification;
     WavHeader wav_header;
   } params;

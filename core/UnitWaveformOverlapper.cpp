@@ -206,30 +206,13 @@ double UnitWaveformOverlapper::PitchMarkObject::getRmsMean()
 UnitWaveformOverlapper::PitchMarkObject::UnitWaveformParams::UnitWaveformParams(vector<UnitWaveform>::const_iterator it, double scale, long output_pitch, long base_pitch, unsigned char lobe)
   :scale(scale)
 {
-  double interpolation_scale = (params.unitwaveform_stretch)?pow(output_pitch/(double)base_pitch,1/params.unitwaveform_stretch_ratio):1.0;
   uw.dwPosition = it->dwPosition;
-  uw.dwPitchLeft = it->dwPitchLeft * interpolation_scale;
-  uw.dwPitchRight = it->dwPitchRight * interpolation_scale;
+  uw.dwPitchLeft = it->dwPitchLeft;
+  uw.dwPitchRight = it->dwPitchRight;
   vector<double> base_waveform = it->data.getData();
-
-  {
-    vector<double> filter = (params.window_modification&&base_pitch>output_pitch)?getWindow(base_waveform.size(),lobe,output_pitch):getWindow(base_waveform.size(),lobe);
-    for (size_t i=0; i<base_waveform.size(); i++) {
-      base_waveform[i] *= filter[i];
-    }
+  vector<double> filter = (params.window_modification&&base_pitch>output_pitch)?getWindow(base_waveform.size(),lobe,output_pitch):getWindow(base_waveform.size(),lobe);
+  for (size_t i=0; i<base_waveform.size(); i++) {
+    base_waveform[i] *= filter[i];
   }
-
-  if (params.unitwaveform_stretch) {
-    vector<double> output_waveform(base_waveform.size());
-    output_waveform.front() = base_waveform.back();
-    output_waveform.back() = base_waveform.back();
-    for (size_t j=1; j<output_waveform.size()-1; j++) {
-      double old_point = j / interpolation_scale;
-      long fore_old_point=(long)old_point, aft_old_point=(long)(old_point+1);
-      output_waveform[j] = (base_waveform[fore_old_point]*(aft_old_point-old_point)) + (base_waveform[aft_old_point]*(old_point-fore_old_point));
-    }
-    uw.data = WavData(output_waveform);
-  } else {
-    uw.data = WavData(base_waveform);
-  }
+  uw.data = WavData(base_waveform);
 }
