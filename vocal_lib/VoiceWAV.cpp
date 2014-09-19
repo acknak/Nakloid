@@ -65,24 +65,6 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
   return this->uwc;
 }
 
-void VoiceWAV::setOffs(short offs)
-{
-  this->offs = offs;
-  is_set_offs = true;
-  if (is_set_cons && pron_alias.checkVowelPron()) {
-    setVowelWav();
-  }
-}
-
-void VoiceWAV::setCons(short cons)
-{
-  this->cons = cons;
-  is_set_cons = true;
-  if (is_set_offs && pron_alias.checkVowelPron()) {
-    setVowelWav();
-  }
-}
-
 void VoiceWAV::setVowelWav() const
 {
   tmp_wav.clear();
@@ -131,15 +113,12 @@ void VoiceWAV::setVowelWav() const
 const vector<double>& VoiceWAV::getVowelWav() const
 {
   map< wstring, vector<double> >::iterator it = vowel_wav_map.find(pron_alias.getPronVowel()+pron_alias.suffix);
-  if (it != vowel_wav_map.end()) {
-    setVowelWav();
-  }
+  setVowelWav();
   return vowel_wav_map[pron_alias.getPronVowel()+pron_alias.suffix];
 }
 
 const vector<double>& VoiceWAV::getPrefixVowelWav() const
 {
-  wstring test = pron_alias.getPrefixVowel();
   map< wstring, vector<double> >::iterator it = vowel_wav_map.find(pron_alias.getPrefixVowel()+pron_alias.suffix);
   if (it != vowel_wav_map.end()) {
     return vowel_wav_map[pron_alias.getPrefixVowel()+pron_alias.suffix];

@@ -45,12 +45,12 @@ bool VocalLibrary::initVoiceMap(const boost::filesystem::path& path_oto_ini)
     Voice *tmp_voice;
     {
       boost::filesystem::path path_wav = path_ini.parent_path()/v1[0];
-      wstring str_pron_alias = (v2[0].empty())?path_wav.stem().wstring():v2[0];
-      boost::filesystem::path path_uwc = path_wav.parent_path()/boost::algorithm::replace_all_copy((str_pron_alias+L".uwc"), L"*", L"_");
+      PronunciationAlias pron_alias((v2[0].empty())?path_wav.stem().wstring():v2[0]);
+      boost::filesystem::path path_uwc = path_wav.parent_path()/boost::algorithm::replace_all_copy((pron_alias.getAliasString()+L".uwc"), L"*", L"_");
       if (params.uwc_cache && UnitWaveformContainer::isUwcFormatFile(path_uwc)) {
-        tmp_voice = new VoiceUWC(str_pron_alias, path_uwc);
+        tmp_voice = new VoiceUWC(pron_alias, path_uwc);
       } else {
-        tmp_voice = new VoiceWAV(str_pron_alias, path_wav);
+        tmp_voice = new VoiceWAV(pron_alias, path_wav);
       }
     }
     for (size_t i=0; i<v2.size(); i++) {
