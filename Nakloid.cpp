@@ -114,6 +114,7 @@ bool Nakloid::vocalization()
   return true;
 }
 
+<<<<<<< HEAD
 bool Nakloid::makeAllCache(bool save_pmp, bool save_uwc)
 {
   if (!(save_pmp|save_uwc)) {

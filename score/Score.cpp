@@ -18,13 +18,13 @@ struct Score::Parameters Score::params;
 const vector<wstring> Score::key2notenum = boost::assign::list_of(L"C")(L"C#")(L"D")(L"D#")(L"E")(L"F")(L"F#")(L"G")(L"G#")(L"A")(L"A#")(L"B");
 
 Score::Score(const boost::filesystem::path& path_score, const VocalLibrary *vocal_lib)
-  :path_score(path_score), vocal_lib(vocal_lib), path_song(L""), key2modifier()
+  :path_song(L""), vocal_lib(vocal_lib), path_score(path_score), key2modifier()
 {
   key2modifier[-1] = make_pair(L"",L"");
 }
 
 Score::Score(const boost::filesystem::path& path_score, const VocalLibrary *vocal_lib, const boost::filesystem::path& path_song)
-  :path_score(path_score), vocal_lib(vocal_lib), path_song(path_song)
+  :path_song(path_song), vocal_lib(vocal_lib), path_score(path_score)
 {
   key2modifier[-1] = make_pair(L"",L"");
 }

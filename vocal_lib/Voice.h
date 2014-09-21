@@ -63,14 +63,14 @@ class Voice {
 
   boost::filesystem::path path;
   PronunciationAlias pron_alias;
-  mutable float frq;
-  mutable UnitWaveformContainer *uwc;
 
   short offs; // offset(left blank)
   short cons; // consonant part(unaltered range)
   short blnk; // blank(right blank)
   short prec; // preceding utterance
   short ovrl; // overlap range
+  mutable float frq;
+  mutable UnitWaveformContainer *uwc;
 };
 
 inline void Voice::trimVector(std::vector<double>* target_vector, long target_length) const
