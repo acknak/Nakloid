@@ -1,6 +1,7 @@
 ﻿#ifndef Wav_h
 #define Wav_h
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -26,12 +27,12 @@ class WavHeader {
   bool operator!=(const WavHeader& other) const;
 
   static const long const_chunk_size = 16;
-  short wFormatTag;
-  unsigned short wChannels;
-  unsigned long dwSamplesPerSec;
-  unsigned long dwAvgBytesPerSec;
-  unsigned short wBlockAlign;
-  unsigned short wBitsPerSamples;
+  uint16_t wFormatTag;
+  uint16_t wChannels;
+  uint32_t dwSamplesPerSec;
+  uint32_t dwAvgBytesPerSec;
+  uint16_t wBlockAlign;
+  uint16_t wBitsPerSamples;
 
   // tag
   static const char tag_riff[];
@@ -48,7 +49,7 @@ class WavData {
   WavData(const WavData& other):data(other.data){}
   explicit WavData(const std::vector<double>& data):data(data){}
   WavData(std::vector<double>::const_iterator from, std::vector<double>::const_iterator to):data(std::vector<double>(from,to)){}
-  WavData(const short data[], long chunk_size);
+  WavData(const int16_t data[], long chunk_size);
   ~WavData(){}
   WavData& operator=(const WavData& other);
   bool operator==(const WavData& other) const;
@@ -57,10 +58,10 @@ class WavData {
   void clear();
 
   // accessor
-  std::vector<short> getDataForWavFile() const;
+  std::vector<int16_t> getDataForWavFile() const;
   const std::vector<double>& getData() const;
   void setData(const std::vector<double>& data);
-  void setData(const short* const data, long chunk_size);
+  void setData(const int16_t* const data, uint32_t chunk_size);
   long getSize() const;
   long getSizeForWavFile() const;
   double getRMS() const;

@@ -1,4 +1,5 @@
-﻿#include "Wav.h"
+﻿#include <cstdint>
+#include "Wav.h"
 
 using namespace std;
 
@@ -93,7 +94,7 @@ void WavData::clear()
 
 vector<short> WavData::getDataForWavFile() const
 {
-  vector<short> tmp(data.size(), 0);
+  vector<int16_t> tmp(data.size(), 0);
   for (size_t i=0; i<data.size(); i++) {
     tmp[i] = data[i] * 32767;
   }
@@ -105,13 +106,13 @@ const vector<double>& WavData::getData() const
   return data;
 }
 
-void WavData::setData(const short* const data, long chunk_size)
+void WavData::setData(const int16_t* const data, uint32_t chunk_size)
 {
   if (data==0 || chunk_size==0) {
     cerr << "[WavData::setData] can't assign null data";
     return;
   }
-  this->data.assign(chunk_size/sizeof(short), 0);
+  this->data.assign(chunk_size/sizeof(int16_t), 0);
   for (size_t i=0; i<this->data.size(); i++) {
     this->data[i] = data[i]/32768.0;
   }
@@ -129,7 +130,7 @@ long WavData::getSize() const
 
 long WavData::getSizeForWavFile() const
 {
-  return data.size()*sizeof(short);
+  return data.size()*sizeof(int16_t);
 }
 
 double WavData::getRMS() const
@@ -192,25 +193,25 @@ bool Wav::operator!=(const Wav& other) const
 
 void Wav::save(const boost::filesystem::path& path)
 {
-  const vector<short>& output_data = data.getDataForWavFile();
-  long data_chunk_size = output_data.size() * sizeof(short);
+  const vector<int16_t>& output_data = data.getDataForWavFile();
+  long data_chunk_size = output_data.size() * sizeof(int16_t);
   long wav_size = data_chunk_size + WavHeader::const_chunk_size + 12;
 
   boost::filesystem::ofstream ofs(path, ios_base::binary);
   ofs.write((char*)WavHeader::tag_riff, sizeof(char)*4);
-  ofs.write((char*)&wav_size, sizeof(long));
+  ofs.write((char*)&wav_size, sizeof(uint32_t));
   ofs.write((char*)WavHeader::tag_wave, sizeof(char)*4);
   ofs.write((char*)WavHeader::tag_fmt_, sizeof(char)*4);
   uint32_t const_chunk_size = WavHeader::const_chunk_size;
-  ofs.write((char*)&(const_chunk_size), sizeof(long));
-  ofs.write((char*)&(header.wFormatTag), sizeof(short));
-  ofs.write((char*)&(header.wChannels), sizeof(short));
-  ofs.write((char*)&(header.dwSamplesPerSec), sizeof(long));
-  ofs.write((char*)&(header.dwAvgBytesPerSec), sizeof(long));
-  ofs.write((char*)&(header.wBlockAlign), sizeof(short));
-  ofs.write((char*)&(header.wBitsPerSamples), sizeof(short));
+  ofs.write((char*)&(const_chunk_size), sizeof(uint32_t));
+  ofs.write((char*)&(header.wFormatTag), sizeof(uint16_t));
+  ofs.write((char*)&(header.wChannels), sizeof(uint16_t));
+  ofs.write((char*)&(header.dwSamplesPerSec), sizeof(uint32_t));
+  ofs.write((char*)&(header.dwAvgBytesPerSec), sizeof(uint32_t));
+  ofs.write((char*)&(header.wBlockAlign), sizeof(uint16_t));
+  ofs.write((char*)&(header.wBitsPerSamples), sizeof(uint16_t));
   ofs.write((char*)WavData::tag_data, sizeof(char)*4);
-  ofs.write((char*)&data_chunk_size, sizeof(long));
+  ofs.write((char*)&data_chunk_size, sizeof(uint32_t));
   ofs.write((char*)&output_data[0], data_chunk_size);
 }
 
