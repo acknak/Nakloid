@@ -1,9 +1,11 @@
 ﻿#ifndef Score_h
 #define Score_h
 
-#include <algorithm>
+#include "Note.h"
+
+#include "../format/Wav.h"
+
 #include <map>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,6 +22,8 @@
 #include "../format/Wav.h"
 #include "../vocal_lib/Voice.h"
 #include "../vocal_lib/VocalLibrary.h"
+
+class VocalLibrary;
 class Note;
 
 class Score {

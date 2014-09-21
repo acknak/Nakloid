@@ -2,11 +2,8 @@
 #define Wav_h
 
 #include <cstdint>
-#include <iostream>
 #include <vector>
-#include <string>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem/path.hpp>
 
 class WavHeader {
  public:

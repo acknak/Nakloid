@@ -1,5 +1,12 @@
 ﻿#include "VoiceWAV.h"
 
+#include "../core/PitchMarker.h"
+#include "../core/UnitWaveformMaker.h"
+#include "../format/UnitWaveformContainer.h"
+#include "../parser/WavParser.h"
+
+#include <boost/algorithm/string.hpp>
+
 using namespace std;
 
 struct VoiceWAV::Parameters VoiceWAV::params;

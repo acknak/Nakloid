@@ -1,5 +1,9 @@
 ﻿#include "Note.h"
 
+#include "Score.h"
+
+#include <boost/utility.hpp>
+
 using namespace std;
 
 struct Note::Parameters Note::params;

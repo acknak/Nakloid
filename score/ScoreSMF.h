@@ -1,14 +1,15 @@
 ﻿#ifndef ScoreSMF_h
 #define ScoreSMF_h
 
+#include "Score.h"
+
+#include "../parser/SmfHandler.h"
+
 #include <string>
 #include <vector>
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include "Note.h"
-#include "Score.h"
-#include "../parser/SmfHandler.h"
-#include "../parser/SmfParser.h"
+#include <boost/filesystem/path.hpp>
+
+class Note;
 
 class ScoreSMF : public Score, public SmfHandler {
  public:

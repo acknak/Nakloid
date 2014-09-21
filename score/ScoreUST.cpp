@@ -1,5 +1,9 @@
 ﻿#include "ScoreUST.h"
 
+#include <boost/algorithm/string.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/lexical_cast.hpp>
+
 using namespace std;
 
 ScoreUST::ScoreUST(const boost::filesystem::path& path_score, const VocalLibrary *vocal_lib, const boost::filesystem::path& path_song)

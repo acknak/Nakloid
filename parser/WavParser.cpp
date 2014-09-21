@@ -1,5 +1,9 @@
-﻿#include <cstdint>
-#include "WavParser.h"
+﻿#include "WavParser.h"
+
+#include "WavHandler.h"
+
+#include <cstdint>
+#include <boost/filesystem/fstream.hpp>
 
 using namespace std;
 

@@ -12,6 +12,12 @@
 #include "Score.h"
 #include "../parser/SmfParser.h"
 #include "../parser/SmfHandler.h"
+#include "Score.h"
+
+#include <boost/filesystem/path.hpp>
+
+class Note;
+class VocalLibrary;
 
 class ScoreNAK : public Score {
  public:

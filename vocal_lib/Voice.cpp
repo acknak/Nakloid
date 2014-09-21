@@ -1,5 +1,9 @@
 ﻿#include "Voice.h"
 
+#include "../format/UnitWaveformContainer.h"
+
+#include <boost/filesystem/fstream.hpp>
+
 using namespace std;
 
 struct Voice::Parameters Voice::params;

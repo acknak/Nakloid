@@ -1,12 +1,6 @@
 ﻿#ifndef PitchMarker_h
 #define PitchMarker_h
 
-#include <algorithm>
-#include <cmath>
-#include <iomanip>
-#include <iostream>
-#include <list>
-#include <numeric>
 #include <vector>
 #include "fftw3compat.h"
 #include "core-inl.h"

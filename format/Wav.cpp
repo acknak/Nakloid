@@ -1,5 +1,8 @@
-﻿#include <cstdint>
-#include "Wav.h"
+﻿#include "Wav.h"
+
+#include <cstdint>
+#include <vector>
+#include <boost/filesystem/fstream.hpp>
 
 using namespace std;
 

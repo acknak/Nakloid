@@ -1,5 +1,7 @@
 ﻿#include "UnitWaveformContainer.h"
 
+#include <boost/filesystem/fstream.hpp>
+
 using namespace std;
 
 bool UnitWaveformHeader::operator==(const UnitWaveformHeader& other) const

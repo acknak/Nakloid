@@ -1,5 +1,9 @@
 ﻿#include "UnitWaveformMaker.h"
 
+#include "../format/UnitWaveformContainer.h"
+
+#include <vector>
+
 using namespace std;
 
 struct UnitWaveformMaker::Parameters UnitWaveformMaker::params;

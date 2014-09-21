@@ -1,6 +1,12 @@
 ﻿#include "PitchMarker.h"
 
 #pragma comment(lib, "fftss.lib")
+#include "core-inl.h"
+
+#include <cmath>
+#include <algorithm>
+#include <iostream>
+#include <fftw3.h>
 
 using namespace std;
 

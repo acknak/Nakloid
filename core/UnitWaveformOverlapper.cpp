@@ -1,4 +1,8 @@
 ﻿#include "UnitWaveformOverlapper.h"
+#include "core-inl.h"
+
+#include <vector>
+#include <utility>
 
 using namespace std;
 

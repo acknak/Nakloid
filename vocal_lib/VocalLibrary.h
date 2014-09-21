@@ -1,18 +1,11 @@
 ﻿#ifndef VocalLibrary_h
 #define VocalLibrary_h
 
-#include <cctype>
 #include <string>
-#include <tuple>
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
-#include "Voice.h"
-#include "VoiceUWC.h"
-#include "VoiceWAV.h"
-#include "../format/PronunciationAlias.h"
-#include "../format/UnitWaveformContainer.h"
+#include <map>
+#include <boost/filesystem/path.hpp>
+
+class Voice;
 
 class VocalLibrary {
  public:

@@ -1,5 +1,15 @@
 ﻿#include "Score.h"
 
+#include "../vocal_lib/Voice.h"
+#include "../vocal_lib/VocalLibrary.h"
+
+#include <boost/algorithm/string.hpp>
+#include <boost/assign.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/random.hpp>
+
 using namespace std;
 using namespace rapidjson;
 

@@ -1,14 +1,13 @@
 ﻿#ifndef Voice_h
 #define Voice_h
 
-#include <string>
-#include <map>
-#include <vector>
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
 #include "../format/PronunciationAlias.h"
-#include "../format/UnitWaveformContainer.h"
+
+#include <string>
+#include <vector>
+#include <boost/filesystem/path.hpp>
+
+class UnitWaveformContainer;
 
 class Voice {
  public:

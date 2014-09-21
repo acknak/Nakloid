@@ -1,16 +1,12 @@
 ﻿#ifndef Note_h
 #define Note_h
 
-#include <algorithm>
-#include <cmath>
-#include <iostream>
+#include "../format/PronunciationAlias.h"
+
 #include <string>
-#include <map>
 #include <utility>
 #include <vector>
-#include <boost/utility.hpp>
-#include "Score.h"
-#include "../format/PronunciationAlias.h"
+
 class Score;
 
 struct NoteFrame {

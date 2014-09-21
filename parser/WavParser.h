@@ -1,16 +1,10 @@
 ﻿#ifndef WavParser_h
 #define WavParser_h
 
-#include <fstream>
-#include <iostream>
-#include <iomanip>
-#include <set>
-#include <string>
 #include <vector>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include "WavHandler.h"
-#include "../format/Wav.h"
+#include <boost/filesystem/path.hpp>
+
+class WavHandler;
 
 class WavParser {
  public:
