@@ -192,7 +192,7 @@ bool Wav::operator!=(const Wav& other) const
 
 void Wav::save(const boost::filesystem::path& path)
 {
-  vector<short>& output_data = data.getDataForWavFile();
+  const vector<short>& output_data = data.getDataForWavFile();
   long data_chunk_size = output_data.size() * sizeof(short);
   long wav_size = data_chunk_size + WavHeader::const_chunk_size + 12;
 
@@ -201,7 +201,8 @@ void Wav::save(const boost::filesystem::path& path)
   ofs.write((char*)&wav_size, sizeof(long));
   ofs.write((char*)WavHeader::tag_wave, sizeof(char)*4);
   ofs.write((char*)WavHeader::tag_fmt_, sizeof(char)*4);
-  ofs.write((char*)&(WavHeader::const_chunk_size), sizeof(long));
+  uint32_t const_chunk_size = WavHeader::const_chunk_size;
+  ofs.write((char*)&(const_chunk_size), sizeof(long));
   ofs.write((char*)&(header.wFormatTag), sizeof(short));
   ofs.write((char*)&(header.wChannels), sizeof(short));
   ofs.write((char*)&(header.dwSamplesPerSec), sizeof(long));

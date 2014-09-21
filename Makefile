@@ -1,22 +1,22 @@
-CC            = gcc
-CFLAGS        = -O4 -Wall -I/usr/local/include
+CXX           = g++
+CXXFLAGS      = -std=c++11 -O4 -Wall -I/usr/local/include
 DEST          = /usr/local/bin
 LDFLAGS       = -L/usr/local/lib
-LIBS          = -lstdc++ -lboost_filesystem -lm
-OBJS          = $(patsubst %.c,%.o,$(wildcard *.cpp))
-OBJS         := $(OBJS) $(patsubst %.c,%.o,$(wildcard core/*.cpp))
-OBJS         := $(OBJS) $(patsubst %.c,%.o,$(wildcard format/*.cpp))
-OBJS         := $(OBJS) $(patsubst %.c,%.o,$(wildcard parser/*.cpp))
-OBJS         := $(OBJS) $(patsubst %.c,%.o,$(wildcard score/*.cpp))
-OBJS         := $(OBJS) $(patsubst %.c,%.o,$(wildcard vocal_lib/*.cpp))
+LIBS          = -lfftw3 -lboost_filesystem -lboost_system -lm
+OBJS         := $(patsubst %.cpp,%.o,$(wildcard *.cpp))
+OBJS         := $(OBJS) $(patsubst %.cpp,%.o,$(wildcard core/*.cpp))
+OBJS         := $(OBJS) $(patsubst %.cpp,%.o,$(wildcard format/*.cpp))
+OBJS         := $(OBJS) $(patsubst %.cpp,%.o,$(wildcard parser/*.cpp))
+OBJS         := $(OBJS) $(patsubst %.cpp,%.o,$(wildcard score/*.cpp))
+OBJS         := $(OBJS) $(patsubst %.cpp,%.o,$(wildcard vocal_lib/*.cpp))
 PROGRAM       = Nakloid
 
 all:            $(PROGRAM)
 
 $(PROGRAM):     $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) $(LIBS) -o $(PROGRAM)
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(LIBS) -o $(PROGRAM)
 
-clean:;         rm -f *.o *~ $(PROGRAM)
+clean:;         rm -f *.o */*.o *~ $(PROGRAM)
 
 install:        $(PROGRAM)
 	install -s $(PROGRAM) $(DEST)
