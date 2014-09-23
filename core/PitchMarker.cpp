@@ -1,6 +1,6 @@
 ﻿#include "PitchMarker.h"
 
-#pragma comment(lib, "libfftw3-3.lib")
+#pragma comment(lib, "fftss.lib")
 
 using namespace std;
 
@@ -304,9 +304,9 @@ template <class Iterator>
 void PitchMarker::xcorr(Iterator it_input_begin, vector<double>::iterator it_output,
                         const Iterator it_base_begin, const Iterator it_base_end) const
 {
-  short win_size = it_base_end - it_base_begin;
-  int fftlen = win_size * 2;
+  short win_size = it_base_end-it_base_begin, fftlen = 1;
   vector<double> filter = getWindow(win_size, 1);
+  for (;fftlen<win_size*2; fftlen<<=1);
 
   fftw_complex *in1 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
   fftw_complex *in2 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
@@ -319,8 +319,6 @@ void PitchMarker::xcorr(Iterator it_input_begin, vector<double>::iterator it_out
     in1[i][0] = in1[i][1] = in2[i][0] = in2[i][1] = 0;
   }
   for (size_t i=0; i<win_size; i++) {
-    in1[i][0] = *(it_base_begin+i);
-    in2[i+win_size][0] = *(it_input_begin-(win_size/2)+i);
     in1[i][0] = *(it_base_begin+i) * filter[i];
     in2[i+win_size][0] = *(it_input_begin-(win_size/2)+i) * filter[i];
   }
@@ -342,7 +340,7 @@ void PitchMarker::xcorr(Iterator it_input_begin, vector<double>::iterator it_out
   fftw_execute(p3);
   fftw_destroy_plan(p3);
 
-  for (size_t i=0; i<fftlen; i++) {
+  for (size_t i=0; i<win_size*2; i++) {
     *(it_output+i) = out3[i][0];
   }
 
