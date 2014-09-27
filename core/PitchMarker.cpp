@@ -287,14 +287,10 @@ const long PitchMarker::getFadeStartSub() const
   return sub_fade_start;
 }
 
-const long PitchMarker::getFadeEndSub() const
+vector<long> PitchMarker::getPitchMarks() const
 {
-  return sub_fade_end;
-}
-
-const vector<long>& PitchMarker::getPitchMarks() const
-{
-  return pitchmarks;
+  vector<long> tmp_pitchmarks(pitchmarks.begin(), pitchmarks.begin()+sub_fade_end+1);
+  return tmp_pitchmarks;
 }
 
 /*

@@ -6,6 +6,7 @@
 #include "Voice.h"
 #include "../core/PitchMarker.h"
 #include "../core/UnitWaveformMaker.h"
+#include "../format/PitchmarkParameters.h"
 #include "../format/PronunciationAlias.h"
 #include "../format/UnitWaveformContainer.h"
 #include "../parser/WavHandler.h"
@@ -13,6 +14,16 @@
 
 class VoiceWAV: public Voice, public WavHandler {
  public:
+  static struct Parameters {
+    Parameters() {
+      use_pmp_cache = true;
+      make_uwc_cache = true;
+      make_pmp_cache = true;
+    }
+    bool use_pmp_cache;
+    bool make_uwc_cache;
+    bool make_pmp_cache;
+  } params;
   VoiceWAV(const std::wstring& str_pron_alias, const boost::filesystem::path& path):Voice(str_pron_alias, path){}
   VoiceWAV(const PronunciationAlias& pron_alias, const boost::filesystem::path& path):Voice(pron_alias, path){}
   VoiceWAV(const VoiceWAV& other):Voice(other){}

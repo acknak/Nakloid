@@ -182,8 +182,17 @@ Nakloid::Nakloid(wstring path_ini)
   if (boost::optional<double> tmp = wpt.get_optional<double>(L"Output.compressor_ratio")) {
     UnitWaveformOverlapper::params.compressor_ratio = tmp.get();
   }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.uwc_cache")) {
-    Voice::params.uwc_cache = VocalLibrary::params.uwc_cache = tmp.get();
+  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.use_uwc_cache")) {
+    VocalLibrary::params.use_uwc_cache = tmp.get();
+  }
+  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.use_pmp_cache")) {
+    VoiceWAV::params.use_pmp_cache = tmp.get();
+  }
+  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.make_uwc_cache")) {
+    VoiceWAV::params.make_uwc_cache = tmp.get();
+  }
+  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.make_pmp_cache")) {
+    VoiceWAV::params.make_pmp_cache = tmp.get();
   }
   if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.print_log")) {
     print_log = tmp.get();

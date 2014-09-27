@@ -17,6 +17,7 @@
 #include "score/ScoreSMF.h"
 #include "score/ScoreUST.h"
 #include "vocal_lib/Voice.h"
+#include "vocal_lib/VoiceWAV.h"
 #include "vocal_lib/VocalLibrary.h"
 
 class Nakloid {

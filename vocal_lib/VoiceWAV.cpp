@@ -2,6 +2,7 @@
 
 using namespace std;
 
+struct VoiceWAV::Parameters VoiceWAV::params;
 map< wstring, vector<double> > VoiceWAV::vowel_wav_map;
 
 const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
@@ -19,9 +20,14 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
   wav_parser.parse();
 
   // make input pitch mark
-  vector<long> input_pitchmarks;
-  long sub_fade_start=0, sub_fade_end=0;
-  {
+  PitchmarkParameters pmp;
+  boost::filesystem::path path_pmp = path.parent_path()/boost::algorithm::replace_all_copy((pron_alias.getAliasString()+L".pmp"), L"*", L"_");
+  boost::system::error_code err_pmp;
+  const bool result_pmp = boost::filesystem::exists(path_pmp, err_pmp);
+  if (params.use_pmp_cache && result_pmp && !err_pmp) {
+    pmp.load(path_pmp);
+  } else {
+    long sub_fade_start=0, sub_fade_end=0;
     PitchMarker *marker = new PitchMarker(tmp_wav.data.getData(), offs, ovrl, prec, blnk, tmp_wav.header.dwSamplesPerSec);
     if (!pron_alias.getPronVowel().empty()) {
       short win_size = tmp_wav.header.dwSamplesPerSec / getFrq() * 2;
@@ -37,17 +43,22 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
     } else {
       marker->mark(getFrq(), tmp_wav.header.dwSamplesPerSec);
     }
-    input_pitchmarks = marker->getPitchMarks();
-    sub_fade_start = marker->getFadeStartSub();
-    sub_fade_end = marker->getFadeEndSub();
+    pmp.pitchmark_points = marker->getPitchMarks();
+    pmp.sub_fade_start = marker->getFadeStartSub();
     delete marker;
+
+    pmp.filename = path.filename().wstring();
+    pmp.base_pitch = tmp_wav.header.dwSamplesPerSec/getFrq();
+    if (params.make_pmp_cache) {
+      pmp.save(path_pmp);
+    }
   }
 
   // make unit waveforms
   {
-    UnitWaveformMaker *maker = new UnitWaveformMaker(uwc, input_pitchmarks);
+    UnitWaveformMaker *maker = new UnitWaveformMaker(uwc, pmp.pitchmark_points);
     maker->setOvrl(offs+ovrl, tmp_wav.header.dwSamplesPerSec);
-    maker->setFadeParams(sub_fade_start, sub_fade_end);
+    maker->setFadeParams(pmp.sub_fade_start, pmp.pitchmark_points.size()-1);
     maker->makeUnitWaveform(tmp_wav.data.getData(), tmp_wav.header.dwSamplesPerSec/getFrq(), isVCV());
     uwc->header.wLobeSize = Voice::params.num_default_uwc_lobes;
     uwc->header.wF0 = getFrq();
@@ -55,7 +66,7 @@ const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
   }
 
   // output uwc
-  if (params.uwc_cache) {
+  if (params.make_uwc_cache) {
     uwc->header.wFormatTag = UnitWaveformHeader::UnitWaveformFormatTag;
     uwc->header.dwSamplesPerSec = tmp_wav.header.dwSamplesPerSec;
     uwc->save(path.parent_path()/boost::algorithm::replace_all_copy(pron_alias.getAliasString()+L".uwc", L"*", L"_"));
@@ -72,15 +83,15 @@ void VoiceWAV::setVowelWav() const
   wav_parser.parse();
   short win_size = tmp_wav.header.dwSamplesPerSec / getFrq();
   vector<double> tmp_win(win_size*2, 0);
-  if (params.num_default_uwc_lobes > 1) {
+  if (Voice::params.num_default_uwc_lobes > 1) {
     long pos_half = tmp_win.size() / 2;
     if (tmp_win.size() % 2 > 0) {
       tmp_win[pos_half] = 1.0;
       ++pos_half;
     }
     for (size_t i = 0; i<tmp_win.size() - pos_half; i++) {
-      double x = (i + 1.0) * params.num_default_uwc_lobes / pos_half;
-      tmp_win[pos_half + i] = sinc(x) * sinc(x / params.num_default_uwc_lobes);
+      double x = (i + 1.0) * Voice::params.num_default_uwc_lobes / pos_half;
+      tmp_win[pos_half + i] = sinc(x) * sinc(x / Voice::params.num_default_uwc_lobes);
     }
     reverse_copy(tmp_win.begin() + pos_half, tmp_win.end(), tmp_win.begin());
   } else {

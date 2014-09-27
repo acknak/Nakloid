@@ -15,11 +15,9 @@ class Voice {
   static struct Parameters {
     Parameters() {
       pitch_default = 260;
-      uwc_cache = true;
-      num_default_uwc_lobes = 3;
+      num_default_uwc_lobes = 1;
     }
     long pitch_default;
-    bool uwc_cache;
     short num_default_uwc_lobes;
   } params;
 

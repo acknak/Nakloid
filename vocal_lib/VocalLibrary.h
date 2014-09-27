@@ -18,11 +18,11 @@ class VocalLibrary {
  public:
   static struct Parameters {
     Parameters() {
-      num_default_uwc_lobes = 3;
-      uwc_cache = false;
+      num_default_uwc_lobes = 1;
+      use_uwc_cache = true;
     }
     short num_default_uwc_lobes;
-    bool uwc_cache;
+    bool use_uwc_cache;
   } params;
 
   VocalLibrary():path_singer(L""){}
