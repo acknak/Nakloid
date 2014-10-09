@@ -16,7 +16,7 @@ class UnitWaveformMaker {
   static struct Parameters {
     Parameters() {
       target_rms = 0.05;
-      num_lobes = 3;
+      num_lobes = 1;
       normalize = true;
       min_repeat_length = 100;
       repeat_threshold = 0.98;

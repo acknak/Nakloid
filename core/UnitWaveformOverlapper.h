@@ -25,7 +25,7 @@ class UnitWaveformOverlapper {
       compressor = false;
       compressor_threshold = -18.0;
       compressor_ratio = 2.5;
-      num_lobes = 3;
+      num_lobes = 1;
       window_modification = true;
     };
     bool stretch_self_fade;
