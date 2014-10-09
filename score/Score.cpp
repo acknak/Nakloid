@@ -1,6 +1,7 @@
 ﻿#include "Score.h"
 
 using namespace std;
+using namespace rapidjson;
 
 struct Score::Parameters Score::params;
 
@@ -22,46 +23,62 @@ Score::~Score(){}
 
 void Score::saveScore(const boost::filesystem::path& path_score)
 {
-  boost::property_tree::wptree pt, pt_notes;
-  for (vector<Note>::const_iterator it_notes=notes.begin(); it_notes!=notes.end(); ++it_notes) {
-    boost::property_tree::wptree pt_note, pt_vel_points;
-    pt_note.put(L"id", it_notes->getId());
-    pt_note.put(L"alias", it_notes->getPronAliasString());
-    pt_note.put(L"vcv", it_notes->isVCV());
-    pt_note.put(L"start", it_notes->getStart());
-    pt_note.put(L"end", it_notes->getEnd());
-    {
-      wstringstream tmp_margin;
-      tmp_margin << it_notes->getFrontMargin() << L"," << it_notes->getBackMargin();
-      pt_note.put(L"margin", tmp_margin.str());
-    }
-    {
-      wstringstream tmp_padding;
-      tmp_padding << it_notes->getFrontPadding() << L"," << it_notes->getBackPadding();
-      pt_note.put(L"padding", tmp_padding.str());
-    }
-    pt_note.put(L"prec", it_notes->getPrec());
-    pt_note.put(L"ovrl", it_notes->getOvrl());
-    pt_note.put(L"cons", it_notes->getCons());
-    pt_note.put(L"vel", it_notes->getBaseVelocity());
-    pt_note.put(L"pitch", it_notes->getBasePitch());
-    {
-      vector< pair<long, short> > vel_points = it_notes->getVelocityPoints();
-      for (vector< pair<long, short> >::iterator it_vel_points=vel_points.begin(); it_vel_points!=vel_points.end(); ++it_vel_points) {
-        boost::property_tree::wptree pt_vel_point;
-        wstringstream tmp_vel_point;
-        tmp_vel_point << it_vel_points->first << L"," << it_vel_points->second;
-        pt_vel_point.put(L"", tmp_vel_point.str());
-        pt_vel_points.push_back(make_pair(L"", pt_vel_point));
-      }
-      pt_note.add_child(L"vel_points", pt_vel_points);
-    }
-    pt_notes.push_back(make_pair(L"", pt_note));
-  }
-  pt.add_child(L"Score.notes", pt_notes);
+  GenericDocument< UTF16<> > doc;
+  Document::AllocatorType& allocator = doc.GetAllocator();
+  doc.SetObject();
+  doc.AddMember(L"Score", kObjectType, allocator);
+  doc[L"Score"].AddMember(L"Notes", kArrayType, allocator);
 
-  boost::filesystem::path fs_path_nak(path_score);
-  write_json(fs_path_nak.string(), pt);
+  for (size_t i=0; i<notes.size(); i++) {
+    GenericValue< UTF16<> > tmp_note(kObjectType);
+    tmp_note.AddMember(L"id", notes[i].getId(), allocator);
+    {
+      GenericValue< UTF16<> > val_alias(kStringType);
+      wstring str_alias = notes[i].getPronAliasString();
+      wchar_t *char_alias = new wchar_t[str_alias.size()+1];
+      wcscpy(char_alias, str_alias.c_str());
+      val_alias.SetString(char_alias, str_alias.size(), doc.GetAllocator());
+      tmp_note.AddMember(L"alias", val_alias, allocator);
+      memset(char_alias, 0, sizeof(wchar_t));
+      delete[] char_alias;
+    }
+    tmp_note.AddMember(L"start", notes[i].getStart(), allocator);
+    tmp_note.AddMember(L"end", notes[i].getEnd(), allocator);
+    {
+      GenericValue< UTF16<> > tmp_margin(kArrayType);
+      tmp_margin.PushBack(notes[i].getFrontMargin(), allocator).PushBack(notes[i].getBackMargin(), allocator);
+      tmp_note.AddMember(L"margin", tmp_margin, allocator);
+    }
+    {
+      GenericValue< UTF16<> > tmp_padding(kArrayType);
+      tmp_padding.PushBack(notes[i].getFrontPadding(), allocator).PushBack(notes[i].getBackPadding(), allocator);
+      tmp_note.AddMember(L"padding", tmp_padding, allocator);
+    }
+    tmp_note.AddMember(L"prec", notes[i].getPrec(), allocator);
+    tmp_note.AddMember(L"ovrl", notes[i].getOvrl(), allocator);
+    tmp_note.AddMember(L"cons", notes[i].getCons(), allocator);
+    tmp_note.AddMember(L"vel", notes[i].getBaseVelocity(), allocator);
+    tmp_note.AddMember(L"pitch", notes[i].getBasePitch(), allocator);
+    {
+      vector< pair<long, short> > vel_points = notes[i].getVelocityPoints();
+      GenericValue< UTF16<> > tmp_vel_points(kArrayType);
+      for (size_t i=0; i<vel_points.size(); i++) {
+        GenericValue< UTF16<> > tmp_vel_point(kArrayType);
+        tmp_vel_point.PushBack(vel_points[i].first, allocator).PushBack(vel_points[i].second, allocator);
+        tmp_vel_points.PushBack(tmp_vel_point, allocator);
+      }
+      tmp_note.AddMember(L"vel_points", tmp_vel_points, allocator);
+    }
+    doc[L"Score"][L"Notes"].PushBack(tmp_note, allocator);
+  }
+
+  GenericStringBuffer< UTF16<> > buffer;
+  PrettyWriter<GenericStringBuffer< UTF16<> >, UTF16<>, ASCII<> > writer(buffer);
+  writer.SetIndent(' ', 2);
+  doc.Accept(writer);
+
+  boost::filesystem::wofstream ofs(path_score);
+  ofs << buffer.GetString();
 }
 
 bool Score::loadModifierMap(const boost::filesystem::path& path_modifier_map)

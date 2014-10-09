@@ -4,13 +4,12 @@
 #include <cmath>
 #include <list>
 #include <string>
-#include <tuple>
-#include <boost/algorithm/string.hpp>
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <rapidjson/allocators.h>
+#include <rapidjson/document.h>
+#include <rapidjson/encodings.h>
+#include <rapidjson/stringbuffer.h>
 #include "Note.h"
+#include "Score.h"
 #include "../parser/SmfParser.h"
 #include "../parser/SmfHandler.h"
 

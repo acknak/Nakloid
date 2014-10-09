@@ -6,6 +6,7 @@ required
 ------
 * [FFTSS](http://www.ssisc.org/fftss/index.ja.html)
 * [Boost C++ Libraries](http://www.boost.org/)
+* [RapidJSON](https://github.com/miloyip/rapidjson/)
 
 license
 ----------
