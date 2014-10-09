@@ -6,6 +6,7 @@ required
 ------
 * [FFTW](http://www.fftw.org/)
 * [Boost C++ Libraries](http://www.boost.org/)
+* [RapidJSON](https://github.com/miloyip/rapidjson/)
 
 license
 ----------
