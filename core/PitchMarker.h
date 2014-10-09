@@ -8,7 +8,7 @@
 #include <list>
 #include <numeric>
 #include <vector>
-#include "fftw3.h"
+#include "fftw3compat.h"
 #include "core-inl.h"
 #include "../format/Wav.h"
 
