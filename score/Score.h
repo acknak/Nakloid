@@ -10,9 +10,12 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/random.hpp>
+#include <rapidjson/allocators.h>
+#include <rapidjson/document.h>
+#include <rapidjson/encodings.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
 #include "Note.h"
 #include "../format/Wav.h"
 #include "../vocal_lib/Voice.h"
@@ -87,6 +90,9 @@ class Score {
   boost::filesystem::path path_song;
   const VocalLibrary *vocal_lib;
   const static std::vector<std::wstring> key2notenum;
+  std::vector<float> pitches;
+  std::vector<Note> notes;
+  boost::filesystem::path path_score;
 
   void addNote(Note note);
   void deleteNote(std::vector<Note>::iterator it_notes);
@@ -101,9 +107,6 @@ class Score {
   inline double cent2rate(double cent) const { return pow(2, cent / 1200.0); }
 
  private:
-  std::vector<float> pitches;
-  std::vector<Note> notes;
-  boost::filesystem::path path_score;
   std::map<short, std::pair<std::wstring, std::wstring> > key2modifier;
 
   void sanitizeNote(std::vector<Note>::iterator it_notes);

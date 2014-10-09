@@ -1,6 +1,7 @@
 ﻿#include "ScoreNAK.h"
 
 using namespace std;
+using namespace rapidjson;
 
 ScoreNAK::ScoreNAK(const boost::filesystem::path& path_score, const VocalLibrary *vocal_lib, const boost::filesystem::path& path_song)
   :Score(path_score, vocal_lib, path_song){}
@@ -13,54 +14,48 @@ void ScoreNAK::load()
 
   wcout << L"nak: " << getScorePath() << endl;
 
-  boost::filesystem::path boost_path_nak(getScorePath());
-  boost::property_tree::wptree pt, pt_notes;
-  boost::property_tree::read_json(boost_path_nak.string(), pt);
-  BOOST_FOREACH (const boost::property_tree::wptree::value_type& child_notes, pt.get_child(L"Score.notes")) {
-    Note *tmp_note;
-    const boost::property_tree::wptree& pt_note = child_notes.second;
-    if (boost::optional<long> id = pt_note.get_optional<long>(L"id"))
-      tmp_note = new Note(this, id.get());
-    else
-      continue;
-    if (boost::optional<wstring> alias = pt_note.get_optional<wstring>(L"alias"))
-      tmp_note->setPronAlias(alias.get());
-    if (boost::optional<long> start = pt_note.get_optional<long>(L"start"))
-      tmp_note->setStart(start.get());
-    if (boost::optional<long> end = pt_note.get_optional<long>(L"end"))
-      tmp_note->setEnd(end.get());
-    if (boost::optional<wstring> margin = pt_note.get_optional<wstring>(L"margin")) {
-      vector<wstring> v;
-      boost::algorithm::split(v, margin.get(), boost::is_any_of(L","));
-      if (v.size() == 2) {
-        tmp_note->setMargin(boost::lexical_cast<short>(v[0]), boost::lexical_cast<short>(v[1]));
+  boost::filesystem::wifstream ifs(path_score);
+  wstring json((istreambuf_iterator<wchar_t>(ifs)), istreambuf_iterator<wchar_t>());
+  GenericStringStream< UTF16<> > buffer(json.c_str());
+
+  GenericDocument< UTF16<> > doc;
+  doc.ParseStream(buffer);
+  const GenericValue< UTF16<> >& tmp_notes = doc[L"Score"][L"Notes"];
+  if (tmp_notes.IsArray()) {
+    for (SizeType i = 0; i < tmp_notes.Size(); i++) {
+      if (tmp_notes[i][L"id"].IsInt()) {
+        Note tmp_note(this, tmp_notes[i][L"id"].GetInt());
+        tmp_note.setPronAlias(tmp_notes[i][L"alias"].IsString()?tmp_notes[i][L"alias"].GetString():L"");
+        tmp_note.setStart(tmp_notes[i][L"start"].IsInt()?tmp_notes[i][L"start"].GetInt():0);
+        tmp_note.setEnd(tmp_notes[i][L"end"].IsInt()?tmp_notes[i][L"end"].GetInt():0);
+        if (tmp_notes[i][L"margin"].IsArray()) {
+          const GenericValue< UTF16<> >& tmp_margin = tmp_notes[i][L"margin"];
+          tmp_note.setMargin(tmp_margin[SizeType(0)].IsInt()?tmp_margin[SizeType(0)].GetInt():0,
+                             tmp_margin[SizeType(1)].IsInt()?tmp_margin[SizeType(1)].GetInt():0);
+        }
+        if (tmp_notes[i][L"padding"].IsArray()) {
+          const GenericValue< UTF16<> >& tmp_padding = tmp_notes[i][L"padding"];
+          tmp_note.setPadding(tmp_padding[SizeType(0)].IsInt()?tmp_padding[SizeType(0)].GetInt():0,
+                             tmp_padding[SizeType(1)].IsInt()?tmp_padding[SizeType(1)].GetInt():0);
+        }
+        tmp_note.setPrec(tmp_notes[i][L"prec"].IsInt()?tmp_notes[i][L"prec"].GetInt():0);
+        tmp_note.setOvrl(tmp_notes[i][L"ovrl"].IsInt()?tmp_notes[i][L"ovrl"].GetInt():0);
+        tmp_note.setCons(tmp_notes[i][L"cons"].IsInt()?tmp_notes[i][L"cons"].GetInt():0);
+        tmp_note.setBaseVelocity(tmp_notes[i][L"vel"].IsInt()?tmp_notes[i][L"vel"].GetInt():0);
+        tmp_note.setBasePitch(tmp_notes[i][L"pitch"].IsInt()?tmp_notes[i][L"pitch"].GetInt():0);
+        if (tmp_notes[i][L"vel_points"].IsArray()) {
+          const GenericValue< UTF16<> >& tmp_vel_points = tmp_notes[i][L"vel_points"];
+          for (SizeType i = 0; i < tmp_vel_points.Size(); i++) {
+            if (tmp_vel_points[L"vel_points"].IsArray()) {
+              const GenericValue< UTF16<> >& tmp_vel_point = tmp_vel_points[i][L"vel_points"];
+              tmp_note.addVelocityPoint(tmp_vel_point[SizeType(0)].IsInt()?tmp_vel_point[SizeType(0)].GetInt():0,
+                                        tmp_vel_point[SizeType(1)].IsInt()?tmp_vel_point[SizeType(1)].GetInt():0);
+            }
+          }
+        }
+        addNote(tmp_note);
       }
     }
-    if (boost::optional<wstring> padding = pt_note.get_optional<wstring>(L"padding")) {
-      vector<wstring> v;
-      boost::algorithm::split(v, padding.get(), boost::is_any_of(","));
-      if (v.size() == 2) {
-        tmp_note->setPadding(boost::lexical_cast<short>(v[0]), boost::lexical_cast<short>(v[1]));
-      }
-    }
-    if (boost::optional<short> prec = pt_note.get_optional<short>(L"prec"))
-      tmp_note->setPrec(prec.get());
-    if (boost::optional<short> ovrl = pt_note.get_optional<short>(L"ovrl"))
-      tmp_note->setOvrl(ovrl.get());
-    if (boost::optional<short> cons = pt_note.get_optional<short>(L"cons"))
-      tmp_note->setCons(cons.get());
-    if (boost::optional<short> vel = pt_note.get_optional<short>(L"vel"))
-      tmp_note->setBaseVelocity(vel.get());
-    if (boost::optional<unsigned char> pitch = pt_note.get_optional<unsigned char>(L"pitch"))
-      tmp_note->setBasePitch(pitch.get());
-    BOOST_FOREACH (const boost::property_tree::wptree::value_type& child_vel_points, pt_note.get_child(L"vel_points")) {
-      wstring ws = child_vel_points.second.get_value<wstring>();
-      vector<wstring> v;
-      boost::algorithm::split(v, ws, boost::is_any_of(L","));
-      if (v.size() == 2)
-        tmp_note->addVelocityPoint(boost::lexical_cast<long>(v[0]), boost::lexical_cast<short>(v[1]));
-    }
-    addNote(*tmp_note);
   }
 
   reloadPitches();
