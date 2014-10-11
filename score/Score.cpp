@@ -103,7 +103,7 @@ bool Score::loadModifierMap(const boost::filesystem::path& path_modifier_map)
     }
     return true;
   } else {
-    wcerr << L"[Score::loadModifierMap] can't find modifier map: \"" << path_modifier_map << L"\"" << endl;
+    wcerr << L"[Score::loadModifierMap] can't find modifier map: " << path_modifier_map << endl;
   }
   return false;
 }

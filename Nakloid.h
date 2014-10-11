@@ -1,32 +1,50 @@
 ﻿#ifndef Nakloid_h
 #define Nakloid_h
 
-#include <cstdio>
 #include <iostream>
-#include <locale>
 #include <string>
 #include <vector>
-#include <boost/assign.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/optional.hpp>
-#include <boost/property_tree/ini_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include "core/UnitWaveformOverlapper.h"
 #include "score/Score.h"
 #include "score/ScoreNAK.h"
 #include "score/ScoreSMF.h"
 #include "score/ScoreUST.h"
 #include "vocal_lib/Voice.h"
-#include "vocal_lib/VoiceWAV.h"
 #include "vocal_lib/VocalLibrary.h"
 
 class Nakloid {
  public:
-  Nakloid(std::wstring path_ini);
+  enum ScoreMode {
+    score_mode_nak, score_mode_ust, score_mode_smf
+  };
+  enum PitchesMode {
+    pitches_mode_pit, pitches_mode_lf0, pitches_mode_none
+  };
+  static struct Parameters {
+    Parameters() {
+      path_input_score = boost::filesystem::wpath(L"./input/score.nak");
+      score_mode = score_mode_nak;
+      path_lyrics = boost::filesystem::wpath(L"./input/lyrics.txt");
+      path_input_pitches = boost::filesystem::wpath(L"./input/pitches.pit");
+      pitch_mode = pitches_mode_none;
+      path_singer = boost::filesystem::wpath(L"./vocal/voiceDB");
+      path_prefix_map = boost::filesystem::wpath(L"");
+      path_song = boost::filesystem::wpath(L"./output/song.wav");
+      path_output_score = boost::filesystem::wpath(L"./output/score.nak");
+      path_output_pitches = boost::filesystem::wpath(L"./output/pitches.pit");
+      print_debug = false;
+    }
+      boost::filesystem::wpath path_input_score, path_lyrics, path_input_pitches, path_singer,
+        path_prefix_map, path_song,path_output_score, path_output_pitches;
+      enum ScoreMode score_mode;
+      enum PitchesMode pitch_mode;
+      bool print_debug;
+  } params;
+
+  Nakloid(){}
   virtual ~Nakloid();
 
   bool vocalization();
-  bool is_logging();
 
  private:
   Nakloid(const Nakloid& other);
@@ -34,29 +52,6 @@ class Nakloid {
 
   Score *score;
   VocalLibrary *vocal_lib;
-
-  enum ScoreMode {
-    score_mode_nak, score_mode_ust, score_mode_smf
-  };
-  enum PitchesMode {
-    pitches_mode_pit, pitches_mode_lf0, pitches_mode_none
-  };
-
-  // Input
-  boost::filesystem::path path_input_score;
-  enum ScoreMode score_mode;
-  std::wstring path_lyrics;
-  std::wstring path_input_pitches;
-  enum PitchesMode pitch_mode;
-  std::wstring path_singer;
-  std::wstring path_prefix_map;
-
-  // Output
-  std::wstring path_song;
-  std::wstring path_output_score;
-  std::wstring path_output_pitches;
-  bool print_log;
-  bool print_debug;
 };
 
 #endif

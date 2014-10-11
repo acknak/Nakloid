@@ -1,6 +1,7 @@
 ﻿#include "Nakloid.h"
 
 using namespace std;
+struct Nakloid::Parameters Nakloid::params;
 
 bool Nakloid::vocalization()
 {
@@ -9,7 +10,7 @@ bool Nakloid::vocalization()
     delete vocal_lib;
     vocal_lib = 0;
   }
-  vocal_lib = new VocalLibrary(path_singer);
+  vocal_lib = new VocalLibrary(params.path_singer);
   if (vocal_lib==0 || !vocal_lib->initVoiceMap()) {
     cerr << "[Nakloid::vocalization] can't find VocalLibrary" << endl;
     return false;
@@ -17,24 +18,24 @@ bool Nakloid::vocalization()
 
   // load score
   cout << endl << "----- load score -----" << endl;
-  switch(score_mode){
+  switch(params.score_mode){
   case score_mode_nak:
-    score=new ScoreNAK(path_input_score, vocal_lib, path_song); break;
+    score=new ScoreNAK(params.path_input_score, vocal_lib, params.path_song); break;
   case score_mode_ust:
-    score=new ScoreUST(path_input_score, vocal_lib, path_song); break;
+    score=new ScoreUST(params.path_input_score, vocal_lib, params.path_song); break;
   case score_mode_smf:
-    score=new ScoreSMF(path_input_score, vocal_lib, path_song, path_lyrics); break;
+    score=new ScoreSMF(params.path_input_score, vocal_lib, params.path_song, params.path_lyrics); break;
   }
-  if (!path_prefix_map.empty()) {
-    score->loadModifierMap(path_prefix_map);
+  if (!params.path_prefix_map.empty()) {
+    score->loadModifierMap(params.path_prefix_map);
     cout << "use modifier map..." << endl;
   }
   score->load();
-  switch(pitch_mode){
+  switch(params.pitch_mode){
   case pitches_mode_pit:
-    score->loadPitPitches(path_input_pitches); break;
+    score->loadPitPitches(params.path_input_pitches); break;
   case pitches_mode_lf0:
-    score->loadLf0Pitches(path_input_pitches); break;
+    score->loadLf0Pitches(params.path_input_pitches); break;
   }
   if (score->getNotesBegin() == score->getNotesEnd()) {
     cerr << "[Nakloid::vocalization] can't load notes" << endl;
@@ -52,11 +53,11 @@ bool Nakloid::vocalization()
   double counter=0, percent=0;
   long notes_size = score->getNotesEnd() - score->getNotesEnd();
   for (vector<Note>::const_iterator it_notes=score->getNotesBegin(); it_notes!=score->getNotesEnd(); ++it_notes) {
-    if (print_debug) {
+    if (params.print_debug) {
       cout << endl;
     }
     wcout << L"synthesize \"" << it_notes->getPronAliasString() << L"\" from " << it_notes->getPronStart() << L"ms to " << it_notes->getPronEnd() << L"ms" << endl;
-    if (print_debug) {
+    if (params.print_debug) {
       cout << "ovrl: " << it_notes->getOvrl() << ", prec: " << it_notes->getPrec() << ", cons: " << it_notes->getCons() << endl
         << "start: " << it_notes->getStart() << ", end: " << it_notes->getEnd() << endl
         << "front margin: "  << it_notes->getFrontMargin()
@@ -81,206 +82,15 @@ bool Nakloid::vocalization()
 
   cout << "----- vocalization finished -----" << endl << endl;
 
-  if (!path_output_score.empty()) {
-    score->saveScore(path_output_score);
+  if (!params.path_output_score.empty()) {
+    score->saveScore(params.path_output_score);
   }
 
-  if (!path_output_pitches.empty()) {
-    score->savePitches(path_output_pitches);
+  if (!params.path_output_pitches.empty()) {
+    score->savePitches(params.path_output_pitches);
   }
 
   return true;
-}
-
-Nakloid::Nakloid(wstring path_ini)
-  :vocal_lib(0), score(0), path_input_score(L""), path_lyrics(L""), path_input_pitches(L""), path_singer(L""), path_prefix_map(L""),
-   path_song(L""),path_output_score(L""),path_output_pitches(L""), print_log(true), print_debug(false)
-{
-  boost::property_tree::wptree wpt;
-  try {
-    boost::filesystem::path fs_path_ini(path_ini);
-    boost::property_tree::ini_parser::read_ini(fs_path_ini.string(), wpt);
-  } catch (boost::property_tree::ini_parser::ini_parser_error &e) {
-    cerr << "[Nakloid.ini line " << e.line() << "] " << e.message() << endl
-      << "[Nakloid::Nakloid] can't parse Nakloid.ini" << endl;
-    return;
-  } catch (...) {
-    cerr << "[Nakloid::Nakloid] can't parse Nakloid.ini" << endl;
-  }
-
-  if (boost::optional<wstring> tmp = wpt.get_optional<wstring>(L"Input.path_input_score")) {
-    path_input_score = tmp.get();
-  }
-  {
-    wstring tmp_score = wpt.get<wstring>(L"Input.score_mode", L"nak");
-    if (tmp_score == L"nak") {
-      score_mode = score_mode_nak;
-    } else if (tmp_score == L"ust") {
-      score_mode = score_mode_ust;
-    } else if (tmp_score == L"smf") {
-      score_mode = score_mode_smf;
-      if (boost::optional<short> tmp = wpt.get_optional<short>(L"Input.track")) {
-        Score::params.smf_track = tmp.get();
-      }
-      if (boost::optional<wstring> tmp = wpt.get_optional<wstring>(L"Input.path_lyrics")) {
-        path_lyrics = tmp.get();
-      }
-    } else {
-      cerr << "[Nakloid::Nakloid] can't recognize score_mode" << endl;
-      return;
-    }
-  }
-  if (boost::optional<wstring> tmp = wpt.get_optional<wstring>(L"Input.path_input_pitches")) {
-    path_input_pitches = tmp.get();
-  }
-  {
-    wstring tmp_pitches = wpt.get<wstring>(L"Input.pitches_mode", L"");
-    if (tmp_pitches == L"pit") {
-      pitch_mode = pitches_mode_pit;
-    } else if (tmp_pitches == L"lf0") {
-      pitch_mode = pitches_mode_lf0;
-      if (boost::optional<short> tmp = wpt.get_optional<short>(L"Input.pitch_frame_length")) {
-        Score::params.pitch_frame_length = tmp.get();
-      }
-    } else {
-      pitch_mode = pitches_mode_none;
-    }
-  }
-  if (boost::optional<wstring> tmp = wpt.get_optional<wstring>(L"Input.path_singer")) {
-    path_singer = tmp.get();
-  }
-  if (boost::optional<wstring> tmp = wpt.get_optional<wstring>(L"Input.path_prefix_map")) {
-    path_prefix_map = tmp.get();
-  }
-  if (boost::optional<wstring> tmp = wpt.get_optional<wstring>(L"Output.path_song")) {
-    path_song = tmp.get();
-  }
-  if (boost::optional<wstring> tmp = wpt.get_optional<wstring>(L"Output.path_output_score")) {
-    path_output_score = tmp.get();
-  }
-  if (boost::optional<wstring> tmp = wpt.get_optional<wstring>(L"Output.path_output_pitches")) {
-    path_output_pitches = tmp.get();
-  }
-  if (boost::optional<long> tmp = wpt.get_optional<long>(L"Output.ms_margin")) {
-    Score::params.ms_margin = tmp.get();
-  }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Output.max_volume")) {
-    double tmp_max_volume = tmp.get();
-    if (tmp_max_volume > 1.0) {
-      tmp_max_volume = 1.0;
-    } else if(tmp_max_volume < 0.0) {
-      tmp_max_volume = 0.0;
-    }
-    UnitWaveformOverlapper::params.max_volume = tmp_max_volume;
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.compressor")) {
-    UnitWaveformOverlapper::params.compressor = tmp.get();
-  }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Output.compressor_threshold")) {
-    UnitWaveformOverlapper::params.compressor_threshold = tmp.get();
-  }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Output.compressor_ratio")) {
-    UnitWaveformOverlapper::params.compressor_ratio = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.use_uwc_cache")) {
-    VocalLibrary::params.use_uwc_cache = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.use_pmp_cache")) {
-    VoiceWAV::params.use_pmp_cache = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.make_uwc_cache")) {
-    VoiceWAV::params.make_uwc_cache = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.make_pmp_cache")) {
-    VoiceWAV::params.make_pmp_cache = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.print_log")) {
-    print_log = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.print_debug")) {
-    print_debug = tmp.get();
-  }
-  if (boost::optional<long> tmp = wpt.get_optional<long>(L"UnitWaveformContainer.target_rms")) {
-    UnitWaveformMaker::params.target_rms = tmp.get();
-  }
-  if (boost::optional<short> tmp = wpt.get_optional<short>(L"UnitWaveformContainer.num_lobes")) {
-    UnitWaveformMaker::params.num_lobes = UnitWaveformOverlapper::params.num_lobes = VocalLibrary::params.num_default_uwc_lobes = Voice::params.num_default_uwc_lobes = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"UnitWaveformContainer.uwc_normalize")) {
-    UnitWaveformMaker::params.normalize = tmp.get();
-  }
-  if (boost::optional<long> tmp = wpt.get_optional<long>(L"Pitchmark.pitch_default")) {
-    Voice::params.pitch_default = tmp.get();
-  }
-  if (boost::optional<short> tmp = wpt.get_optional<short>(L"Pitchmark.pitch_margin")) {
-    PitchMarker::params.pitch_margin = tmp.get();
-  }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Pitchmark.xcorr_threshold")) {
-    PitchMarker::params.xcorr_threshold = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.stretch_self_fade")) {
-    UnitWaveformOverlapper::params.stretch_self_fade = tmp.get();
-  }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Overlap.ms_self_fade")) {
-    UnitWaveformOverlapper::params.ms_self_fade = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.interpolation")) {
-    UnitWaveformOverlapper::params.interpolation = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.overlap_normalize")) {
-    UnitWaveformOverlapper::params.overlap_normalize = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.window_modification")) {
-    UnitWaveformOverlapper::params.window_modification = tmp.get();
-  }
-  if (boost::optional<short> tmp = wpt.get_optional<short>(L"Note.ms_front_padding")) {
-    Note::params.ms_front_padding = tmp.get();
-  }
-  if (boost::optional<short> tmp = wpt.get_optional<short>(L"Note.ms_back_padding")) {
-    Note::params.ms_back_padding = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Arrange.auto_vowel_combining")) {
-    Note::params.auto_vowel_combining = Score::params.auto_vowel_combining = tmp.get();
-  }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Arrange.vowel_combining_volume")) {
-    Note::params.vowel_combining_volume = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Arrange.vibrato")) {
-    Score::params.vibrato = tmp.get();
-  }
-  if (boost::optional<short> tmp = wpt.get_optional<short>(L"Arrange.ms_vibrato_offset")) {
-    Score::params.ms_vibrato_offset = tmp.get();
-  }
-  if (boost::optional<short> tmp = wpt.get_optional<short>(L"Arrange.ms_vibrato_width")) {
-    Score::params.ms_vibrato_width = tmp.get();
-  }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Arrange.pitch_vibrato")) {
-    Score::params.pitch_vibrato = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Arrange.overshoot")) {
-    Score::params.overshoot = tmp.get();
-  }
-  if (boost::optional<short> tmp = wpt.get_optional<short>(L"Arrange.ms_overshoot")) {
-    Score::params.ms_overshoot = tmp.get();
-  }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Arrange.pitch_overshoot")) {
-    Score::params.pitch_overshoot = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Arrange.preparation")) {
-    Score::params.preparation = tmp.get();
-  }
-  if (boost::optional<short> tmp = wpt.get_optional<short>(L"Arrange.ms_preparation")) {
-    Score::params.ms_preparation = tmp.get();
-  }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Arrange.pitch_preparation")) {
-    Score::params.pitch_preparation = tmp.get();
-  }
-  if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Arrange.finefluctuation")) {
-    Score::params.finefluctuation = tmp.get();
-  }
-  if (boost::optional<double> tmp = wpt.get_optional<double>(L"Arrange.finefluctuation_deviation")) {
-    Score::params.finefluctuation_deviation = tmp.get();
-  }
 }
 
 Nakloid::~Nakloid()
@@ -293,40 +103,4 @@ Nakloid::~Nakloid()
     delete score;
     score = 0;
   }
-}
-
-bool Nakloid::is_logging() {
-  return print_log;
-}
-
-/*
- * main
- */
-int main()
-{
-  // set locale
-	ios_base::sync_with_stdio(false);
-	locale default_loc("");
-	locale::global(default_loc);
-	locale ctype_default(locale::classic(), default_loc, locale::ctype);
-	wcout.imbue(ctype_default);
-	wcerr.imbue(ctype_default);
-	wcin.imbue(ctype_default);
-
-  Nakloid *nakloid = new Nakloid(L"Nakloid.ini");
-  if (!nakloid->is_logging()) {
-    freopen("", "r", stdout);
-    freopen("", "r", stderr);
-  }
-  nakloid->vocalization();
-
-  delete nakloid;
-
-  if (nakloid->is_logging()) {
-    cin.sync();
-    cout << "Press Enter/Return to continue..." << endl;
-    cin.get();
-  }
-
-  return 0;
 }
