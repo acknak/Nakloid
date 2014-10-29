@@ -36,7 +36,7 @@ class PitchMarker {
   // accessor
   void setInputWavParam(short ms_offs, short ms_ovrl, short ms_prec, short ms_blnk, unsigned long fs);
   std::vector<long> getPitchMarks() const;
-  const long getFadeStartSub() const;
+  long getFadeStartSub() const;
 
  private:
   PitchMarker(const PitchMarker& other);

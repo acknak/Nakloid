@@ -51,7 +51,7 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     pitch_cons_start = *(pitchmarks.end()-1) - *(pitchmarks.end()-2);
   }
   {
-    vector<double>::const_reverse_iterator rit_mark_start, rit_input_wav_offs(it_input_wav_blnk), rit_input_wav_prec(it_input_wav_prec), rit_cons_start(input_wav.begin()+pos_cons_start);
+    vector<double>::const_reverse_iterator rit_mark_start, rit_input_wav_offs(it_input_wav_blnk), rit_input_wav_prec(it_input_wav_prec), rit_prec_start(input_wav.begin()+pos_cons_start);
     {
       // find start point
       vector<double> xcorr_win(win_size*2, 0.0);
@@ -72,7 +72,7 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
         pos_fade_end = input_wav.rend() - tmp_pitchmarks[i];
       }
     }
-    tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), rit_cons_start, *(tmp_pitchmarks.end()-3), *(tmp_pitchmarks.end()-1));
+    tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), rit_prec_start, *(tmp_pitchmarks.end()-3), *(tmp_pitchmarks.end()-1));
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
     }
@@ -129,17 +129,27 @@ bool PitchMarker::mark(const vector<double>& vowel_wav)
     vector<double> xcorr_std;
     vector<vector<double>::const_reverse_iterator> tmp_pitchmarks =
       markWithVowel(rit_mark_start, rit_input_wav_prec, vowel_wav.rbegin(), vowel_wav.rend(), &xcorr_std);
-    for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
-      pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
-      if (pos_fade_start==0 && xcorr_std[xcorr_std.size()-i-1] > 0.0) {
-        pos_fade_start = input_wav.rend() - tmp_pitchmarks[xcorr_std.size()-i-1];
+    if (tmp_pitchmarks.size() > 0) {
+      for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
+        pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
+        if (pos_fade_start==0 && xcorr_std[xcorr_std.size()-i-1] > 0.0) {
+          pos_fade_start = input_wav.rend() - tmp_pitchmarks[xcorr_std.size()-i-1];
+        }
+        if (pos_fade_end==0 && xcorr_std[i] > 0.0) {
+          pos_fade_end = input_wav.rend() - tmp_pitchmarks[i];
+        }
       }
-      if (pos_fade_end==0 && xcorr_std[i] > 0.0) {
-        pos_fade_end = input_wav.rend() - tmp_pitchmarks[i];
-      }
+    } else {
+      pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[0]);
+      pos_fade_start = pos_fade_end = pitchmarks.back();
     }
-    rit_base_start = *(tmp_pitchmarks.end()-3);
-    rit_base_end = *(tmp_pitchmarks.end()-1);
+    if (tmp_pitchmarks.size() < 3) {
+      rit_base_start = tmp_pitchmarks.back() - (win_size/2);
+      rit_base_end = tmp_pitchmarks.back() + (win_size/2);
+    } else {
+      rit_base_start = *(tmp_pitchmarks.end()-3);
+      rit_base_end = *(tmp_pitchmarks.end()-1);
+    }
   }
   {
     // consonant pitch mark
@@ -275,14 +285,14 @@ void PitchMarker::setInputWavParam(short ms_offs, short ms_ovrl, short ms_prec, 
   }
 
   long pos_blnk = fs / 1000.0 * ms_blnk;
-  if (pos_blnk > 0) {
+  if (pos_blnk >= 0) {
     this->it_input_wav_blnk = this->input_wav.end() - pos_blnk;
   } else {
     this->it_input_wav_blnk = this->it_input_wav_offs - pos_blnk;
   }
 }
 
-const long PitchMarker::getFadeStartSub() const
+long PitchMarker::getFadeStartSub() const
 {
   return sub_fade_start;
 }
