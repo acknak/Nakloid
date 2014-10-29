@@ -44,6 +44,6 @@ void PitchmarkParameters::save(const boost::filesystem::wpath& path)
   PrettyWriter<GenericStringBuffer< UTF16<> >, UTF16<>, ASCII<> > writer(buffer);
   doc.Accept(writer);
 
-  boost::filesystem::wofstream ofs(path);
+  boost::filesystem::wofstream ofs(path, ios_base::trunc);
   ofs << buffer.GetString();
 }
