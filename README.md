@@ -4,8 +4,8 @@ Nakloid: Unit-waveform-oriented Singing Voice Synthesis System
 
 required
 ------
-* [FFTSS](http://www.ssisc.org/fftss/index.ja.html)
 * [Boost C++ Libraries](http://www.boost.org/)
+* [FFTSS](http://www.ssisc.org/fftss/index.ja.html)
 * [RapidJSON](https://github.com/miloyip/rapidjson/)
 
 license

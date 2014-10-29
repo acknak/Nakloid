@@ -17,8 +17,8 @@ class VoiceWAV: public Voice, public WavHandler {
   static struct Parameters {
     Parameters() {
       use_pmp_cache = true;
-      make_uwc_cache = true;
-      make_pmp_cache = true;
+      make_uwc_cache = false;
+      make_pmp_cache = false;
     }
     bool use_pmp_cache;
     bool make_uwc_cache;
@@ -30,6 +30,7 @@ class VoiceWAV: public Voice, public WavHandler {
   ~VoiceWAV(){}
 
   const UnitWaveformContainer* getUnitWaveformContainer() const;
+  void makeUnitWaveformContainerCache(bool save_memory_cache=true) const;
 
  private:
   mutable Wav tmp_wav;

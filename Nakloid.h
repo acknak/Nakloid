@@ -41,10 +41,13 @@ class Nakloid {
       bool print_debug;
   } params;
 
-  Nakloid(){}
+  Nakloid():score(0),vocal_lib(0) {}
   virtual ~Nakloid();
 
   bool vocalization();
+  bool makeAllCache(bool save_pmp, bool save_uwc);
+  bool makeCache(PronunciationAlias pron_alias, bool save_pmp, bool save_uwc);
+  bool makeCache(std::wstring pron_alias, bool save_pmp, bool save_uwc);
 
  private:
   Nakloid(const Nakloid& other);

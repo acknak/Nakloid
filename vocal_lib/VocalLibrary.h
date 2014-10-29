@@ -29,8 +29,9 @@ class VocalLibrary {
   explicit VocalLibrary(const boost::filesystem::path& path_singer):path_singer(path_singer){};
   virtual ~VocalLibrary();
 
-  bool initVoiceMap();
-  bool initVoiceMap(const boost::filesystem::path& path_oto_ini);
+  bool initVoiceMap(bool make_cache_file_mode=false);
+  bool initVoiceMap(const boost::filesystem::path& path_oto_ini, bool make_cache_file_mode=false);
+  bool makeFileCache(const PronunciationAlias& pron_alias) const;
 
   // accessor
   const Voice* getVoice(const std::wstring& alias) const;
@@ -46,6 +47,8 @@ class VocalLibrary {
  private:
   VocalLibrary(const VocalLibrary& other);
   VocalLibrary& operator=(const VocalLibrary& other);
+
+  void parseVoiceData(Voice* voice, const std::vector<std::wstring>& data) const;
 };
 
 #endif

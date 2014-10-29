@@ -3,18 +3,28 @@
 using namespace std;
 struct Nakloid::Parameters Nakloid::params;
 
+Nakloid::~Nakloid()
+{
+  if (vocal_lib != 0) {
+    delete vocal_lib;
+    vocal_lib = 0;
+  }
+  if (score != 0) {
+    delete score;
+    score = 0;
+  }
+}
+
 bool Nakloid::vocalization()
 {
-  cout << "----- load voice DB -----" << endl;
+  // load vocal library
+  cout << endl << "----- load vocal library -----" << endl;
   if (vocal_lib != 0) {
     delete vocal_lib;
     vocal_lib = 0;
   }
   vocal_lib = new VocalLibrary(params.path_singer);
-  if (vocal_lib==0 || !vocal_lib->initVoiceMap()) {
-    cerr << "[Nakloid::vocalization] can't find VocalLibrary" << endl;
-    return false;
-  }
+  vocal_lib->initVoiceMap();
 
   // load score
   cout << endl << "----- load score -----" << endl;
@@ -93,14 +103,51 @@ bool Nakloid::vocalization()
   return true;
 }
 
-Nakloid::~Nakloid()
+bool Nakloid::makeAllCache(bool save_pmp, bool save_uwc)
 {
+  if (!(save_pmp|save_uwc)) {
+    return false;
+  }
+  cout << endl << "----- save " << ((save_pmp)?"pmp ":"") << ((save_pmp&&save_uwc)?"& ":"") << ((save_uwc)?"uwc":"") << " -----" << endl;
   if (vocal_lib != 0) {
     delete vocal_lib;
     vocal_lib = 0;
   }
-  if (score != 0) {
-    delete score;
-    score = 0;
+
+  VoiceWAV::params.make_pmp_cache = save_pmp;
+  VoiceWAV::params.make_uwc_cache = save_uwc;
+
+  vocal_lib = new VocalLibrary(params.path_singer);
+  if (vocal_lib==0 || !vocal_lib->initVoiceMap(true)) {
+    cerr << "[Nakloid::vocalization] can't find VocalLibrary" << endl;
   }
+  return true;
+}
+
+bool Nakloid::makeCache(PronunciationAlias pron_alias, bool save_pmp, bool save_uwc)
+{
+  if (!(save_pmp|save_uwc)) {
+    return false;
+  }
+  wcout << L"----- save " << ((save_pmp)?L"pmp ":L"") << ((save_pmp&&save_uwc)?L"& ":L"") << ((save_uwc)?L"uwc":L"") << L" of \"" << pron_alias.getAliasString() << L"\" -----" << endl;
+  if (vocal_lib != 0) {
+    delete vocal_lib;
+    vocal_lib = 0;
+  }
+
+  VoiceWAV::params.make_pmp_cache = save_pmp;
+  VoiceWAV::params.make_uwc_cache = save_uwc;
+
+  vocal_lib = new VocalLibrary(params.path_singer);
+  if (vocal_lib==0 || !vocal_lib->makeFileCache(pron_alias)) {
+    cerr << "[Nakloid::vocalization] can't find VocalLibrary" << endl;
+  }
+  wcout << L"succeeded to create cache of \"" << pron_alias.getAliasString() << endl;
+
+  return true;
+}
+
+bool Nakloid::makeCache(std::wstring pron_alias, bool save_pmp, bool save_uwc)
+{
+  return makeCache(PronunciationAlias(pron_alias), save_pmp, save_uwc);
 }
