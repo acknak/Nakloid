@@ -1,11 +1,14 @@
 ﻿#ifndef VoiceUWC_h
 #define VoiceUWC_h
 
-#include "VocalLibrary.h"
 #include "Voice.h"
-#include "../format/PronunciationAlias.h"
-#include "../format/UnitWaveformContainer.h"
 #include "../parser/WavHandler.h"
+
+#include <string>
+#include <boost/filesystem/path.hpp>
+
+class PronunciationAlias;
+class UnitWaveformContainer;
 
 class VoiceUWC: public Voice, public WavHandler {
  public:

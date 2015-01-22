@@ -1,5 +1,7 @@
 ﻿#include "UnitWaveformContainer.h"
 
+#include <boost/filesystem/fstream.hpp>
+
 using namespace std;
 
 bool UnitWaveformHeader::operator==(const UnitWaveformHeader& other) const
@@ -41,14 +43,16 @@ void UnitWaveformContainer::save(const boost::filesystem::path& path_uwc)
   ofs.write((char*)&size_all, sizeof(long));
   ofs.write((char*)WavHeader::tag_wave, sizeof(char)*4);
   ofs.write((char*)WavHeader::tag_fmt_, sizeof(char)*4);
-  ofs.write((char*)&(UnitWaveformHeader::const_chunk_size), sizeof(long));
+  uint32_t const_chunk_size = UnitWaveformHeader::const_chunk_size;
+  ofs.write((char*)&(const_chunk_size), sizeof(long));
   ofs.write((char*)&(header.wFormatTag), sizeof(short));
   ofs.write((char*)&(header.wChannels), sizeof(short));
   ofs.write((char*)&(header.dwSamplesPerSec), sizeof(long));
   ofs.write((char*)&(header.dwAvgBytesPerSec), sizeof(long));
   ofs.write((char*)&(header.wBlockAlign), sizeof(short));
   ofs.write((char*)&(header.wBitsPerSamples), sizeof(short));
-  ofs.write((char*)&(UnitWaveformHeader::wAdditionalSize), sizeof(short));
+  uint16_t wAdditionalSize = UnitWaveformHeader::wAdditionalSize;
+  ofs.write((char*)&(wAdditionalSize), sizeof(short));
   ofs.write((char*)&(header.wLobeSize), sizeof(short));
   ofs.write((char*)&(header.dwRepeatStart), sizeof(long));
   ofs.write((char*)&(header.wF0), sizeof(float));
@@ -61,7 +65,8 @@ void UnitWaveformContainer::save(const boost::filesystem::path& path_uwc)
     long dataChunkSize = data_short.size()*sizeof(short);
 
     ofs.write((char*)WavData::tag_fact, sizeof(char)*4);
-    ofs.write((char*)&UnitWaveform::chunkSize, sizeof(long));
+    uint32_t chunkSize = UnitWaveform::chunkSize;
+    ofs.write((char*)&(chunkSize), sizeof(long));
     ofs.write((char*)&(unit_waveforms[i].dwPitchLeft), sizeof(long));
     ofs.write((char*)&(unit_waveforms[i].dwPitchRight), sizeof(long));
     ofs.write((char*)&(unit_waveforms[i].dwPosition), sizeof(long));

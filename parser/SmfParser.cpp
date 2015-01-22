@@ -1,5 +1,9 @@
 ﻿#include "SmfParser.h"
 
+#include "SmfHandler.h"
+
+#include <boost/filesystem/fstream.hpp>
+
 using namespace std;
 
 const unsigned char SmfParser::mthd[] = {'M','T','h','d',0,0,0,6,0,1}; //smf header

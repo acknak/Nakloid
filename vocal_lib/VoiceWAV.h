@@ -1,16 +1,22 @@
 ﻿#ifndef VoiceWAV_h
 #define VoiceWAV_h
 
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem/fstream.hpp>
 #include "Voice.h"
 #include "../core/PitchMarker.h"
 #include "../core/UnitWaveformMaker.h"
 #include "../format/PitchmarkParameters.h"
 #include "../format/PronunciationAlias.h"
 #include "../format/UnitWaveformContainer.h"
+#include "../format/Wav.h"
 #include "../parser/WavHandler.h"
-#include "../parser/WavParser.h"
+
+#include <string>
+#include <map>
+#include <vector>
+#include <boost/filesystem/path.hpp>
+
+class PronunciationAlias;
+class UnitWaveformContainer;
 
 class VoiceWAV: public Voice, public WavHandler {
  public:
@@ -45,9 +51,9 @@ class VoiceWAV: public Voice, public WavHandler {
   void chunkHeader(WavHeader wav_header);
   void chunkData(WavData wav_data);
 };
-
-#ifndef M_PI
-#define M_PI 3.1415926535897932384626433832795
-#endif
+//
+//#ifndef M_PI
+//#define M_PI 3.1415926535897932384626433832795
+//#endif
 
 #endif

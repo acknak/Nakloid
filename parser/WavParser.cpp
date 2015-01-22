@@ -1,5 +1,10 @@
 ﻿#include "WavParser.h"
 
+#include "WavHandler.h"
+
+#include <cstdint>
+#include <boost/filesystem/fstream.hpp>
+
 using namespace std;
 
 WavParser::WavParser(){}
@@ -49,28 +54,28 @@ bool WavParser::parse()
   }
 
   boost::filesystem::ifstream ifs(path_input, ios::in | ios::binary);
-  long rest_size = 0, fmtChunkSize = 0;
+  uint32_t rest_size = 0, fmtChunkSize = 0;
 
   // fmt chunk
   ifs.seekg(sizeof(char)*4, ios_base::cur);
-  ifs.read((char*)&rest_size, sizeof(long));
+  ifs.read((char*)&rest_size, sizeof(uint32_t));
   ifs.seekg(sizeof(char)*8, ios_base::cur);
-  ifs.read((char*)&fmtChunkSize, sizeof(long));
+  ifs.read((char*)&fmtChunkSize, sizeof(uint32_t));
   {
     WavHeader header;
-    ifs.read((char*)&header.wFormatTag, sizeof(short));
-    ifs.read((char*)&header.wChannels, sizeof(short));
-    ifs.read((char*)&header.dwSamplesPerSec, sizeof(long));
-    ifs.read((char*)&header.dwAvgBytesPerSec, sizeof(long));
-    ifs.read((char*)&header.wBlockAlign, sizeof(short));
-    ifs.read((char*)&header.wBitsPerSamples, sizeof(short));
+    ifs.read((char*)&header.wFormatTag, sizeof(uint16_t));
+    ifs.read((char*)&header.wChannels, sizeof(uint16_t));
+    ifs.read((char*)&header.dwSamplesPerSec, sizeof(uint32_t));
+    ifs.read((char*)&header.dwAvgBytesPerSec, sizeof(uint32_t));
+    ifs.read((char*)&header.wBlockAlign, sizeof(uint16_t));
+    ifs.read((char*)&header.wBitsPerSamples, sizeof(uint16_t));
     for (size_t i=0; i<handlers.size(); i++) {
       handlers[i]->chunkHeader(header);
     }
     if (fmtChunkSize > 16) {
-      short tmp_size = 0;
-      ifs.read((char*)&tmp_size, sizeof(short));
-      unsigned char* tmp_data = new unsigned char[tmp_size/sizeof(char)];
+      uint16_t tmp_size = 0;
+      ifs.read((char*)&tmp_size, sizeof(uint16_t));
+      uint8_t* tmp_data = new uint8_t[tmp_size/sizeof(uint8_t)];
       ifs.read((char*)&tmp_data[0], tmp_size);
       for (size_t i=0; i<handlers.size(); i++) {
         handlers[i]->chunkHeaderAdditionalField(tmp_size, tmp_data);
@@ -79,33 +84,30 @@ bool WavParser::parse()
   }
   rest_size -= 24;
 
-  while (rest_size>(long)sizeof(char)*4 && !ifs.eof()) {
+  while (rest_size>(uint32_t)sizeof(uint8_t)*4 && !ifs.eof()) {
     char tag[4] = {0};
     ifs.read((char*)tag, sizeof(char)*4);
     long chunk_size = 0;
-    ifs.read((char*)&chunk_size, sizeof(long));
+    ifs.read((char*)&chunk_size, sizeof(uint32_t));
     if (WavData::isDataTag(tag)) {
-      short* tmp_data = new short[chunk_size/sizeof(short)];
-      ifs.read((char*)&tmp_data[0], chunk_size);
-      WavData wav_data(tmp_data, chunk_size);
+      vector<int16_t> tmp_data(chunk_size/sizeof(int16_t));
+      ifs.read((char*)tmp_data.data(), chunk_size);
+      WavData wav_data(tmp_data.data(), chunk_size);
       for (size_t i=0; i<handlers.size(); i++) {
         handlers[i]->chunkData(wav_data);
       }
-      delete[] tmp_data;
     } else if (WavData::isFactTag(tag)) {
-      unsigned char* tmp_data = new unsigned char[chunk_size/sizeof(char)];
-      ifs.read((char*)&tmp_data[0], chunk_size);
+      vector<uint8_t> tmp_data(chunk_size/sizeof(uint8_t));
+      ifs.read((char*)tmp_data.data(), chunk_size);
       for (size_t i=0; i<handlers.size(); i++) {
-        handlers[i]->chunkFact(chunk_size, tmp_data);
+        handlers[i]->chunkFact(chunk_size, tmp_data.data());
       }
-      delete[] tmp_data;
     } else if (WavData::isListTag(tag)) {
-      unsigned char* tmp_data = new unsigned char[chunk_size/sizeof(char)];
-      ifs.read((char*)&tmp_data[0], chunk_size);
+      vector<uint8_t> tmp_data(chunk_size/sizeof(uint8_t));
+      ifs.read((char*)tmp_data.data(), chunk_size);
       for (size_t i=0; i<handlers.size(); i++) {
-        handlers[i]->chunkList(chunk_size, tmp_data);
+        handlers[i]->chunkList(chunk_size, tmp_data.data());
       }
-      delete[] tmp_data;
     } else {
       wcerr << L"[WavParser::parse] unknown tag found at " << path_input << endl;
       ifs.seekg(chunk_size, ios_base::cur);

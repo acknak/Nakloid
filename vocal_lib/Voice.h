@@ -1,14 +1,13 @@
 ﻿#ifndef Voice_h
 #define Voice_h
 
-#include <string>
-#include <map>
-#include <vector>
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
 #include "../format/PronunciationAlias.h"
-#include "../format/UnitWaveformContainer.h"
+
+#include <string>
+#include <vector>
+#include <boost/filesystem/path.hpp>
+
+class UnitWaveformContainer;
 
 class Voice {
  public:
@@ -64,14 +63,14 @@ class Voice {
 
   boost::filesystem::path path;
   PronunciationAlias pron_alias;
-  mutable float frq;
-  mutable UnitWaveformContainer *uwc;
 
   short offs; // offset(left blank)
   short cons; // consonant part(unaltered range)
   short blnk; // blank(right blank)
   short prec; // preceding utterance
   short ovrl; // overlap range
+  mutable float frq;
+  mutable UnitWaveformContainer *uwc;
 };
 
 inline void Voice::trimVector(std::vector<double>* target_vector, long target_length) const

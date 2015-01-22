@@ -1,5 +1,18 @@
 ﻿#include "VocalLibrary.h"
 
+#include "Voice.h"
+#include "VoiceUWC.h"
+#include "VoiceWAV.h"
+#include "../format/PronunciationAlias.h"
+#include "../format/UnitWaveformContainer.h"
+
+#include <map>
+#include <boost/algorithm/string.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+
 using namespace std;
 
 struct VocalLibrary::Parameters VocalLibrary::params;

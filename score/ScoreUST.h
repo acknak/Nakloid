@@ -1,16 +1,11 @@
 ﻿#ifndef ScoreUST_h
 #define ScoreUST_h
 
-#include <string>
-#include <utility>
-#include <vector>
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/lexical_cast.hpp>
-#include "Note.h"
 #include "Score.h"
-#include "../parser/SmfHandler.h"
-#include "../parser/SmfParser.h"
+
+#include <boost/filesystem/path.hpp>
+
+class VocalLibrary;
 
 class ScoreUST : public Score {
  public:

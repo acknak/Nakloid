@@ -1,8 +1,6 @@
 ﻿#ifndef SmfHandler_h
 #define SmfHandler_h
 
-#include <fstream>
-#include <map>
 #include <string>
 
 enum MidiMsg{

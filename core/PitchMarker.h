@@ -1,12 +1,6 @@
 ﻿#ifndef PitchMarker_h
 #define PitchMarker_h
 
-#include <algorithm>
-#include <cmath>
-#include <iomanip>
-#include <iostream>
-#include <list>
-#include <numeric>
 #include <vector>
 #include "fftw3compat.h"
 #include "core-inl.h"
@@ -25,7 +19,7 @@ class PitchMarker {
   } params;
 
   explicit PitchMarker(const std::vector<double>& input_wav)
-   :input_wav(input_wav), it_input_wav_offs(input_wav.begin()), it_input_wav_blnk(input_wav.end()), sub_fade_start(0), sub_fade_end(0){}
+   :input_wav(input_wav), sub_fade_start(0), sub_fade_end(0), it_input_wav_offs(input_wav.begin()), it_input_wav_blnk(input_wav.end()){}
   PitchMarker(const std::vector<double>& input_wav, short ms_offs, short ms_ovrl, short ms_prec, short ms_blnk, unsigned long fs);
   ~PitchMarker(){}
 

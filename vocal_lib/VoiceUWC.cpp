@@ -1,5 +1,8 @@
 ﻿#include "VoiceUWC.h"
 
+#include "../format/UnitWaveformContainer.h"
+#include "../parser/WavParser.h"
+
 using namespace std;
 
 VoiceUWC::~VoiceUWC()

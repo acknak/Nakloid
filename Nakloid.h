@@ -6,11 +6,10 @@
 #include <vector>
 #include "core/UnitWaveformOverlapper.h"
 #include "score/Score.h"
-#include "score/ScoreNAK.h"
-#include "score/ScoreSMF.h"
-#include "score/ScoreUST.h"
-#include "vocal_lib/Voice.h"
 #include "vocal_lib/VocalLibrary.h"
+
+#include <string>
+#include <boost/filesystem/path.hpp>
 
 class Nakloid {
  public:

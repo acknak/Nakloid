@@ -1,5 +1,16 @@
 ﻿#include "Nakloid.h"
 
+#include "core/UnitWaveformOverlapper.h"
+#include "core/UnitWaveformMaker.h"
+#include "core/PitchMarker.h"
+#include "score/ScoreNAK.h"
+#include "score/ScoreSMF.h"
+#include "score/ScoreUST.h"
+#include "vocal_lib/Voice.h"
+
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+
 using namespace std;
 struct Nakloid::Parameters Nakloid::params;
 
@@ -103,6 +114,7 @@ bool Nakloid::vocalization()
   return true;
 }
 
+<<<<<<< HEAD
 bool Nakloid::makeAllCache(bool save_pmp, bool save_uwc)
 {
   if (!(save_pmp|save_uwc)) {

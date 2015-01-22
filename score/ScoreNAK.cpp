@@ -1,5 +1,11 @@
 ﻿#include "ScoreNAK.h"
 
+#include <boost/algorithm/string.hpp>
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+
 using namespace std;
 using namespace rapidjson;
 

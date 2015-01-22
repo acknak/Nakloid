@@ -1,13 +1,10 @@
 ﻿#ifndef SmfParser_h
 #define SmfParser_h
 
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include <string>
 #include <vector>
-#include <boost/filesystem/fstream.hpp>
-#include "SmfHandler.h"
+#include <boost/filesystem/path.hpp>
+
+class SmfHandler;
 
 class SmfParser {
  public:

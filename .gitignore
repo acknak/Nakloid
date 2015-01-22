@@ -26,6 +26,7 @@ Nakloid
 *.lo
 *.o
 *.exe
+*.d
 
 # Compiled Dynamic libraries
 *.so

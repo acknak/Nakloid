@@ -1,5 +1,7 @@
 ﻿#include "PronunciationAlias.h"
 
+#include <boost/assign.hpp>
+
 using namespace std;
 
 map<wstring, wstring> PronunciationAlias::data_vowel2pron = boost::assign::map_list_of
