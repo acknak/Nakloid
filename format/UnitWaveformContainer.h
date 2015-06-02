@@ -22,7 +22,7 @@ class UnitWaveform {
  public:
   static const long chunkSize = 12;
   UnitWaveform(){}
-  UnitWaveform(short dwPitchLeft, long dwPitchRight, float dwPosition)
+  UnitWaveform(short dwPitchLeft, long dwPitchRight, long dwPosition)
     :dwPitchLeft(dwPitchLeft), dwPitchRight(dwPitchRight), dwPosition(dwPosition){}
   bool operator==(const UnitWaveform& other) const;
   bool operator!=(const UnitWaveform& other) const;
