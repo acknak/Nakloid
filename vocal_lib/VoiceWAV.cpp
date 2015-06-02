@@ -3,7 +3,7 @@
 using namespace std;
 
 struct VoiceWAV::Parameters VoiceWAV::params;
-map< wstring, vector<double> > VoiceWAV::vowel_wav_map;
+map< wstring, VoiceWAV::PitchmarkTemplateParameters > VoiceWAV::vowel_wav_map;
 
 const UnitWaveformContainer* VoiceWAV::getUnitWaveformContainer() const
 {
@@ -33,14 +33,23 @@ void VoiceWAV::makeUnitWaveformContainerCache(bool save_memory_cache) const
     pmp.load(path_pmp);
   } else {
     long sub_fade_start=0, sub_fade_end=0;
+
     PitchMarker *marker = new PitchMarker(tmp_wav.data.getData(), offs, ovrl, prec, blnk, tmp_wav.header.dwSamplesPerSec);
     if (!pron_alias.getPronVowel().empty()) {
       short win_size = tmp_wav.header.dwSamplesPerSec / getFrq() * 2;
+
       vector<double> aft_vowel_wav = getVowelWav();
-      vector<double> fore_vowel_wav;
       trimVector(&aft_vowel_wav, win_size);
+      pmp.base_vowel_wav_filename = vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].filename;
+      pmp.base_vowel_wav_from = vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].from;
+      pmp.base_vowel_wav_to = vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].to;
+
+      vector<double> fore_vowel_wav;
       if (isVCV() && (fore_vowel_wav=getPrefixVowelWav()).size()>0) {
         trimVector(&fore_vowel_wav, win_size);
+        pmp.prefix_vowel_wav_filename = vowel_wav_map[pron_alias.getPrefixVowel() + pron_alias.suffix].filename;
+        pmp.prefix_vowel_wav_from = vowel_wav_map[pron_alias.getPrefixVowel() + pron_alias.suffix].from;
+        pmp.prefix_vowel_wav_to = vowel_wav_map[pron_alias.getPrefixVowel() + pron_alias.suffix].to;
         marker->mark(fore_vowel_wav, aft_vowel_wav);
       } else {
         marker->mark(aft_vowel_wav);
@@ -132,22 +141,27 @@ void VoiceWAV::setVowelWav() const
       it_tmp_wav_max = it_tmp_wav_cons+i;
     }
   }
-  vowel_wav_map[pron_alias.getPronVowel()+pron_alias.suffix].assign(it_tmp_wav_max-win_size, it_tmp_wav_max+win_size);
+  vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].filename = path.filename().wstring();
+  vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].waveform.assign(it_tmp_wav_max - win_size, it_tmp_wav_max + win_size);
+  vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].from = (it_tmp_wav_max - tmp_wav.data.getData().begin()) - win_size;
+  vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].to = (it_tmp_wav_max - tmp_wav.data.getData().begin()) + win_size;
   tmp_wav.clear();
 }
 
 const vector<double>& VoiceWAV::getVowelWav() const
 {
-  map< wstring, vector<double> >::iterator it = vowel_wav_map.find(pron_alias.getPronVowel()+pron_alias.suffix);
-  setVowelWav();
-  return vowel_wav_map[pron_alias.getPronVowel()+pron_alias.suffix];
+  map< wstring, VoiceWAV::PitchmarkTemplateParameters >::iterator it = vowel_wav_map.find(pron_alias.getPronVowel() + pron_alias.suffix);
+  if (it == vowel_wav_map.end()) {
+    setVowelWav();
+  }
+  return vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].waveform;
 }
 
 const vector<double>& VoiceWAV::getPrefixVowelWav() const
 {
-  map< wstring, vector<double> >::iterator it = vowel_wav_map.find(pron_alias.getPrefixVowel()+pron_alias.suffix);
+  map< wstring, VoiceWAV::PitchmarkTemplateParameters >::iterator it = vowel_wav_map.find(pron_alias.getPrefixVowel() + pron_alias.suffix);
   if (it != vowel_wav_map.end()) {
-    return vowel_wav_map[pron_alias.getPrefixVowel()+pron_alias.suffix];
+    return vowel_wav_map[pron_alias.getPrefixVowel()+pron_alias.suffix].waveform;
   }
   return vector<double>(0,0);
 }

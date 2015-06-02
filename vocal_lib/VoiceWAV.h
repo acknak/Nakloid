@@ -24,6 +24,14 @@ class VoiceWAV: public Voice, public WavHandler {
     bool make_uwc_cache;
     bool make_pmp_cache;
   } params;
+
+  static struct PitchmarkTemplateParameters {
+    std::wstring filename;
+    std::vector<double> waveform;
+    long from;
+    long to;
+  };
+
   VoiceWAV(const std::wstring& str_pron_alias, const boost::filesystem::path& path):Voice(str_pron_alias, path){}
   VoiceWAV(const PronunciationAlias& pron_alias, const boost::filesystem::path& path):Voice(pron_alias, path){}
   VoiceWAV(const VoiceWAV& other):Voice(other){}
@@ -34,7 +42,7 @@ class VoiceWAV: public Voice, public WavHandler {
 
  private:
   mutable Wav tmp_wav;
-  static std::map< std::wstring, std::vector<double> > vowel_wav_map;
+  static std::map< std::wstring, PitchmarkTemplateParameters > vowel_wav_map;
 
   const std::vector<double>& getVowelWav() const;
   const std::vector<double>& getPrefixVowelWav() const;

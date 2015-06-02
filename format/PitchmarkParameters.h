@@ -21,6 +21,14 @@ class PitchmarkParameters {
   long base_pitch;
   std::vector<long> pitchmark_points;
 
+  std::wstring base_vowel_wav_filename;
+  long base_vowel_wav_from;
+  long base_vowel_wav_to;
+
+  std::wstring prefix_vowel_wav_filename;
+  long prefix_vowel_wav_from;
+  long prefix_vowel_wav_to;
+
   void load(const boost::filesystem::wpath& path);
   void save(const boost::filesystem::wpath& path);
 };
