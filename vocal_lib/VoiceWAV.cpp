@@ -141,7 +141,7 @@ void VoiceWAV::setVowelWav() const
       it_tmp_wav_max = it_tmp_wav_cons+i;
     }
   }
-  vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].filename = path.filename().wstring();
+  vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].filename = path.relative_path().wstring();
   vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].waveform.assign(it_tmp_wav_max - win_size, it_tmp_wav_max + win_size);
   vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].from = (it_tmp_wav_max - tmp_wav.data.getData().begin()) - win_size;
   vowel_wav_map[pron_alias.getPronVowel() + pron_alias.suffix].to = (it_tmp_wav_max - tmp_wav.data.getData().begin()) + win_size;
