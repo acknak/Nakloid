@@ -20,30 +20,53 @@ void ScoreNAK::load()
 
   GenericDocument< UTF16<> > doc;
   doc.ParseStream(buffer);
-  const GenericValue< UTF16<> >& tmp_notes = doc[L"Score"][L"Notes"];
+  if (!doc.HasMember(L"Score")) {
+    cerr << "[ScoreNAK::load]" << getScorePath() << " is not nak score." << endl;
+    return;
+  }
+  const GenericValue< UTF16<> >& tmp_score = doc[L"Score"];
+  if (!tmp_score.HasMember(L"Notes")) {
+    cerr << "[ScoreNAK::load]" << getScorePath() << " does not have Notes." << endl;
+    return;
+  }
+  const GenericValue< UTF16<> >& tmp_notes = tmp_score[L"Notes"];
   if (tmp_notes.IsArray()) {
     for (SizeType i = 0; i < tmp_notes.Size(); i++) {
       if (tmp_notes[i][L"id"].IsInt()) {
         Note tmp_note(this, tmp_notes[i][L"id"].GetInt());
-        tmp_note.setPronAlias(tmp_notes[i][L"alias"].IsString()?tmp_notes[i][L"alias"].GetString():L"");
-        tmp_note.setStart(tmp_notes[i][L"start"].IsInt()?tmp_notes[i][L"start"].GetInt():0);
-        tmp_note.setEnd(tmp_notes[i][L"end"].IsInt()?tmp_notes[i][L"end"].GetInt():0);
-        if (tmp_notes[i][L"margin"].IsArray()) {
-          const GenericValue< UTF16<> >& tmp_margin = tmp_notes[i][L"margin"];
-          tmp_note.setMargin(tmp_margin[SizeType(0)].IsInt()?tmp_margin[SizeType(0)].GetInt():0,
-                             tmp_margin[SizeType(1)].IsInt()?tmp_margin[SizeType(1)].GetInt():0);
+        if (tmp_notes[i].HasMember(L"alias") && tmp_notes[i][L"alias"].IsString()) {
+          tmp_note.setPronAlias(tmp_notes[i][L"alias"].GetString());
         }
-        if (tmp_notes[i][L"padding"].IsArray()) {
-          const GenericValue< UTF16<> >& tmp_padding = tmp_notes[i][L"padding"];
-          tmp_note.setPadding(tmp_padding[SizeType(0)].IsInt()?tmp_padding[SizeType(0)].GetInt():0,
-                             tmp_padding[SizeType(1)].IsInt()?tmp_padding[SizeType(1)].GetInt():0);
+        if (tmp_notes[i].HasMember(L"start") && tmp_notes[i][L"start"].IsInt()) {
+          tmp_note.setStart(tmp_notes[i][L"start"].GetInt());
         }
-        tmp_note.setPrec(tmp_notes[i][L"prec"].IsInt()?tmp_notes[i][L"prec"].GetInt():0);
-        tmp_note.setOvrl(tmp_notes[i][L"ovrl"].IsInt()?tmp_notes[i][L"ovrl"].GetInt():0);
-        tmp_note.setCons(tmp_notes[i][L"cons"].IsInt()?tmp_notes[i][L"cons"].GetInt():0);
-        tmp_note.setBaseVelocity(tmp_notes[i][L"vel"].IsInt()?tmp_notes[i][L"vel"].GetInt():0);
-        tmp_note.setBasePitch(tmp_notes[i][L"pitch"].IsInt()?tmp_notes[i][L"pitch"].GetInt():0);
-        if (tmp_notes[i][L"vel_points"].IsArray()) {
+        if (tmp_notes[i].HasMember(L"end") && tmp_notes[i][L"end"].IsInt()) {
+          tmp_note.setEnd(tmp_notes[i][L"end"].GetInt());
+        }
+        if (tmp_notes[i].HasMember(L"front_margin") && tmp_notes[i][L"front_margin"].IsInt()
+          && tmp_notes[i].HasMember(L"back_margin") && tmp_notes[i][L"back_margin"].IsInt()) {
+          tmp_note.setMargin(tmp_notes[i][L"front_margin"].GetInt(), tmp_notes[i][L"back_margin"].GetInt());
+        }
+        if (tmp_notes[i].HasMember(L"front_padding") && tmp_notes[i][L"front_padding"].IsInt()
+          && tmp_notes[i].HasMember(L"back_padding") && tmp_notes[i][L"back_padding"].IsInt()) {
+          tmp_note.setPadding(tmp_notes[i][L"front_padding"].GetInt(), tmp_notes[i][L"back_padding"].GetInt());
+        }
+        if (tmp_notes[i].HasMember(L"prec") && tmp_notes[i][L"prec"].IsInt()) {
+          tmp_note.setPrec(tmp_notes[i][L"prec"].GetInt());
+        }
+        if (tmp_notes[i].HasMember(L"ovrl") && tmp_notes[i][L"ovrl"].IsInt()) {
+          tmp_note.setOvrl(tmp_notes[i][L"ovrl"].GetInt());
+        }
+        if (tmp_notes[i].HasMember(L"cons") && tmp_notes[i][L"cons"].IsInt()) {
+          tmp_note.setCons(tmp_notes[i][L"cons"].GetInt());
+        }
+        if (tmp_notes[i].HasMember(L"vel") && tmp_notes[i][L"vel"].IsInt()) {
+          tmp_note.setBaseVelocity(tmp_notes[i][L"vel"].GetInt());
+        }
+        if (tmp_notes[i].HasMember(L"pitch") && tmp_notes[i][L"pitch"].IsInt()) {
+          tmp_note.setBasePitch(tmp_notes[i][L"pitch"].GetInt());
+        }
+        if (tmp_notes[i].HasMember(L"vel_points") && tmp_notes[i][L"vel_points"].IsArray()) {
           const GenericValue< UTF16<> >& tmp_vel_points = tmp_notes[i][L"vel_points"];
           for (SizeType i = 0; i < tmp_vel_points.Size(); i++) {
             if (tmp_vel_points[L"vel_points"].IsArray()) {

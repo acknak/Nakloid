@@ -44,16 +44,10 @@ void Score::saveScore(const boost::filesystem::path& path_score)
     }
     tmp_note.AddMember(L"start", notes[i].getStart(), allocator);
     tmp_note.AddMember(L"end", notes[i].getEnd(), allocator);
-    {
-      GenericValue< UTF16<> > tmp_margin(kArrayType);
-      tmp_margin.PushBack(notes[i].getFrontMargin(), allocator).PushBack(notes[i].getBackMargin(), allocator);
-      tmp_note.AddMember(L"margin", tmp_margin, allocator);
-    }
-    {
-      GenericValue< UTF16<> > tmp_padding(kArrayType);
-      tmp_padding.PushBack(notes[i].getFrontPadding(), allocator).PushBack(notes[i].getBackPadding(), allocator);
-      tmp_note.AddMember(L"padding", tmp_padding, allocator);
-    }
+    tmp_note.AddMember(L"front_margin", notes[i].getFrontMargin(), allocator);
+    tmp_note.AddMember(L"back_margin", notes[i].getBackMargin(), allocator);
+    tmp_note.AddMember(L"front_padding", notes[i].getFrontPadding(), allocator);
+    tmp_note.AddMember(L"back_padding", notes[i].getBackPadding(), allocator);
     tmp_note.AddMember(L"prec", notes[i].getPrec(), allocator);
     tmp_note.AddMember(L"ovrl", notes[i].getOvrl(), allocator);
     tmp_note.AddMember(L"cons", notes[i].getCons(), allocator);
