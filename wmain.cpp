@@ -284,8 +284,8 @@ bool parse_ini()
     if (boost::optional<double> tmp = wpt.get_optional<double>(L"Arrange.pitch_preparation")) {
       Score::params.pitch_preparation = tmp.get();
     }
-    if (boost::optional<long> tmp = wpt.get_optional<long>(L"Pitchmark.pitch_default")) {
-      Voice::params.pitch_default = tmp.get();
+    if (boost::optional<long> tmp = wpt.get_optional<long>(L"Pitchmark.default_pitch")) {
+      Voice::params.default_pitch = tmp.get();
     }
     if (boost::optional<short> tmp = wpt.get_optional<short>(L"Pitchmark.pitch_margin")) {
       PitchMarker::params.pitch_margin = tmp.get();

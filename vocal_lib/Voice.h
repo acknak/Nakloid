@@ -14,10 +14,10 @@ class Voice {
  public:
   static struct Parameters {
     Parameters() {
-      pitch_default = 260;
+      default_pitch = 260;
       num_default_uwc_lobes = 1;
     }
-    long pitch_default;
+    long default_pitch;
     short num_default_uwc_lobes;
   } params;
 
