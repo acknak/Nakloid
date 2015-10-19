@@ -339,15 +339,15 @@ vector<short> Note::getVelocities() const
           (1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second);
       }
     }
-  }
-
-  // padding
-  short padding_front=getFrontPadding(), padding_back=getBackPadding();
-  for (size_t i=0; i<padding_front; i++) {
-    velocities[i] *= i / (double)padding_front;
-  }
-  for (size_t i=0; i<padding_back; i++) {
-    velocities[velocities.size()-1-i] *= i / (double)padding_back;
+  } else {
+	// padding
+	short padding_front = getFrontPadding(), padding_back = getBackPadding();
+	for (size_t i = 0; i<padding_front; i++) {
+		velocities[i] *= i / (double)padding_front;
+	}
+	for (size_t i = 0; i<padding_back; i++) {
+		velocities[velocities.size() - 1 - i] *= i / (double)padding_back;
+	}
   }
 
   return velocities;
