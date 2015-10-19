@@ -26,7 +26,7 @@ class PitchMarker {
 
   explicit PitchMarker(const std::vector<double>& input_wav)
    :input_wav(input_wav), it_input_wav_offs(input_wav.begin()), it_input_wav_blnk(input_wav.end()), sub_fade_start(0), sub_fade_end(0){}
-  PitchMarker(const std::vector<double>& input_wav, short ms_offs, short ms_ovrl, short ms_prec, short ms_blnk, unsigned long fs);
+  PitchMarker(const std::vector<double>& input_wav, short ms_offs, short ms_ovrl, short ms_preu, short ms_blnk, unsigned long fs);
   ~PitchMarker(){}
 
   bool mark(const std::vector<double>& vowel_wav);
@@ -34,7 +34,7 @@ class PitchMarker {
   bool mark(double hz, unsigned long fs);
 
   // accessor
-  void setInputWavParam(short ms_offs, short ms_ovrl, short ms_prec, short ms_blnk, unsigned long fs);
+  void setInputWavParam(short ms_offs, short ms_ovrl, short ms_preu, short ms_blnk, unsigned long fs);
   std::vector<long> getPitchMarks() const;
   long getFadeStartSub() const;
 
@@ -46,7 +46,7 @@ class PitchMarker {
   long sub_fade_start, sub_fade_end;
   std::vector<double>::const_iterator it_input_wav_offs;
   std::vector<double>::const_iterator it_input_wav_ovrl;
-  std::vector<double>::const_iterator it_input_wav_prec;
+  std::vector<double>::const_iterator it_input_wav_preu;
   std::vector<double>::const_iterator it_input_wav_blnk;
   std::vector<long> pitchmarks;
 

@@ -68,7 +68,7 @@ bool Nakloid::vocalization()
     }
     wcout << L"synthesize \"" << it_notes->getPronAliasString() << L"\" from " << it_notes->getPronStart() << L"ms to " << it_notes->getPronEnd() << L"ms" << endl;
     if (params.print_debug) {
-      cout << "ovrl: " << it_notes->getOvrl() << ", prec: " << it_notes->getPrec() << ", cons: " << it_notes->getCons() << endl
+      cout << "ovrl: " << it_notes->getOvrl() << ", preu: " << it_notes->getPreu() << ", cons: " << it_notes->getCons() << endl
         << "start: " << it_notes->getStart() << ", end: " << it_notes->getEnd() << endl
         << "front margin: "  << it_notes->getFrontMargin()
         << ", front padding: " << it_notes->getFrontPadding() << endl

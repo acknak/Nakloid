@@ -69,7 +69,7 @@ void ScoreUST::load()
           }
         } else if (buf_vector[0] == L"PreUtterance") {
           if (!buf_vector[1].empty()) {
-            tmp_note->setPrec(boost::lexical_cast<double>(buf_vector[1]));
+            tmp_note->setPreu(boost::lexical_cast<double>(buf_vector[1]));
           }
         } else if (buf_vector[0] == L"VoiceOverlap") {
           if (!buf_vector[1].empty()) {

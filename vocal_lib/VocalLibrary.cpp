@@ -147,15 +147,15 @@ void VocalLibrary::parseVoiceData(Voice* voice, const vector<wstring>& data) con
   voice->setOffs((((tmp=boost::lexical_cast<double>(data[1]))>0))?tmp:0);
   voice->setCons((((tmp=boost::lexical_cast<double>(data[2]))>0))?tmp:0);
   voice->setBlnk(boost::lexical_cast<double>(data[3]));
-  voice->setPrec(boost::lexical_cast<double>(data[4]));
+  voice->setPreu(boost::lexical_cast<double>(data[4]));
   voice->setOvrl(boost::lexical_cast<double>(data[5]));
 
   // sanitize
-  if (voice->getOvrl() > voice->getPrec()) {
-    voice->setPrec(voice->getOvrl());
+  if (voice->getOvrl() > voice->getPreu()) {
+    voice->setPreu(voice->getOvrl());
   }
-  if (voice->getPrec() > voice->getCons()) {
-    voice->setCons(voice->getPrec());
+  if (voice->getPreu() > voice->getCons()) {
+    voice->setCons(voice->getPreu());
   }
   if (voice->getBlnk()<0 && voice->getCons()>-voice->getBlnk()) {
     voice->setBlnk(-voice->getCons());
@@ -165,7 +165,7 @@ void VocalLibrary::parseVoiceData(Voice* voice, const vector<wstring>& data) con
     voice->setOffs(0);
     voice->setOvrl(voice->getOvrl()+tmp);
     voice->setCons(voice->getCons()+tmp);
-    voice->setPrec(voice->getPrec()+tmp);
+    voice->setPreu(voice->getPreu()+tmp);
     if (voice->getBlnk() < 0) {
       voice->setBlnk(voice->getBlnk()-tmp);
     }

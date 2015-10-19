@@ -48,9 +48,6 @@ void Score::saveScore(const boost::filesystem::path& path_score)
     tmp_note.AddMember(L"back_margin", notes[i].getBackMargin(), allocator);
     tmp_note.AddMember(L"front_padding", notes[i].getFrontPadding(), allocator);
     tmp_note.AddMember(L"back_padding", notes[i].getBackPadding(), allocator);
-    tmp_note.AddMember(L"prec", notes[i].getPrec(), allocator);
-    tmp_note.AddMember(L"ovrl", notes[i].getOvrl(), allocator);
-    tmp_note.AddMember(L"cons", notes[i].getCons(), allocator);
     tmp_note.AddMember(L"vel", notes[i].getBaseVelocity(), allocator);
     tmp_note.AddMember(L"pitch", notes[i].getBasePitch(), allocator);
     {
@@ -383,7 +380,7 @@ void Score::sanitizeNote(std::vector<Note>::iterator it_notes)
   const Voice *tmp_voice = vocal_lib->getVoice(tmp_alias.getAliasString());
   if (tmp_voice != 0) {
     it_notes->setOvrl((it_notes->isOvrl())?it_notes->getOvrl():tmp_voice->getOvrl());
-    it_notes->setPrec((it_notes->isPrec())?it_notes->getPrec():tmp_voice->getPrec());
+    it_notes->setPreu((it_notes->isPreu())?it_notes->getPreu():tmp_voice->getPreu());
     it_notes->setCons((it_notes->isCons())?it_notes->getCons():tmp_voice->getCons());
   }
 

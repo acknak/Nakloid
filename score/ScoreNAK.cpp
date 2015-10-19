@@ -51,15 +51,6 @@ void ScoreNAK::load()
           && tmp_notes[i].HasMember(L"back_padding") && tmp_notes[i][L"back_padding"].IsInt()) {
           tmp_note.setPadding(tmp_notes[i][L"front_padding"].GetInt(), tmp_notes[i][L"back_padding"].GetInt());
         }
-        if (tmp_notes[i].HasMember(L"prec") && tmp_notes[i][L"prec"].IsInt()) {
-          tmp_note.setPrec(tmp_notes[i][L"prec"].GetInt());
-        }
-        if (tmp_notes[i].HasMember(L"ovrl") && tmp_notes[i][L"ovrl"].IsInt()) {
-          tmp_note.setOvrl(tmp_notes[i][L"ovrl"].GetInt());
-        }
-        if (tmp_notes[i].HasMember(L"cons") && tmp_notes[i][L"cons"].IsInt()) {
-          tmp_note.setCons(tmp_notes[i][L"cons"].GetInt());
-        }
         if (tmp_notes[i].HasMember(L"vel") && tmp_notes[i][L"vel"].IsInt()) {
           tmp_note.setBaseVelocity(tmp_notes[i][L"vel"].GetInt());
         }

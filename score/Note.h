@@ -19,7 +19,7 @@ struct NoteFrame {
     base_pitch = 0x45;
     base_velocity = 100;
     margin = padding = 0;
-    prec = ovrl = cons = 0;
+    preu = ovrl = cons = 0;
     is_vcv = false;
   }
   long start, end;
@@ -28,7 +28,7 @@ struct NoteFrame {
   short base_velocity;
   std::vector< std::pair<long,short> > velocity_points;
   std::pair<short,short> *margin, *padding;
-  short *prec, *ovrl, *cons;
+  short *preu, *ovrl, *cons;
   bool is_vcv;
 };
 
@@ -84,9 +84,9 @@ class Note {
   const std::vector< std::pair<long,short> > &getVelocityPoints() const;
   short getVelocityPointNum() const;
   std::vector<short> getVelocities() const;
-  bool isPrec() const;
-  short getPrec() const;
-  void setPrec(short prec);
+  bool isPreu() const;
+  short getPreu() const;
+  void setPreu(short preu);
   bool isOvrl() const;
   short getOvrl() const;
   void setOvrl(short ovrl);

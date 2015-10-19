@@ -5,7 +5,7 @@ using namespace std;
 struct Voice::Parameters Voice::params;
 
 Voice::Voice(const Voice& other)
-  :path(other.path),pron_alias(other.pron_alias),offs(other.offs),cons(other.cons),blnk(other.blnk),prec(other.prec),ovrl(other.ovrl),frq(0.0),uwc(0)
+  :path(other.path),pron_alias(other.pron_alias),offs(other.offs),cons(other.cons),blnk(other.blnk),preu(other.preu),ovrl(other.ovrl),frq(0.0),uwc(0)
 {
   if (other.hasFrq()) {
     setFrq(other.getFrq());
@@ -31,7 +31,7 @@ Voice& Voice::operator=(const Voice& other)
     offs = other.offs;
     cons = other.cons;
     blnk = other.blnk;
-    prec = other.prec;
+    preu = other.preu;
     ovrl = other.ovrl;
     if (other.hasFrq()) {
       setFrq(other.getFrq());
@@ -52,7 +52,7 @@ bool Voice::operator==(const Voice& other) const
   is_eq &= (offs == other.offs);
   is_eq &= (cons == other.cons);
   is_eq &= (blnk == other.blnk);
-  is_eq &= (prec == other.prec);
+  is_eq &= (preu == other.preu);
   is_eq &= (ovrl == other.ovrl);
 
   if (hasFrq() && other.hasFrq()) {
@@ -185,14 +185,14 @@ void Voice::setBlnk(short blnk)
   this->blnk = blnk;
 }
 
-short Voice::getPrec() const
+short Voice::getPreu() const
 {
-  return prec;
+  return preu;
 }
 
-void Voice::setPrec(short prec)
+void Voice::setPreu(short preu)
 {
-  this->prec = prec;
+  this->preu = preu;
 }
 
 short Voice::getOvrl() const

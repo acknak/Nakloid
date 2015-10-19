@@ -22,9 +22,9 @@ class Voice {
   } params;
 
   Voice(const std::wstring& str_pron_alias, boost::filesystem::path path)
-    :path(path),pron_alias(PronunciationAlias(str_pron_alias)),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0){}
+    :path(path),pron_alias(PronunciationAlias(str_pron_alias)),offs(0),cons(0),blnk(0),preu(0),ovrl(0),frq(0.0),uwc(0){}
   Voice(const PronunciationAlias& pron_alias, boost::filesystem::path path)
-    :path(path),pron_alias(pron_alias),offs(0),cons(0),blnk(0),prec(0),ovrl(0),frq(0.0),uwc(0){}
+    :path(path),pron_alias(pron_alias),offs(0),cons(0),blnk(0),preu(0),ovrl(0),frq(0.0),uwc(0){}
   Voice(const Voice& other);
   virtual ~Voice();
   
@@ -53,8 +53,8 @@ class Voice {
   virtual void setCons(short cons);
   virtual short getBlnk() const;
   virtual void setBlnk(short blnk);
-  virtual short getPrec() const;
-  virtual void setPrec(short prec);
+  virtual short getPreu() const;
+  virtual void setPreu(short preu);
   virtual short getOvrl() const;
   virtual void setOvrl(short ovrl);
 
@@ -70,7 +70,7 @@ class Voice {
   short offs; // offset(left blank)
   short cons; // consonant part(unaltered range)
   short blnk; // blank(right blank)
-  short prec; // preceding utterance
+  short preu; // preutterance
   short ovrl; // overlap range
 };
 

@@ -26,8 +26,8 @@ Note::Note(const Note& other)
   if (other.self.padding != 0) {
     self.padding = new pair<short,short>(*(other.self.padding));
   }
-  if (other.self.prec != 0) {
-    self.prec = new short (*(other.self.prec));
+  if (other.self.preu != 0) {
+    self.preu = new short (*(other.self.preu));
   }
   if (other.self.ovrl != 0) {
     self.ovrl = new short (*(other.self.ovrl));
@@ -47,9 +47,9 @@ Note::~Note()
     delete self.padding;
     self.padding = 0;
   }
-  if (self.prec != 0) {
-    delete self.prec;
-    self.prec = 0;
+  if (self.preu != 0) {
+    delete self.preu;
+    self.preu = 0;
   }
   if (self.ovrl != 0) {
     delete self.ovrl;
@@ -73,8 +73,8 @@ Note& Note::operator=(const Note& other)
     if (other.self.padding != 0) {
       self.padding = new pair<short,short>(*(other.self.padding));
     }
-    if (other.self.prec != 0) {
-      self.prec = new short (*(other.self.prec));
+    if (other.self.preu != 0) {
+      self.preu = new short (*(other.self.preu));
     }
     if (other.self.ovrl != 0) {
       self.ovrl = new short (*(other.self.ovrl));
@@ -105,7 +105,7 @@ bool Note::operator==(const Note& other) const
   if (self.padding!=other.self.padding && self.padding!=0 && other.self.padding!=0) {
     is_eq &= (*self.padding!=*other.self.padding);
   }
-  is_eq &= (this->getPrec() == other.getPrec());
+  is_eq &= (this->getPreu() == other.getPreu());
   is_eq &= (this->getOvrl() == other.getOvrl());
   is_eq &= (this->getCons() == other.getCons());
   is_eq &= (self.is_vcv == other.self.is_vcv);
@@ -132,7 +132,7 @@ long Note::getStart() const
 
 long Note::getPronStart() const
 {
-  return self.start - getPrec() - ((getOvrl()<0)?getOvrl():0) + score->getMargin() + getFrontMargin();
+  return self.start - getPreu() - ((getOvrl()<0)?getOvrl():0) + score->getMargin() + getFrontMargin();
 }
 
 void Note::setStart(long ms_start)
@@ -172,16 +172,16 @@ short Note::getFrontMargin() const
   }
 
   if (isVCV()) {
-    long ms_prev_cons_start = note_prev->getStart() - note_prev->getPrec() + note_prev->getCons();
-    long ms_start = getStart() - getPrec();
+    long ms_prev_cons_start = note_prev->getStart() - note_prev->getPreu() + note_prev->getCons();
+    long ms_start = getStart() - getPreu();
     if (ms_start < ms_prev_cons_start) {
       long tmp_margin = ms_prev_cons_start - ms_start;
       long tmp_padding = max(params.ms_front_padding, params.ms_back_padding);
       tmp_padding = min(tmp_padding, (long)getOvrl());
-      if (getPrec()-tmp_margin > tmp_padding) {
+      if (getPreu()-tmp_margin > tmp_padding) {
         return tmp_margin;
       } else {
-        return getPrec() - tmp_padding;
+        return getPreu() - tmp_padding;
       }
     }
   }
@@ -202,7 +202,7 @@ short Note::getBackMargin() const
   if (isVCV() || note_next->isVCV()) {
     return getEnd()+score->getMargin() - (note_next->getPronStart()+note_next->getFrontPadding());
   }
-  return note_next->getPrec() - note_next->getOvrl();
+  return note_next->getPreu() - note_next->getOvrl();
 }
 
 void Note::setMargin(short front, short back)
@@ -321,7 +321,7 @@ vector<short> Note::getVelocities() const
 {
   long ms_pron_start=getPronStart(), ms_pron_end=getPronEnd();
   long velocities_size = ms_pron_end-((getPronStart()>0)?ms_pron_start:0);
-  vector<short> velocities(velocities_size, 100*(params.auto_vowel_combining?params.vowel_combining_volume:1.0));
+  vector<short> velocities(velocities_size, self.base_velocity*(params.auto_vowel_combining?params.vowel_combining_volume:1.0));
   vector< pair<long,short> > tmp_velocity_points = getVelocityPoints();
 
   if (tmp_velocity_points.size() > 0) {
@@ -336,7 +336,7 @@ vector<short> Note::getVelocities() const
     for (map<long,short>::iterator it=++tmp_vels.begin(); it!=tmp_vels.end(); ++it) {
       for (size_t i=0; i<it->first-boost::prior(it)->first; i++) {
         velocities[i+boost::prior(it)->first] =
-          (1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second)*(self.base_velocity/100.0);
+          (1.0/(it->first-boost::prior(it)->first)*i*(it->second-boost::prior(it)->second)+boost::prior(it)->second);
       }
     }
   }
@@ -353,23 +353,23 @@ vector<short> Note::getVelocities() const
   return velocities;
 }
 
-bool Note::isPrec() const
+bool Note::isPreu() const
 {
-  return self.prec!=0;
+  return self.preu!=0;
 }
 
-short Note::getPrec() const
+short Note::getPreu() const
 {
-  return (self.prec==0)?0:*self.prec;
+  return (self.preu==0)?0:*self.preu;
 }
 
-void Note::setPrec(short prec)
+void Note::setPreu(short preu)
 {
-  if (self.prec != 0) {
-    delete self.prec;
-    self.prec = 0;
+  if (self.preu != 0) {
+    delete self.preu;
+    self.preu = 0;
   }
-  self.prec = new short (prec);
+  self.preu = new short (preu);
 }
 
 bool Note::isOvrl() const
