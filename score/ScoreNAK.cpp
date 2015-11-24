@@ -20,7 +20,7 @@ void ScoreNAK::load()
 
   GenericDocument< UTF16<> > doc;
   doc.ParseStream(buffer);
-  if (!doc.HasMember(L"Score")) {
+  if (doc.IsNull() || !doc.HasMember(L"Score")) {
     cerr << "[ScoreNAK::load]" << getScorePath() << " is not nak score." << endl;
     return;
   }
@@ -59,11 +59,12 @@ void ScoreNAK::load()
         }
         if (tmp_notes[i].HasMember(L"vel_points") && tmp_notes[i][L"vel_points"].IsArray()) {
           const GenericValue< UTF16<> >& tmp_vel_points = tmp_notes[i][L"vel_points"];
-          for (SizeType i = 0; i < tmp_vel_points.Size(); i++) {
-            if (tmp_vel_points[L"vel_points"].IsArray()) {
-              const GenericValue< UTF16<> >& tmp_vel_point = tmp_vel_points[i][L"vel_points"];
-              tmp_note.addVelocityPoint(tmp_vel_point[SizeType(0)].IsInt()?tmp_vel_point[SizeType(0)].GetInt():0,
-                                        tmp_vel_point[SizeType(1)].IsInt()?tmp_vel_point[SizeType(1)].GetInt():0);
+          if (tmp_vel_points.IsArray()) {
+            for (SizeType j=0; j<tmp_vel_points.Size(); j++) {
+              const GenericValue< UTF16<> >& tmp_vel_point = tmp_vel_points[j];
+              if (tmp_vel_points.IsArray() && tmp_vel_point[SizeType(0)].IsInt() && tmp_vel_point[SizeType(1)].IsInt()) {
+                tmp_note.addVelocityPoint(tmp_vel_point[SizeType(0)].GetInt(), tmp_vel_point[SizeType(1)].GetInt());
+              }
             }
           }
         }
