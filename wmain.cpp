@@ -21,13 +21,13 @@ bool is_logging = true;
 int wmain(int argc, wchar_t *argv[])
 {
   // set locale
-	ios_base::sync_with_stdio(false);
-	locale default_loc("");
-	locale::global(default_loc);
-	locale ctype_default(locale::classic(), default_loc, locale::ctype);
-	wcout.imbue(ctype_default);
-	wcerr.imbue(ctype_default);
-	wcin.imbue(ctype_default);
+  ios_base::sync_with_stdio(false);
+  locale default_loc("");
+  locale::global(default_loc);
+  locale ctype_default(locale::classic(), default_loc, locale::ctype);
+  wcout.imbue(ctype_default);
+  wcerr.imbue(ctype_default);
+  wcin.imbue(ctype_default);
 
   Nakloid *nakloid = 0;
 
