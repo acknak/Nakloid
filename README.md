@@ -17,3 +17,4 @@ see also
 * [wiki](https://github.com/acknak/Nakloid/wiki)
 * [video commentary](http://nico.ms/sm17093726)
 * [samples](http://nico.ms/mylist/32930257)
+* [NakloidGUI](https://github.com/acknak/NakloidGUI)
