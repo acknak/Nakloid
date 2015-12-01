@@ -222,7 +222,7 @@ bool parse_ini()
       VoiceWAV::params.use_pmp_cache = tmp.get();
     }
     if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"VocalLibrary.use_uwc_cache")) {
-      VocalLibrary::params.use_uwc_cache = tmp.get();
+      VocalLibrary::params.use_uwc_cache = VoiceWAV::params.make_uwc_cache = tmp.get();
     }
     if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.print_debug")) {
       Nakloid::params.print_debug = tmp.get();
