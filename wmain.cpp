@@ -293,8 +293,8 @@ bool parse_ini()
     if (boost::optional<double> tmp = wpt.get_optional<double>(L"Pitchmark.xcorr_threshold")) {
       PitchMarker::params.xcorr_threshold = tmp.get();
     }
-    if (boost::optional<double> tmp = wpt.get_optional<double>(L"Overlap.self_fade_stretch_scale")) {
-		UnitWaveformOverlapper::params.self_fade_stretch_scale = tmp.get();
+    if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Overlap.stretch_self_fade")) {
+		UnitWaveformOverlapper::params.stretch_self_fade = tmp.get();
     }
     if (boost::optional<long> tmp = wpt.get_optional<long>(L"Overlap.ms_self_fade")) {
       UnitWaveformOverlapper::params.ms_self_fade = tmp.get();

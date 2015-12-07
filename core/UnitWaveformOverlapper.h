@@ -17,7 +17,7 @@ class UnitWaveformOverlapper {
  public:
   static struct Parameters {
     Parameters() {
-	  self_fade_stretch_scale = 1.0;
+      stretch_self_fade = false;
       ms_self_fade = 200;
       interpolation = false;
       overlap_normalize = false;
@@ -28,7 +28,7 @@ class UnitWaveformOverlapper {
       num_lobes = 1;
       window_modification = true;
     };
-	double self_fade_stretch_scale;
+	bool stretch_self_fade;
     long ms_self_fade;
     bool interpolation;
     bool overlap_normalize;
