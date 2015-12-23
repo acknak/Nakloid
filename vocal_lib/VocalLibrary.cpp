@@ -48,6 +48,10 @@ bool VocalLibrary::initVoiceMap(const boost::filesystem::path& path_oto_ini, boo
     for (size_t i=0; i<v2.size(); i++) {
       boost::algorithm::trim(v2[i]);
     }
+    if (v2.size()<6 || v2[1].empty() || v2[2].empty() || v2[3].empty() || v2[4].empty() || v2[5].empty()) {
+      wcerr << L"[VocalLibrary::makeFileCache] invalid parameter found at \"" << pron_alias.getAliasString() << L"\" of \"" << path_singer << L"\"" << endl;
+      return false;
+    }
     if (make_cache_file) {
       VoiceWAV *tmp_voice = new VoiceWAV(pron_alias, path_wav);
       parseVoiceData(tmp_voice, v2);
@@ -85,6 +89,10 @@ bool VocalLibrary::makeFileCache(const PronunciationAlias& pron_alias) const
           boost::algorithm::split(v1, buf, boost::is_any_of("="));
           boost::algorithm::split(v2, v1[1], boost::is_any_of(","));
           boost::filesystem::path path_wav = path_ini.parent_path()/v1[0];
+          if (v2.size()<6 || v2[1].empty() || v2[2].empty() || v2[3].empty() || v2[4].empty() || v2[5].empty()) {
+            wcerr << L"[VocalLibrary::makeFileCache] invalid parameter found at \"" << str_pron_alias << L"\" of \"" << path_singer << L"\"" << endl;
+            return false;
+          }
           if (str_pron_alias == ((v2[0].empty())?path_wav.stem().wstring():v2[0])) {
             VoiceWAV *tmp_voice = new VoiceWAV(pron_alias, path_wav);
             parseVoiceData(tmp_voice, v2);
