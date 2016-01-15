@@ -8,7 +8,6 @@
 #include <list>
 #include <numeric>
 #include <vector>
-#include "fftw3compat.h"
 #include "core-inl.h"
 #include "../format/Wav.h"
 
@@ -51,18 +50,15 @@ class PitchMarker {
   std::vector<long> pitchmarks;
 
   template <class Iterator>
-  std::vector<Iterator> markWithVowel(Iterator it_input_begin, Iterator it_input_end,
-                                      Iterator it_vowel_begin, Iterator it_vowel_end) const;
+  std::vector<Iterator> markWithVowel(const Iterator it_input_begin, const Iterator it_input_end,
+                                      const Iterator it_vowel_begin, const Iterator it_vowel_end) const;
   template <class Iterator>
-  std::vector<Iterator> markWithVowel(Iterator it_input_begin, Iterator it_input_end,
-                                      Iterator it_vowel_begin, Iterator it_vowel_end,
+  std::vector<Iterator> markWithVowel(const Iterator it_input_begin, const Iterator it_input_end,
+                                      const Iterator it_vowel_begin, const Iterator it_vowel_end,
                                       std::vector<double>* xcorr_std) const;
   template <class Iterator>
-  std::vector<Iterator> markWithSelf(Iterator it_input_begin, Iterator it_input_end,
-                                     Iterator it_base_begin, Iterator it_base_end) const;
-  template <class Iterator>
-  void xcorr(Iterator it_input_begin, std::vector<double>::iterator it_output,
-             Iterator it_base_begin, Iterator it_base_end) const;
+  std::vector<Iterator> markWithSelf(const Iterator it_input_begin, const Iterator it_input_end,
+                                     const Iterator it_base_begin, const Iterator it_base_end) const;
 };
 
 #endif

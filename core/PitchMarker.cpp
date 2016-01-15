@@ -179,15 +179,15 @@ bool PitchMarker::mark(double hz, unsigned long fs)
 }
 
 template <class Iterator>
-vector<Iterator> PitchMarker::markWithVowel(Iterator it_input_begin, Iterator it_input_end,
-                                            Iterator it_vowel_begin, Iterator it_vowel_end) const
+vector<Iterator> PitchMarker::markWithVowel(const Iterator it_input_begin, const Iterator it_input_end,
+                                            const Iterator it_vowel_begin, const Iterator it_vowel_end) const
 {
   return markWithVowel(it_input_begin,it_input_end, it_vowel_begin, it_vowel_end, 0);
 }
 
 template <class Iterator>
-vector<Iterator> PitchMarker::markWithVowel(Iterator it_input_begin, Iterator it_input_end,
-                                            Iterator it_vowel_begin, Iterator it_vowel_end,
+vector<Iterator> PitchMarker::markWithVowel(const Iterator it_input_begin, const Iterator it_input_end,
+                                            const Iterator it_vowel_begin, const Iterator it_vowel_end,
                                             vector<double>* xcorr_std) const
 {
   vector<Iterator> pitchmarks(1, it_input_begin);
@@ -231,8 +231,8 @@ vector<Iterator> PitchMarker::markWithVowel(Iterator it_input_begin, Iterator it
 }
 
 template <class Iterator>
-vector<Iterator> PitchMarker::markWithSelf(Iterator it_input_begin, Iterator it_input_end,
-                                           Iterator it_base_begin, Iterator it_base_end) const
+vector<Iterator> PitchMarker::markWithSelf(const Iterator it_input_begin, const Iterator it_input_end,
+                                           const Iterator it_base_begin, const Iterator it_base_end) const
 {
   vector<Iterator> pitchmarks(1, it_input_begin);
   if (it_base_begin>=it_base_end || it_input_begin>=it_input_end) {
@@ -301,59 +301,4 @@ vector<long> PitchMarker::getPitchMarks() const
 {
   vector<long> tmp_pitchmarks(pitchmarks.begin(), pitchmarks.begin()+sub_fade_end+1);
   return tmp_pitchmarks;
-}
-
-/*
- * private
- */
-template <class Iterator>
-void PitchMarker::xcorr(Iterator it_input_begin, vector<double>::iterator it_output,
-                        const Iterator it_base_begin, const Iterator it_base_end) const
-{
-  short win_size = it_base_end-it_base_begin, fftlen = 1;
-  vector<double> filter = getWindow(win_size, 1);
-  for (;fftlen<win_size*2; fftlen<<=1);
-
-  fftw_complex *in1 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
-  fftw_complex *in2 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
-  fftw_complex *in3 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
-  fftw_complex *out1 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
-  fftw_complex *out2 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
-  fftw_complex *out3 = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex) * fftlen));
-
-  for (size_t i=0; i<fftlen; i++) {
-    in1[i][0] = in1[i][1] = in2[i][0] = in2[i][1] = 0;
-  }
-  for (size_t i=0; i<win_size; i++) {
-    in1[i][0] = *(it_base_begin+i) * filter[i];
-    in2[i+win_size][0] = *(it_input_begin-(win_size/2)+i) * filter[i];
-  }
-
-  fftw_plan p1 = fftw_plan_dft_1d(fftlen, in1, out1, FFTW_FORWARD, FFTW_ESTIMATE);
-  fftw_execute(p1);
-  fftw_destroy_plan(p1);
-
-  fftw_plan p2 = fftw_plan_dft_1d(fftlen, in2, out2, FFTW_FORWARD, FFTW_ESTIMATE);
-  fftw_execute(p2);
-  fftw_destroy_plan(p2);
-
-  for (size_t i=0; i<fftlen; i++) {
-    in3[i][0] = (out1[i][0]*out2[i][0])+(out1[i][1]*out2[i][1]);
-    in3[i][1] = (out1[i][0]*out2[i][1])-(out1[i][1]*out2[i][0]);
-  }
-
-  fftw_plan p3 = fftw_plan_dft_1d(fftlen, in3, out3, FFTW_BACKWARD, FFTW_ESTIMATE);
-  fftw_execute(p3);
-  fftw_destroy_plan(p3);
-
-  for (size_t i=0; i<win_size*2; i++) {
-    *(it_output+i) = out3[i][0];
-  }
-
-  fftw_free(in1);
-  fftw_free(in2);
-  fftw_free(in3);
-  fftw_free(out1);
-  fftw_free(out2);
-  fftw_free(out3);
 }
