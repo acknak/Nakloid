@@ -87,7 +87,7 @@ wstring PronunciationAlias::getPronVowel() const
 {
   wstring tmp_pron = pron;
   if (tmp_pron.length() > 1) {
-    tmp_pron = pron.substr(pron.length()-2, 1);
+    tmp_pron = pron.substr(pron.length()-1, 1);
   }
   return pron2vowel(tmp_pron);
 }
