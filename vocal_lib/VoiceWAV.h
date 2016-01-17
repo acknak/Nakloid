@@ -4,6 +4,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include "Voice.h"
+#include "../core/core-inl.h"
 #include "../core/PitchMarker.h"
 #include "../core/UnitWaveformMaker.h"
 #include "../format/PitchmarkParameters.h"
