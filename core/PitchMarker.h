@@ -53,10 +53,6 @@ class PitchMarker {
   std::vector<Iterator> markWithVowel(const Iterator it_input_begin, const Iterator it_input_end,
                                       const Iterator it_vowel_begin, const Iterator it_vowel_end) const;
   template <class Iterator>
-  std::vector<Iterator> markWithVowel(const Iterator it_input_begin, const Iterator it_input_end,
-                                      const Iterator it_vowel_begin, const Iterator it_vowel_end,
-                                      std::vector<double>* xcorr_std) const;
-  template <class Iterator>
   std::vector<Iterator> markWithSelf(const Iterator it_input_begin, const Iterator it_input_end,
                                      const Iterator it_base_begin, const Iterator it_base_end) const;
 };

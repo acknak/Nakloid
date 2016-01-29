@@ -60,18 +60,13 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
       rit_mark_start += max_element(xcorr_win.begin(), xcorr_win.end()) - xcorr_win.begin() - (win_size/2);
     }
     // aft vowel pitch mark
-    vector<double> xcorr_std;
     vector<vector<double>::const_reverse_iterator> tmp_pitchmarks =
-      markWithVowel(rit_mark_start, rit_input_wav_preu, aft_vowel_wav.rbegin(), aft_vowel_wav.rend(), &xcorr_std);
+      markWithVowel(rit_mark_start, rit_input_wav_preu, aft_vowel_wav.rbegin(), aft_vowel_wav.rend());
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
-      if (pos_fade_start==0 && xcorr_std[xcorr_std.size()-i-1] > 0.0) {
-        pos_fade_start = input_wav.rend() - tmp_pitchmarks[xcorr_std.size()-i-1];
-      }
-      if (pos_fade_end==0 && xcorr_std[i] > 0.0) {
-        pos_fade_end = input_wav.rend() - tmp_pitchmarks[i];
-      }
     }
+    pos_fade_start = pitchmarks.front();
+    pos_fade_end = pitchmarks.back();
     tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), rit_preu_start, *(tmp_pitchmarks.end()-3), *(tmp_pitchmarks.end()-1));
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
@@ -115,7 +110,7 @@ bool PitchMarker::mark(const vector<double>& vowel_wav)
   pitchmarks.reserve((it_input_wav_blnk-it_input_wav_offs)/win_size);
 
   vector<double>::const_reverse_iterator rit_input_wav_offs(it_input_wav_blnk), rit_input_wav_preu(it_input_wav_preu), rit_base_start, rit_base_end;
-  long pos_fade_start=0, pos_fade_end=0;
+  long pos_fade_start, pos_fade_end;
   {
     vector<double>::const_reverse_iterator rit_mark_start;
     {
@@ -126,19 +121,14 @@ bool PitchMarker::mark(const vector<double>& vowel_wav)
       rit_mark_start += max_element(xcorr_win.begin(), xcorr_win.end()) - xcorr_win.begin() - (win_size/2);
     }
     // vowel pitch mark
-    vector<double> xcorr_std;
     vector<vector<double>::const_reverse_iterator> tmp_pitchmarks =
-      markWithVowel(rit_mark_start, rit_input_wav_preu, vowel_wav.rbegin(), vowel_wav.rend(), &xcorr_std);
+      markWithVowel(rit_mark_start, rit_input_wav_preu, vowel_wav.rbegin(), vowel_wav.rend());
     if (tmp_pitchmarks.size() > 0) {
       for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
         pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
-        if (pos_fade_start==0 && xcorr_std[xcorr_std.size()-i-1] > 0.0) {
-          pos_fade_start = input_wav.rend() - tmp_pitchmarks[xcorr_std.size()-i-1];
-        }
-        if (pos_fade_end==0 && xcorr_std[i] > 0.0) {
-          pos_fade_end = input_wav.rend() - tmp_pitchmarks[i];
-        }
       }
+      pos_fade_start = *min_element(pitchmarks.begin(), pitchmarks.end());
+      pos_fade_end = *max_element(pitchmarks.begin(), pitchmarks.end());
     } else {
       pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[0]);
       pos_fade_start = pos_fade_end = pitchmarks.back();
@@ -182,14 +172,6 @@ template <class Iterator>
 vector<Iterator> PitchMarker::markWithVowel(const Iterator it_input_begin, const Iterator it_input_end,
                                             const Iterator it_vowel_begin, const Iterator it_vowel_end) const
 {
-  return markWithVowel(it_input_begin,it_input_end, it_vowel_begin, it_vowel_end, 0);
-}
-
-template <class Iterator>
-vector<Iterator> PitchMarker::markWithVowel(const Iterator it_input_begin, const Iterator it_input_end,
-                                            const Iterator it_vowel_begin, const Iterator it_vowel_end,
-                                            vector<double>* xcorr_std) const
-{
   vector<Iterator> pitchmarks(1, it_input_begin);
   if (it_vowel_begin>=it_vowel_end || it_input_begin>=it_input_end) {
     return pitchmarks;
@@ -197,36 +179,44 @@ vector<Iterator> PitchMarker::markWithVowel(const Iterator it_input_begin, const
 
   short win_size = it_vowel_end - it_vowel_begin;
   Iterator tmp_pitchmark = it_input_begin;
-  vector<double> xcorr_win(win_size*2, 0.0), xcorr_max;
+  vector<double> xcorr_win(win_size*2, 0.0);
   pitchmarks.reserve((it_input_end-it_input_begin)/win_size);
 
-  long dist = win_size/2, pre_dist = dist;
+  vector<double> array_vowel_dev(it_vowel_begin, it_vowel_end);
+  {
+    double avg = accumulate(array_vowel_dev.begin(), array_vowel_dev.end(), 0.0) / win_size;
+    for (int i=0; i<win_size; ++i) {
+      array_vowel_dev[i] -= avg;
+    }
+  }
+
+  long dist = win_size / 2;
   while (tmp_pitchmark < it_input_end-(win_size/2*3)) {
     xcorr(tmp_pitchmark+(win_size/2), xcorr_win.begin(), it_vowel_begin, it_vowel_end);
     short margin_fore=win_size/4*3, margin_aft=win_size/4*7;
     vector<double>::iterator it_xcorr_max = max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft);
     dist = it_xcorr_max - xcorr_win.begin() - (win_size/2);
-    if (xcorr_std != 0) {
-      xcorr_max.push_back(*it_xcorr_max);
-    }
-    pre_dist = dist;
     pitchmarks.push_back(tmp_pitchmark+=dist);
+    vector<double> array_target_dev(tmp_pitchmark-(win_size/2), tmp_pitchmark-(win_size/2)+win_size);
+    {
+      double avg = accumulate(array_target_dev.begin(), array_target_dev.end(), 0.0) / win_size;
+      for (int i = 0; i<win_size; ++i) {
+        array_target_dev[i] -= avg;
+      }
+    }
+    double numerator = 0.0;
+    for(int i=0; i<win_size; i++) {
+      numerator += array_vowel_dev[i] * array_target_dev[i];
+    }
+    double denominator_vowel = 0.0, denominator_target = 0.0;
+    for(int i=0; i<win_size; i++) {
+      denominator_vowel += pow(array_vowel_dev[i], 2.0);
+      denominator_target += pow(array_target_dev[i], 2.0);
+    }
+    if (numerator/pow(denominator_vowel, 0.5)/pow(denominator_target, 0.5) < PitchMarker::params.xcorr_threshold) {
+      break;
+    }
   }
-
-  if (xcorr_std != 0) {
-    xcorr_std->assign(xcorr_max.size(), 0.0);
-    double avg=0.0, stdev=0.0;
-    for (size_t i=0; i<xcorr_max.size(); i++) {
-      avg += xcorr_max[i] / xcorr_max.size();
-    }
-    for (size_t i=0; i<xcorr_max.size(); i++) {
-      stdev += pow(xcorr_max[i]-avg, 2.0) / xcorr_max.size();
-    }
-    for (size_t i=0; i<xcorr_max.size(); i++) {
-      xcorr_std->at(i) = (xcorr_max[i]-avg) / stdev;
-    }
-  }
-
   return pitchmarks;
 }
 
