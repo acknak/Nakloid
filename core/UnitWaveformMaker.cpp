@@ -147,7 +147,7 @@ void UnitWaveformMaker::setFadeParams(long ms_fade_start, long ms_fade_end, unsi
 
 void UnitWaveformMaker::setFadeParams(long sub_fade_start, long sub_fade_end)
 {
-  this->sub_fade_start = sub_fade_start;
+  this->sub_fade_start = sub_fade_start-(sub_fade_start==sub_fade_end)?1:0;
   this->sub_fade_end = sub_fade_end;
 }
 
