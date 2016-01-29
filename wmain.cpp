@@ -66,9 +66,8 @@ int wmain(int argc, wchar_t *argv[])
       nakloid = new Nakloid();
     } else {
       cerr << "[wmain] can't parse Nakloid.ini correctly" << endl;
-      cin.sync();
       cout << "Press Enter/Return to continue..." << endl;
-      cin.get();
+      cin.get(); cin.ignore();
       return 0;
     }
     while(1) {
@@ -78,7 +77,7 @@ int wmain(int argc, wchar_t *argv[])
         << L"'3': make specific cache of vocal library" << endl
         << L"'0': exit" << endl << endl;
       char input_key;
-      cin >> input_key;
+      cin >> input_key; cin.ignore();
       if (input_key == '0') {
         delete nakloid;
         nakloid = 0;
@@ -94,28 +93,23 @@ int wmain(int argc, wchar_t *argv[])
         nakloid->vocalization();
         break;
        case '2':
-        cin.sync();
         wcout << "make pmp file [y/n]:";
-        input_key = cin.get();
+        input_key = cin.get(); cin.ignore();
         make_pmp = (input_key=='y')?true:false;
-        cin.sync();
         wcout << "make uwc file [y/n]:";
-        input_key = cin.get();
+        input_key = cin.get(); cin.ignore();
         make_uwc = (input_key=='y')?true:false;
         nakloid->makeAllCache(make_pmp, make_uwc);
         break;
        case '3':
         wstring pron_alias;
-        cin.sync();
         wcout << "pron_alias: ";
-        getline(wcin, pron_alias);
-        cin.sync();
+        getline(wcin, pron_alias); cin.ignore();
         wcout << "make pmp file [y/n]:";
-        input_key = cin.get();
+        input_key = cin.get(); cin.ignore();
         make_pmp = (input_key=='y')?true:false;
-        cin.sync();
         wcout << "make uwc file [y/n]:";
-        input_key = cin.get();
+        input_key = cin.get(); cin.ignore();
         make_uwc = (input_key=='y')?true:false;
         nakloid->makeCache(pron_alias, make_pmp, make_uwc);
         break;
