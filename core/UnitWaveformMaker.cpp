@@ -64,38 +64,37 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
       }
     }
   }
-
   // make self fade
   {
-    long sub_rep_len = (sub_fade_end-sub_fade_start) / 2;
-    sub_fade_start = sub_fade_end - (sub_rep_len*2);
-    for (size_t i=0; i<sub_rep_len; i++) {
-      UnitWaveform uw_fore = uwc->unit_waveforms[sub_fade_start+i];
-      UnitWaveform uw_aft = uwc->unit_waveforms[sub_fade_start+sub_rep_len+i];
-      vector<double> data_fore = uw_fore.data.getData();
-      vector<double> data_aft = uw_aft.data.getData();
+    long sub_rep_len = sub_fade_end - sub_fade_start;
+    UnitWaveform uw_base = uwc->unit_waveforms[sub_fade_start];
+    for (size_t i = 1; i<sub_rep_len; i++) {
+      UnitWaveform uw_target = uwc->unit_waveforms[sub_fade_start + i];
+      vector<double> data_base = uw_base.data.getData();
+      vector<double> data_target = uw_target.data.getData();
 
-      long left_diff = uw_aft.dwPitchLeft - uw_fore.dwPitchLeft;
+      long left_diff = uw_target.dwPitchLeft - uw_base.dwPitchLeft;
       if (left_diff < 0) {
-        data_fore.erase(data_fore.begin(), data_fore.begin()-left_diff);
-      } else if (left_diff > 0) {
-        data_fore.insert(data_fore.begin(), left_diff, 0);
+        data_base.erase(data_base.begin(), data_base.begin() - left_diff);
       }
-      long right_diff = uw_aft.dwPitchRight - uw_fore.dwPitchRight;
+      else if (left_diff > 0) {
+        data_base.insert(data_base.begin(), left_diff, 0);
+      }
+      long right_diff = uw_target.dwPitchRight - uw_base.dwPitchRight;
       if (right_diff < 0) {
-        data_fore.erase(data_fore.end()+right_diff, data_fore.end());
-      } else if (right_diff > 0) {
-        data_fore.insert(data_fore.end(), right_diff, 0);
+        data_base.erase(data_base.end() + right_diff, data_base.end());
       }
-      double scale = 1.0 / (sub_rep_len+1) * (i+1);
-      for (size_t j=0; j<data_aft.size(); j++) {
-        data_aft[j] = (data_fore[j]*scale) + (data_aft[j]*(1.0-scale));
+      else if (right_diff > 0) {
+        data_base.insert(data_base.end(), right_diff, 0);
       }
-      uwc->unit_waveforms[sub_fade_start+sub_rep_len+i].data.setData(data_aft);
+      double scale = i / (double)sub_rep_len;
+      for (size_t j = 0; j<data_target.size(); j++) {
+        data_target[j] = (data_base[j] * scale) + (data_target[j] * (1.0 - scale));
+      }
+      uwc->unit_waveforms[sub_fade_start + i].data.setData(data_target);
     }
-    uwc->header.dwRepeatStart = sub_fade_start + sub_rep_len;
+    uwc->header.dwRepeatStart = sub_fade_start;
   }
-
   return true;
 }
 
