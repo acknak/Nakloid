@@ -32,8 +32,6 @@ void VoiceWAV::makeUnitWaveformContainerCache(bool save_memory_cache) const
   if (!params.make_pmp_cache && (params.use_pmp_cache && result_pmp && !err_pmp)) {
     pmp.load(path_pmp);
   } else {
-    long sub_fade_start=0, sub_fade_end=0;
-
     PitchMarker *marker = new PitchMarker(tmp_wav.data.getData(), offs, ovrl, cons, blnk, tmp_wav.header.dwSamplesPerSec);
     if (!pron_alias.getPronVowel().empty()) {
       short win_size = tmp_wav.header.dwSamplesPerSec / getFrq() * 2;
