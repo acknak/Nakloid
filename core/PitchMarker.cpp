@@ -50,7 +50,7 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
       }
     }
     pos_cons_start = pitchmarks.back();
-    pitch_cons_start = *(pitchmarks.end()-1) - *(pitchmarks.end()-2);
+    pitch_cons_start = (pitchmarks.size()>1)?(*(pitchmarks.end()-1)-*(pitchmarks.end()-2)):0;
   }
   {
     vector<double>::const_reverse_iterator rit_mark_start, rit_input_wav_offs(it_input_wav_blnk), rit_input_wav_preu(it_input_wav_preu), rit_preu_start(input_wav.begin()+pos_cons_start);
@@ -76,9 +76,9 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
       }
     }
     pos_cons_end = pitchmarks.back();
-    pitch_cons_end = *(pitchmarks.end()-2) - *(pitchmarks.end()-1);
+    pitch_cons_end = (pitchmarks.size()>1)?(*(pitchmarks.end()-2)-*(pitchmarks.end()-1)):0;
   }
-  {
+  if (pitch_cons_start>0 && pitch_cons_end>0) {
     // consonant pitch mark
     long pos_len=pos_cons_end-pos_cons_start, pitch_avg=(pitch_cons_start+pitch_cons_end)/2;
     if (pos_len > pitch_avg) {

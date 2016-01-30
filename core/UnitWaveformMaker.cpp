@@ -13,11 +13,7 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
 {
   this->voice = voice;
   if (voice.size()==0 || pitchmarks.empty() || params.num_lobes==0) {
-    cerr << "[UnitWaveformMaker] voice, pitch mark or lobe is null" << endl;
-    return false;
-  }
-  if (sub_ovrl > sub_fade_start) {
-    cerr << "[UnitWaveformMaker] invalid ovrl and rep_start" << endl;
+    cerr << "[UnitWaveformMaker::makeUnitWaveform] voice, pitch mark or lobe is null" << endl;
     return false;
   }
   double fade_start_rms = makeUnitWaveform(sub_fade_start, pitch).data.getRMS();
