@@ -43,9 +43,11 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(tmp_pitchmarks[i] - input_wav.begin());
     }
-    tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), it_input_wav_preu, *(tmp_pitchmarks.end()-3), *(tmp_pitchmarks.end()-1));
-    for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
-      pitchmarks.push_back(tmp_pitchmarks[i] - input_wav.begin());
+    if (tmp_pitchmarks.size() > 2) {
+      tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), it_input_wav_preu, *(tmp_pitchmarks.end() - 3), *(tmp_pitchmarks.end() - 1));
+      for (size_t i = 0; i<tmp_pitchmarks.size(); i++) {
+        pitchmarks.push_back(tmp_pitchmarks[i] - input_wav.begin());
+      }
     }
     pos_cons_start = pitchmarks.back();
     pitch_cons_start = *(pitchmarks.end()-1) - *(pitchmarks.end()-2);
@@ -67,9 +69,11 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     }
     pos_fade_start = pitchmarks.front();
     pos_fade_end = pitchmarks.back();
-    tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), rit_preu_start, *(tmp_pitchmarks.end()-3), *(tmp_pitchmarks.end()-1));
-    for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
-      pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
+    if (tmp_pitchmarks.size() > 2) {
+      tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), rit_preu_start, *(tmp_pitchmarks.end() - 3), *(tmp_pitchmarks.end() - 1));
+      for (size_t i = 0; i < tmp_pitchmarks.size(); i++) {
+        pitchmarks.push_back(input_wav.rend() - tmp_pitchmarks[i]);
+      }
     }
     pos_cons_end = pitchmarks.back();
     pitch_cons_end = *(pitchmarks.end()-2) - *(pitchmarks.end()-1);
@@ -79,8 +83,10 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     long pos_len=pos_cons_end-pos_cons_start, pitch_avg=(pitch_cons_start+pitch_cons_end)/2;
     if (pos_len > pitch_avg) {
       long num_pitchmark = (long)((pos_len/(double)pitch_avg)+0.5) - 1;
-      for (size_t i=0; i<num_pitchmark; i++) {
-        pitchmarks.push_back(pos_len/(num_pitchmark+1.0)*(i+1)+pos_cons_start);
+      if (num_pitchmark > 0) {
+        for (size_t i = 0; i<num_pitchmark; i++) {
+          pitchmarks.push_back(pos_len / (num_pitchmark + 1.0)*(i + 1) + pos_cons_start);
+        }
       }
     }
   }
