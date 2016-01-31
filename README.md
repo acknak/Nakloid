@@ -10,7 +10,7 @@ required
 
 license
 ----------
-Copyright (c) 2012-2015 acknak
+Copyright (c) 2012–2016 acknak
 
 This software is released under the MIT License.
 
