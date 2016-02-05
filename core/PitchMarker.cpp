@@ -67,8 +67,8 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(input_wav.rend()-tmp_pitchmarks[i]);
     }
-    pos_fade_start = pitchmarks.front();
-    pos_fade_end = pitchmarks.back();
+    pos_fade_start = input_wav.rend() - tmp_pitchmarks.back();
+    pos_fade_end = input_wav.rend() - tmp_pitchmarks.front();
     if (tmp_pitchmarks.size() > 2) {
       tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), rit_preu_start, *(tmp_pitchmarks.end() - 3), *(tmp_pitchmarks.end() - 1));
       for (size_t i = 0; i < tmp_pitchmarks.size(); i++) {
