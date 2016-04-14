@@ -43,11 +43,14 @@ class VoiceWAV: public Voice, public WavHandler {
 
  private:
   mutable Wav tmp_wav;
-  static std::map< std::wstring, PitchmarkTemplateParameters > vowel_wav_map;
+  mutable struct Vowel {
+    std::vector<double> wav;
+    long ms_from = 0;
+  } fore_vowel, aft_vowel;
 
-  const std::vector<double>& getVowelWav() const;
-  const std::vector<double>& getPrefixVowelWav() const;
-  void setVowelWav() const;
+  Vowel getVowelWav(std::vector<double>::const_iterator base_pitchmark) const;
+  void setVowelWav();
+  void setPrefixVowelWav();
   inline double sinc(double x) const { return sin(M_PI*x) / (M_PI*x); }
 
   // inherit from WavHandler
