@@ -43,12 +43,6 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     for (size_t i=0; i<tmp_pitchmarks.size(); i++) {
       pitchmarks.push_back(tmp_pitchmarks[i] - input_wav.begin());
     }
-    if (tmp_pitchmarks.size() > 2) {
-      tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), it_input_wav_preu, *(tmp_pitchmarks.end() - 3), *(tmp_pitchmarks.end() - 1));
-      for (size_t i = 0; i<tmp_pitchmarks.size(); i++) {
-        pitchmarks.push_back(tmp_pitchmarks[i] - input_wav.begin());
-      }
-    }
     pos_cons_start = pitchmarks.back();
     pitch_cons_start = (pitchmarks.size()>1)?(*(pitchmarks.end()-1)-*(pitchmarks.end()-2)):0;
   }
@@ -69,12 +63,6 @@ bool PitchMarker::mark(const vector<double>& fore_vowel_wav, const vector<double
     }
     pos_fade_start = input_wav.rend() - tmp_pitchmarks.back();
     pos_fade_end = input_wav.rend() - tmp_pitchmarks.front();
-    if (tmp_pitchmarks.size() > 2) {
-      tmp_pitchmarks = markWithSelf(tmp_pitchmarks.back(), rit_preu_start, *(tmp_pitchmarks.end() - 3), *(tmp_pitchmarks.end() - 1));
-      for (size_t i = 0; i < tmp_pitchmarks.size(); i++) {
-        pitchmarks.push_back(input_wav.rend() - tmp_pitchmarks[i]);
-      }
-    }
     pos_cons_end = pitchmarks.back();
     pitch_cons_end = (pitchmarks.size()>1)?(*(pitchmarks.end()-2)-*(pitchmarks.end()-1)):0;
   }
