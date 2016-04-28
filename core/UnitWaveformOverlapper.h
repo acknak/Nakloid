@@ -6,6 +6,7 @@
 #include <iostream>
 #include <limits>
 #include <list>
+#include <numeric>
 #include <string>
 #include <vector>
 #include <boost/filesystem/fstream.hpp>

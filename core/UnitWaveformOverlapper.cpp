@@ -214,5 +214,10 @@ UnitWaveformOverlapper::PitchMarkObject::UnitWaveformParams::UnitWaveformParams(
   for (size_t i=0; i<base_waveform.size(); i++) {
     base_waveform[i] *= filter[i];
   }
+  double avg = accumulate(base_waveform.begin(), base_waveform.end(), 0.0) / base_waveform.size();
+  for (size_t j=0; j<base_waveform.size(); j++) {
+    base_waveform[j] -= avg;
+  }
+
   uw.data = WavData(base_waveform);
 }
