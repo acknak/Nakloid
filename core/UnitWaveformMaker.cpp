@@ -62,34 +62,49 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
   }
   // make self fade
   {
-    long sub_rep_len = sub_fade_end - sub_fade_start;
-    UnitWaveform uw_base = uwc->unit_waveforms[sub_fade_start];
-    for (size_t i = 1; i<sub_rep_len; i++) {
-      UnitWaveform uw_target = uwc->unit_waveforms[sub_fade_start + i];
-      vector<double> data_base = uw_base.data.getData();
-      vector<double> data_target = uw_target.data.getData();
-
-      long left_diff = uw_target.dwPitchLeft - uw_base.dwPitchLeft;
-      if (left_diff < 0) {
-        data_base.erase(data_base.begin(), data_base.begin() - left_diff);
-      }
-      else if (left_diff > 0) {
-        data_base.insert(data_base.begin(), left_diff, 0);
-      }
-      long right_diff = uw_target.dwPitchRight - uw_base.dwPitchRight;
-      if (right_diff < 0) {
-        data_base.erase(data_base.end() + right_diff, data_base.end());
-      }
-      else if (right_diff > 0) {
-        data_base.insert(data_base.end(), right_diff, 0);
-      }
-      double scale = i / (double)sub_rep_len;
-      for (size_t j = 0; j<data_target.size(); j++) {
-        data_target[j] = (data_base[j] * scale) + (data_target[j] * (1.0 - scale));
-      }
-      uwc->unit_waveforms[sub_fade_start + i].data.setData(data_target);
+    long sub_rep_len=sub_fade_end-sub_fade_start;
+    if (params.repeat_type == Parameters::RepeatType::repeat_type_self_fade) {
+      sub_rep_len /= 2;
+      sub_fade_start = sub_fade_end - (sub_rep_len*2);
     }
-    uwc->header.dwRepeatStart = sub_fade_start;
+    UnitWaveform uw_dimin, uw_cres=uwc->unit_waveforms[sub_fade_start];
+    for (size_t i=0; i<sub_rep_len; i++) {
+      vector<double> data_cres, data_dimin;
+      if (params.repeat_type == Parameters::RepeatType::repeat_type_self_fade) {
+        uw_dimin = uwc->unit_waveforms[sub_fade_start+sub_rep_len+i];
+        uw_cres = uwc->unit_waveforms[sub_fade_start+i];
+      } else {
+        uw_dimin = uwc->unit_waveforms[sub_fade_start+i];
+      }
+      data_cres = uw_cres.data.getData();
+      data_dimin = uw_dimin.data.getData();
+      {
+        long left_diff=uw_dimin.dwPitchLeft-uw_cres.dwPitchLeft, right_diff=uw_dimin.dwPitchRight-uw_dimin.dwPitchRight;
+        if (left_diff < 0) {
+          data_cres.erase(data_cres.begin(), data_cres.begin()-left_diff);
+        } else if (left_diff > 0) {
+          data_cres.insert(data_cres.begin(), left_diff, 0);
+        }
+        if (right_diff < 0) {
+          data_cres.erase(data_cres.end()+right_diff, data_cres.end());
+        } else if (right_diff > 0) {
+          data_cres.insert(data_cres.end(), right_diff, 0);
+        }
+      }
+      {
+        double scale = i / (double)sub_rep_len;
+        for (size_t j=0; j<data_dimin.size(); j++) {
+          data_dimin[j] = (data_cres[j]*scale) + (data_dimin[j]*(1.0-scale));
+        }
+      }
+      if (params.repeat_type == Parameters::RepeatType::repeat_type_self_fade) {
+        uwc->unit_waveforms[sub_fade_start+sub_rep_len+i].data.setData(data_dimin);
+        uwc->header.dwRepeatStart = sub_fade_start+sub_rep_len;
+      } else {
+        uwc->unit_waveforms[sub_fade_start+i].data.setData(data_dimin);
+        uwc->header.dwRepeatStart = sub_fade_start;
+      }
+    }
   }
   return true;
 }

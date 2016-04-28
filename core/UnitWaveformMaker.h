@@ -17,12 +17,16 @@ class UnitWaveformMaker {
     Parameters() {
       target_rms = 0.05;
       num_lobes = 1;
+      repeat_type = repeat_type_self_fade;
       normalize = true;
       min_repeat_length = 100;
       repeat_threshold = 0.98;
     };
     double target_rms;
     short num_lobes;
+    enum RepeatType {
+      repeat_type_self_fade, repeat_type_front_fade
+    }repeat_type;
     bool normalize;
     short min_repeat_length;
     double repeat_threshold;

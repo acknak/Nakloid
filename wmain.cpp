@@ -221,6 +221,13 @@ bool parse_ini()
     if (boost::optional<bool> tmp = wpt.get_optional<bool>(L"Output.print_debug")) {
       Nakloid::params.print_debug = tmp.get();
     }
+    if (boost::optional<short> tmp = wpt.get_optional<short>(L"UnitWaveformContainer.repeat_type")) {
+      if (tmp.get() == 1) {
+        UnitWaveformMaker::params.repeat_type = UnitWaveformMaker::Parameters::RepeatType::repeat_type_self_fade;
+      } else if (tmp.get() == 2) {
+        UnitWaveformMaker::params.repeat_type = UnitWaveformMaker::Parameters::RepeatType::repeat_type_front_fade;
+      }
+    }
     if (boost::optional<long> tmp = wpt.get_optional<long>(L"UnitWaveformContainer.target_rms")) {
       UnitWaveformMaker::params.target_rms = tmp.get();
     }
