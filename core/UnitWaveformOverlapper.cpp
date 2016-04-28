@@ -51,7 +51,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
 
     // choose unit waveform for overlap
     long dist = *it_pitchmarks - *it_begin_pitchmarks + pos_trim + pos_margin;
-    if (dist > fade_last) {
+    if (dist > fade_start) {
       dist = ((long)((dist-fade_start)/fade_stretch_scale)%(fade_last-fade_start)
         +(uwc->unit_waveforms.begin()+uwc->header.dwRepeatStart)->dwPosition);
     }
@@ -100,7 +100,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
     }
     // analyze subset
     for (vector<PitchMarkObject>::iterator it_pmos=pmos.begin();it_pmos!=pmos.end();++it_pmos) {
-      double mean_rms=it_pmos->getRmsMean();
+      double mean_rms = it_pmos->getRmsMean();
       long tmp_pos = *it_pmos->it - *it_begin_pitchmarks + margin;
       if (tmp_pos-it_pmos->uwps[0].uw.dwPitchLeft >= 0) {
         vector<double> tmp_wav(subset_wav.begin()+tmp_pos-it_pmos->uwps.front().uw.dwPitchLeft, subset_wav.begin()+tmp_pos+it_pmos->uwps.front().uw.dwPitchRight+1);
