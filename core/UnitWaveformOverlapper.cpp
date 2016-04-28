@@ -39,7 +39,7 @@ bool UnitWaveformOverlapper::overlapping(const UnitWaveformContainer* const uwc,
   }
 
   vector<PitchMarkObject> pmos;
-  long fade_start=(uwc->unit_waveforms.begin()+uwc->header.dwRepeatStart-1)->dwPosition, fade_last=uwc->unit_waveforms.back().dwPosition;
+  long fade_start=(uwc->unit_waveforms.begin()+uwc->header.dwRepeatStart-1)->dwPosition, fade_last=uwc->unit_waveforms.back().dwPosition+uwc->unit_waveforms.back().data.getSize();
   long pos_trim=ms2pos(ms_trim, params.wav_header), pos_margin=ms2pos(ms_note_margin,params.wav_header);
   double fade_stretch_scale = (params.stretch_self_fade)
     ? (params.ms_self_fade/1000.0)/((uwc->unit_waveforms.back().dwPosition-uwc->unit_waveforms[uwc->header.dwRepeatStart].dwPosition)/(double)uwc->header.dwSamplesPerSec)
