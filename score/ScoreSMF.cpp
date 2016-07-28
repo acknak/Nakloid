@@ -38,6 +38,11 @@ void ScoreSMF::load()
     return;
   }
 
+  if (notes.size() == 0) {
+    cerr << "[ScoreSMF::load] can't find any notes at " << params.smf_track << "th track" << endl;
+    return;
+  }
+
   reloadPitches();
 
   return;
