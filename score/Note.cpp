@@ -342,6 +342,10 @@ vector<short> Note::getVelocities() const
   } else {
 	// padding
 	short padding_front = getFrontPadding(), padding_back = getBackPadding();
+    if (velocities.size() < padding_front+padding_back) {
+      padding_front *= velocities.size() / (padding_front+padding_back);
+      padding_back = velocities.size() - padding_front;
+    }
 	for (size_t i = 0; i<padding_front; i++) {
 		velocities[i] *= i / (double)padding_front;
 	}
