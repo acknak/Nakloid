@@ -64,7 +64,7 @@ bool UnitWaveformMaker::makeUnitWaveform(const vector<double>& voice, short pitc
   {
     long sub_rep_len=sub_fade_end-sub_fade_start;
     if (params.repeat_type == Parameters::RepeatType::repeat_type_self_fade) {
-      sub_rep_len /= 2;
+      sub_rep_len = (sub_rep_len+1) / 2;
       sub_fade_start = sub_fade_end - (sub_rep_len*2);
     }
     UnitWaveform uw_dimin, uw_cres=uwc->unit_waveforms[sub_fade_start];
