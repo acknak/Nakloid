@@ -158,7 +158,12 @@ bool PitchMarker::mark(double hz, unsigned long fs)
 {
   short win_size = fs / hz;
   vector<double>::const_iterator it_input_wav_max = max_element(it_input_wav_cons, it_input_wav_cons+win_size);
-  vector<double> vowel_wav(it_input_wav_max+(win_size/2), it_input_wav_max+(win_size/2)+win_size);
+  vector<double> vowel_wav;
+  if (it_input_wav_blnk-it_input_wav_cons < win_size/2*3) {
+    vowel_wav.assign(it_input_wav_max-(win_size/2), it_input_wav_max+(win_size/2));
+  } else {
+    vowel_wav.assign(it_input_wav_max+(win_size/2), it_input_wav_max+(win_size/2)+win_size);
+  }
   return mark(vowel_wav);
 }
 
