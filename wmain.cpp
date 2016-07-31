@@ -104,7 +104,7 @@ int wmain(int argc, wchar_t *argv[])
        case '3':
         wstring pron_alias;
         wcout << "pron_alias: ";
-        getline(wcin, pron_alias); cin.ignore();
+        getline(wcin, pron_alias);
         wcout << "make pmp file [y/n]:";
         input_key = cin.get(); cin.ignore();
         make_pmp = (input_key=='y')?true:false;
