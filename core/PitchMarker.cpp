@@ -157,12 +157,15 @@ bool PitchMarker::mark(const vector<double>& vowel_wav)
 bool PitchMarker::mark(double hz, unsigned long fs)
 {
   short win_size = fs / hz;
-  vector<double>::const_iterator it_input_wav_max = max_element(it_input_wav_cons, it_input_wav_cons+win_size);
   vector<double> vowel_wav;
-  if (it_input_wav_blnk-it_input_wav_cons < win_size/2*3) {
-    vowel_wav.assign(it_input_wav_max-(win_size/2), it_input_wav_max+(win_size/2));
+  if (it_input_wav_blnk-it_input_wav_cons > win_size*3) {
+    vector<double>::const_iterator it_input_wav_max = max_element(it_input_wav_cons, it_input_wav_cons+win_size);
+    vowel_wav.assign(it_input_wav_max+(win_size/2), it_input_wav_max+(win_size*3/2));
+  } else if (it_input_wav_cons-it_input_wav_offs > win_size*3) {
+    vector<double>::const_iterator it_input_wav_max = max_element(it_input_wav_cons-win_size, it_input_wav_cons);
+    vowel_wav.assign(it_input_wav_max-(win_size*3/2), it_input_wav_max-(win_size/2));
   } else {
-    vowel_wav.assign(it_input_wav_max+(win_size/2), it_input_wav_max+(win_size/2)+win_size);
+    vowel_wav.assign(it_input_wav_cons, it_input_wav_blnk);
   }
   return mark(vowel_wav);
 }
@@ -177,6 +180,10 @@ vector<Iterator> PitchMarker::markWithVowel(const Iterator it_input_begin, const
   }
 
   short win_size = it_vowel_end - it_vowel_begin;
+  if (it_input_end-it_input_begin<=win_size*3/2) {
+    return pitchmarks;
+  }
+
   Iterator tmp_pitchmark = it_input_begin;
   vector<double> xcorr_win(win_size*2, 0.0);
   pitchmarks.reserve((it_input_end-it_input_begin)/win_size);
@@ -190,7 +197,7 @@ vector<Iterator> PitchMarker::markWithVowel(const Iterator it_input_begin, const
   }
 
   long dist = win_size / 2;
-  while (tmp_pitchmark < it_input_end-(win_size/2*3)) {
+  while (tmp_pitchmark < it_input_end-(win_size*3/2)) {
     xcorr(tmp_pitchmark+(win_size/2), xcorr_win.begin(), it_vowel_begin, it_vowel_end);
     short margin_fore=win_size/4*3, margin_aft=win_size/4*7;
     vector<double>::iterator it_xcorr_max = max_element(xcorr_win.begin()+margin_fore, xcorr_win.begin()+margin_aft);
